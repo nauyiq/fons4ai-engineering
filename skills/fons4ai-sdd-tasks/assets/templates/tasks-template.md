@@ -89,14 +89,14 @@ graph LR
 
 仅当技术设计说明书声明持久化数据结构新增、删除、重命名、字段、索引、约束或关系变更时生成。任务阶段只规划，不直接执行数据库 DDL，不在任务规划阶段生成 SQL 文件。
 
-- [ ] Txxx 生成执行型 DDL 草案
+- [ ] Txxx 生成执行型 DDL 草案或等价结构变更产物
   - 通俗解释: 完成后用户或 DBA 可以审核并手动执行数据库结构变更脚本。
   - AC: AC-xxx
-  - 来源: 技术设计说明书 §4
+  - 来源: 技术设计说明书 §4.5、§4.7
   - Files: spec/features/<yyyymmdd>/ddl-changes/<INIT|CR-xxx>-<database_or_service>-<business_model>.sql | <project-migration-path>.sql
   - Depends: Txxx
-  - Verification: 对照原始 SQL DDL 与目标结构，确认 `ALTER TABLE` 或等价语句覆盖字段、索引、约束、默认值、兼容策略和回滚要求，并标明需要用户或 DBA 手动执行。
-  - Quality: 执行型变更 DDL 与 `.specify/sql/` 当前结构快照分离维护，不包含 MCP/Tool 信息、查询文本或来源路径，不从实体或 Mapper 推断 DDL。
+  - Verification: 对照技术设计的结构变更详设、原始 SQL DDL/schema 证据与目标结构，确认 `ALTER TABLE` 或等价结构变更产物覆盖字段、属性、索引、约束、默认值、兼容策略、回填清理和回滚要求，并标明需要用户或 DBA 手动执行。
+  - Quality: 执行型变更 DDL 与 `.specify/sql/` 当前结构快照分离维护，不包含 MCP/Tool 信息、查询文本或来源路径，不从实体、Mapper、ORM 注解或 Java 字段推断 DDL。
   - Done: 用户确认实现后已生成执行型变更 DDL 草案，且明确执行前置条件、手动执行责任方和回滚策略；或已明确不适用原因。
 
 - [ ] Txxx 确认 DDL 执行状态
@@ -105,7 +105,7 @@ graph LR
   - 来源: 技术设计说明书 §4
   - Files: spec/features/<yyyymmdd>/ddl-changes/<INIT|CR-xxx>-<database_or_service>-<business_model>.sql | <project-migration-path>.sql
   - Depends: Txxx
-  - Verification: 用户明确确认 DDL 已执行，或通过只读数据库 MCP/查询确认字段、索引、约束和默认值已生效；如果未执行，记录阻塞原因和影响范围。
+  - Verification: 用户明确确认 DDL 或等价结构变更已执行，或通过只读数据库 MCP/查询/数据服务控制台确认字段、索引、约束、默认值、集合结构、索引映射或 Topic 元数据已生效；如果未执行，记录阻塞原因和影响范围。
   - Quality: 不由 agent 直接执行生产 DDL；确认记录只描述执行状态和验证证据，不暴露敏感连接信息。
   - Done: DDL 执行状态已确认；若未执行，依赖该结构变更的代码任务不得标记为发布就绪。
 
@@ -115,7 +115,7 @@ graph LR
   - 来源: 技术设计说明书 §4
   - Files: .specify/sql/<database_or_service>/<business_model>.sql
   - Depends: Txxx
-  - Verification: 对照已执行 DDL、只读数据库 MCP/查询结果或仓库正式迁移文件，确认 SQL 当前结构快照准确且不包含 MCP/Tool 信息。
+  - Verification: 对照已执行 DDL、只读数据库 MCP/查询结果、数据服务 schema 导出或仓库正式迁移文件，确认 SQL/数据结构当前快照准确且不包含 MCP/Tool 信息。
   - Quality: SQL 文件按同库业务模型分组，跨库/跨服务不合并，不从实体、Mapper、ORM 注解或 Java 字段推断 DDL。
   - Done: SQL 当前结构快照已在 DDL 执行确认后更新；或已记录暂缓原因、责任方和确认依据。
 

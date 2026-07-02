@@ -57,6 +57,8 @@ DATA_IMPACT_HEADINGS = ("### 数据影响判断", "## 数据影响判断", "### 
 FIELD_MAPPING_HEADINGS = ("### 4.2 字段映射契约", "### 字段映射契约", "## 字段映射契约", "### Field Mapping Contract")
 DATA_FLOW_HEADINGS = ("### 4.3 数据流设计", "### 数据流设计", "## 数据流设计", "### Data Flow Design")
 DATA_SECURITY_HEADINGS = ("### 4.4 数据安全与合规设计", "### 数据安全与合规设计", "## 数据安全与合规设计", "### Data Security")
+DATA_STRUCTURE_DETAIL_HEADINGS = ("### 4.5 结构变更详设", "### 结构变更详设", "## 结构变更详设", "### Data Structure Detail")
+EVIDENCE_LIST_HEADINGS = ("## 11. 证据清单", "## 证据清单", "## Evidence List")
 CHANGE_REQUIRED_HEADING_GROUPS = (
     ("变更摘要", ("## 1. 变更摘要", "## 变更摘要")),
     ("影响范围", ("## 4. 影响范围", "## 影响范围", "## 影响分析", "## Impact Analysis")),
@@ -214,6 +216,14 @@ def plan_declares_sql_sync(plan_text: str) -> bool:
     )
 
 
+def declares_data_structure_change(text: str) -> bool:
+    return bool(
+        plan_declares_sql_sync(text)
+        or re.search(r"(是否涉及持久化结构变化|持久化结构变化|数据结构变更|DDL\s*影响)\s*[：:]\s*是", text, re.IGNORECASE)
+        or re.search(r"SQL\s*DDL\s*(update needed|action|required)\s*:\s*(yes|add|update|rename)", text, re.IGNORECASE)
+    )
+
+
 def declares_existing_table_change_with_baseline(text: str) -> bool:
     return bool(
         re.search(r"Existing\s+table.*baseline\s+DDL\s*:\s*(yes|confirmed)", text, re.IGNORECASE)
@@ -285,6 +295,7 @@ def validate(feature_dir: Path, strict: bool = False) -> tuple[list[str], list[s
         ("字段映射契约", FIELD_MAPPING_HEADINGS),
         ("数据流设计", DATA_FLOW_HEADINGS),
         ("数据安全与合规设计", DATA_SECURITY_HEADINGS),
+        ("结构变更详设", DATA_STRUCTURE_DETAIL_HEADINGS),
     ):
         if not has_any_heading(design_text, headings):
             errors.append(f"{design.name} is missing data design section '{display_name}'")
@@ -298,6 +309,8 @@ def validate(feature_dir: Path, strict: bool = False) -> tuple[list[str], list[s
     plan_sql_files = sorted(set(SQL_PATH_RE.findall(design_text)))
     if plan_declares_sql_sync(design_text) and not plan_sql_files:
         errors.append(f"{design.name} declares DDL sync but names no .specify/sql/**/*.sql file")
+    if declares_data_structure_change(design_text) and not has_any_heading(design_text, EVIDENCE_LIST_HEADINGS):
+        errors.append(f"{design.name} declares data structure or DDL impact but has no evidence list")
     for sql_file in plan_sql_files:
         if sql_file not in tasks_text:
             errors.append(f"{sql_file} is referenced in {design.name} but not in {tasks.name}")
@@ -421,6 +434,49 @@ def validate_bugfix_report(report: Path) -> list[str]:
     for field in ("回滚方案", "Knowledge Sync Needed", "SQL DDL files"):
         if field not in text:
             errors.append(f"{report} is missing '{field}'")
+    if not has_any_heading(text, EVIDENCE_LIST_HEADINGS):
+        errors.append(f"{report} is missing evidence list section")
+    for phrase in ("复现信号", "根因判断", "修复已生效"):
+        if phrase not in text:
+            errors.append(f"{report} evidence list is missing '{phrase}'")
+    if re.search(r"Status:\s*(Fixed|Verified)", text, re.IGNORECASE) and "L3" not in text:
+        errors.append(f"{report} is Fixed/Verified but has no L3 verification evidence")
+
+    return errors
+
+
+def validate_implementation_report(report: Path) -> list[str]:
+    errors: list[str] = []
+    if not report.exists():
+        return [f"Missing implementation report: {report}"]
+
+    text = read(report)
+    required = (
+        "## 4. 验证结果",
+        "## 5. AC 覆盖",
+        "## 7. DDL 与数据结构状态",
+        "验证证据等级",
+        "未验证项",
+    )
+    for heading in required:
+        if heading not in text:
+            errors.append(f"{report} is missing '{heading}'")
+
+    declares_complete = bool(
+        re.search(r"实施结果\s*[：:]\s*完成", text)
+        or re.search(r"是否发布就绪\s*[：:]\s*是", text)
+    )
+    if declares_complete:
+        if not re.search(r"未验证项\s*[：:]\s*无", text):
+            errors.append(f"{report} declares completion but has unverified items or no explicit '未验证项：无'")
+        if not re.search(r"验证证据等级\s*[：:]\s*L3", text):
+            errors.append(f"{report} declares completion but has no L3 verification evidence")
+    if (
+        re.search(r"是否涉及 DDL\s*[：:]\s*是", text)
+        and re.search(r"DDL 执行状态\s*[：:]\s*未执行", text)
+        and re.search(r"是否发布就绪\s*[：:]\s*是", text)
+    ):
+        errors.append(f"{report} is release-ready while DDL execution is not confirmed")
 
     return errors
 
@@ -430,12 +486,13 @@ def main() -> int:
     parser.add_argument("--feature-dir", help="Path to spec/features/<yyyymmdd> containing *-任务规划.md")
     parser.add_argument("--change-file", help="Path to spec/features/<yyyymmdd>/changes/CR-xxx.md")
     parser.add_argument("--bugfix-report", help="Path to spec/bugfixes/<yyyymmdd>/<bug中文名>-BUG修复报告.md")
+    parser.add_argument("--implementation-report", help="Path to spec/features/<yyyymmdd>/reports/<功能中文名>-实施报告.md")
     parser.add_argument("--strict", action="store_true", help="Fail modern SDD section omissions instead of warning")
     args = parser.parse_args()
 
-    selected = [value for value in (args.feature_dir, args.change_file, args.bugfix_report) if value]
+    selected = [value for value in (args.feature_dir, args.change_file, args.bugfix_report, args.implementation_report) if value]
     if len(selected) != 1:
-        print("ERROR: provide exactly one of --feature-dir, --change-file, or --bugfix-report", file=sys.stderr)
+        print("ERROR: provide exactly one of --feature-dir, --change-file, --bugfix-report, or --implementation-report", file=sys.stderr)
         return 2
 
     if args.feature_dir:
@@ -447,11 +504,16 @@ def main() -> int:
         errors = validate_change_file(target)
         warnings = []
         success = f"OK: {target} SDD change artifact is valid"
-    else:
+    elif args.bugfix_report:
         target = Path(args.bugfix_report).resolve()
         errors = validate_bugfix_report(target)
         warnings = []
         success = f"OK: {target} bugfix report is valid"
+    else:
+        target = Path(args.implementation_report).resolve()
+        errors = validate_implementation_report(target)
+        warnings = []
+        success = f"OK: {target} implementation report is valid"
 
     for warning in warnings:
         print(f"WARN: {warning}", file=sys.stderr)

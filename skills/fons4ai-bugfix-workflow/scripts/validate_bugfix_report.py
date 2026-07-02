@@ -17,6 +17,7 @@ REQUIRED_HEADINGS = (
     "## 自动化测试",
     "## 手动验证",
     "## 回归验证",
+    "## 证据清单",
     "## 知识库同步",
 )
 
@@ -25,6 +26,12 @@ REQUIRED_FIELDS = (
     "Knowledge Sync Needed",
     "SQL DDL files",
     "Suggested follow-up",
+)
+
+REQUIRED_EVIDENCE_ROWS = (
+    "复现信号",
+    "根因判断",
+    "修复已生效",
 )
 
 
@@ -47,6 +54,11 @@ def validate(report: Path) -> list[str]:
     for field in REQUIRED_FIELDS:
         if field not in text:
             errors.append(f"Missing field: {field}")
+    for row in REQUIRED_EVIDENCE_ROWS:
+        if row not in text:
+            errors.append(f"Missing evidence row: {row}")
+    if ("Status: Fixed" in text or "Status: Verified" in text) and "L3" not in text:
+        errors.append("Fixed/Verified report must include L3 verification evidence")
     return errors
 
 

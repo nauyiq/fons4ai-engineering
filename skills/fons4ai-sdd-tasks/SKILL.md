@@ -5,6 +5,38 @@ description: "Fons4AI 受控的 SDD 任务拆解技能。只有当作用域内 A
 
 # Fons4ai-sdd-tasks
 
+## Contract
+
+### Inputs
+
+- Required: 同一功能目录下的正式需求说明书和技术设计说明书。
+- Optional: `contracts/`、`checklists/`、既有任务规划、相关规则、知识卡片、SQL/schema 证据、代表性源码和测试。
+- Forbidden assumptions: 不得把设计中未确认的字段、DDL、接口、风险或专业工作流临场补成可执行任务；不得把规划产物当作实现授权。
+
+### Preconditions
+
+- Entry gates: 满足触发条件之一，且需求说明书、技术设计说明书不是草案或阻塞状态。
+- Required source artifacts: 需求说明书和技术设计说明书必须完整读取；已有任务规划必须先读取。
+- Required repository facts: 只读取与任务拆解直接相关的规则、代码、测试和数据证据。
+
+### Outputs
+
+- May create or update: `spec/features/<yyyymmdd>/<功能中文名>-任务规划.md`。
+- Must not create or update: 需求说明书、技术设计说明书、业务代码、执行型 DDL、SQL 快照、知识库正文、知识同步任务。
+- Output location: `spec/features/<yyyymmdd>/`。
+
+### Exit Criteria
+
+- Success: 任务按依赖顺序排列，每个任务包含 `AC:`、`Files:`、`Verification:`、`Quality:`、`Done:`，实现确认状态为 `pending`，并通过 SDD 产物校验。
+- Blocked: 输入产物缺失、草案/阻塞、AC/设计/数据结构详设不足、任务依赖或执行范围无法确定。
+- Failure report: 汇报缺失产物、阻塞字段、应回到的上游技能和需要用户确认的问题。
+
+### Handoff
+
+- Next skill: `fons4ai-sdd-implement`，但只有用户最新消息明确授权执行后才允许进入。
+- Required handoff fields: 任务规划路径、未完成任务 ID、依赖关系、AC 映射、Files、Verification、Quality、DDL/数据结构任务、风险任务。
+- Stop condition: 任务规划生成后必须停止等待实现确认；不得自动实现。
+
 ## 触发门禁
 
 使用本技能前，必须确认至少满足以下任一条件：
@@ -96,7 +128,8 @@ description: "Fons4AI 受控的 SDD 任务拆解技能。只有当作用域内 A
    - 新增依赖必须已经在技术设计说明书或用户确认中记录原因、替代方案和影响。
 8. 处理 DDL 和数据结构任务。
    - 任务阶段只规划 DDL/SQL 工作，不直接执行数据库 DDL，不查询并落盘 DDL，不在任务规划阶段生成 SQL 文件。
-   - 如果技术设计说明书声明持久化数据结构变化，必须生成 DDL/SQL 相关实施任务，任务应覆盖执行型 DDL 草案、人工执行确认、执行后验证和 SQL 当前结构快照更新。
+   - 如果技术设计说明书声明持久化数据结构或其他数据服务结构变化，必须基于技术设计 `结构变更详设` 生成数据结构相关实施任务，任务应覆盖执行型 DDL 草案或等价结构变更产物、人工执行确认、执行后验证和 SQL/数据结构当前快照更新。
+   - 数据结构任务必须引用技术设计中的目标结构定义、字段/属性明细、索引约束、迁移/回填/清理策略和回滚思路；不得让实施者从实体、Mapper、ORM 注解或 Java 字段临场推断结构。
    - 执行型变更 DDL 应指向 `spec/features/<yyyymmdd>/ddl-changes/*.sql` 或项目既有迁移目录；`.specify/sql/**/*.sql` 只记录执行后的当前结构快照。
    - 如果 agent 没有执行数据库 DDL 的权力，任务必须明确由用户或 DBA 手动执行 DDL，并保留“确认执行状态”和“验证结构已生效”的任务。
    - 依赖数据库结构变更的代码任务，必须在 `Depends:` 或 `Done:` 中体现 DDL 已执行或已确认暂缓，否则不得视为发布就绪。
