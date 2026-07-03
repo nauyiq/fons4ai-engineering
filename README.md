@@ -66,6 +66,7 @@ Fons4AI Harness Engineering 按 6 层组织：
 ```text
 scripts/validate_skill_contracts.py --skills-root skills
 scripts/validate_feedback_harness.py
+scripts/validate_all.py
 scripts/validate_business_project_harness.py --target <业务项目根目录>
 ```
 

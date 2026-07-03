@@ -30,7 +30,7 @@ Fons4AI Harness Engineering 使用 6 层结构：
 | `fons4ai-sdd-implement` | Feedback Harness | Skill Harness, Context Harness | 执行已授权 SDD 任务，要求验证证据和实施报告 | 结构完整，可作为实现类技能样板 |
 | `fons4ai-bugfix-workflow` | Feedback Harness | Intent Harness, Skill Harness | 复现、诊断、修复、验证并记录 BUG | Contract 完整；后续补显式角色和职责边界章节 |
 | `fons4ai-agent-env-readiness` | Feedback Harness | Context Harness | 评估 Agent 环境准备度和验证可靠性 | 保留按需增强定位；后续评估是否补 Evidence 章节 |
-| `fons4ai-harness-feedback` | Learning Harness | Feedback Harness | 将业务试点项目中的 Agent 使用问题整理为脱敏上游反馈单 | 新增技能；默认输出到 `spec/reports/harness-feedback/` |
+| `spec/reports/harness-feedback/` 反馈单 | Learning Harness | Feedback Harness | 将业务试点项目中的 Agent 使用问题整理为脱敏上游反馈单 | 当前阶段使用文档路径承载；独立反馈 Skill 后续再评估 |
 | `fons4ai-knowledge-bootstrap` | Context Harness | Skill Harness | 从代码、文档、接口、测试和配置建立项目知识基线 | Contract 已补齐；后续按 MVP 试点反馈优化 |
 | `fons4ai-domain-knowledge-modeling` | Context Harness | Skill Harness | 对领域或技术能力域进行深度知识建模 | Contract 已补齐；后续按 MVP 试点反馈优化 |
 | `fons4ai-knowledge-summary` | Context Harness | Feedback Harness, Skill Harness | 汇总已验证事实到知识库、领域文档、知识卡片和 SQL 快照 | 结构完整，可作为知识汇总类技能样板 |
@@ -110,7 +110,7 @@ P1 技能的统一 Contract 已补齐：
 
 - 不再继续孤立补全所有细节。
 - 使用业务项目 MVP 试点检验这三个入口技能的触发、上下文加载、确认门禁和输出边界。
-- 试点反馈通过 `fons4ai-harness-feedback` 汇总后，再回流优化技能正文、模板或校验器。
+- 试点反馈先通过 `spec/reports/harness-feedback/` 反馈单汇总后，再回流优化技能正文、模板或校验器。
 
 ### P2：补齐显式章节
 
