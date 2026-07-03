@@ -5,6 +5,38 @@ description: "Fons4AI 受控的领域/能力域知识建模技能。只有当作
 
 # Fons4ai-domain-knowledge-modeling
 
+## Contract
+
+### Inputs
+
+- Required: 用户明确要求进行领域知识建模、技术能力域建模、领域深挖或二级知识库建设；项目已有 `.specify/memory/index.md` 或用户明确提供足以定位建模对象的资料。
+- Optional: 项目知识基线、领域/能力域候选、正式业务/技术文档、接口文档、测试用例、历史设计、配置、源码事实、已有知识卡片、用户确认的建模边界。
+- Forbidden assumptions: 不得把单个实现方、渠道、厂商、协议、策略、流程、配置样例、测试样例或历史片段写成标准流程/标准能力；不得在未确认边界时批量生成正式深度文档。
+
+### Preconditions
+
+- Entry gates: 满足 Fons4AI 路由条件之一，且用户意图是对业务领域或技术能力域进行深度建模。
+- Required source artifacts: 优先读取 `AGENTS.md`、`.specify/memory/index.md`、用户指定资料和目标领域/能力域相关代码、测试、配置、接口或已有知识材料。
+- Confirmation gates: 正式生成文档前，必须逐个确认建模对象名称、slug、边界、核心能力、适配对象、公共抽象、代表性实现和不得作为标准的实现。
+
+### Outputs
+
+- May create or update: `.specify/memory/domains/<domain-slug>/` 下的业务/技术/数据文档、业务适配矩阵、适配说明、知识卡片和可选证据账本；或 `.specify/memory/capabilities/<capability-slug>/` 下的能力/运行/配置与资源文档、能力适配矩阵、适配说明、知识卡片和可选证据账本。
+- May create or update: `.specify/memory/deep-dive/<yyyymmdd>-domain-modeling-report.md` 或 `<yyyymmdd>-capability-modeling-report.md`，以及 `.specify/memory/index.md` 中的建模状态、适配索引和卡片索引。
+- Must not create or update: 业务代码、SDD 需求/设计/任务、CR、生产 DDL、直接可执行 SQL、未确认的标准流程/标准能力、与当前建模对象无关的领域或能力域文档。
+
+### Exit Criteria
+
+- Success: 建模对象边界和关键标准判定已由用户确认，主文档、适配矩阵、按需适配说明、知识卡片、索引和建模报告已生成或更新，并通过对应校验或记录无法校验原因。
+- Blocked: 缺少项目知识基线且用户未允许直接建模、建模对象名称/边界/核心能力未确认、文档与代码冲突未确认、证据不足以支撑标准判定、敏感或高风险规则无法脱敏或验证。
+- Failure report: 说明已读取资料、候选建模对象、冲突点、缺失证据、未确认问题、未生成或未更新的文件，以及建议回到 `fons4ai-knowledge-bootstrap` 或用户确认环节。
+
+### Handoff
+
+- Next skill: 若建模发现项目级基线缺失或边界错误，建议显式触发 `fons4ai-knowledge-bootstrap`；若建模结果需要转成项目规则，建议显式触发 `fons4ai-generate-project-rules`；若发现实现缺陷或需求变更，建议用户按需触发 BUG 或 SDD 技能。
+- Required handoff fields: 建模对象、对象类型、生成路径、确认结论、标准判定、适配矩阵状态、知识卡片清单、待确认项、校验结果和剩余风险。
+- Stop condition: 单个建模对象完成或遇到阻塞确认问题后停止；批量建模时每个对象独立交付，不自动进入下一对象或后续技能。
+
 ## 触发门禁
 
 使用本技能前，必须满足以下任一条件：

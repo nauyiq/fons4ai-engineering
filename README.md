@@ -42,8 +42,8 @@ Prompt Engineering
 当前仓库主要包含以下资产：
 
 - `skills/`：Fons4AI 技能定义，包括 SDD、BUG 修复、知识建模、项目规则和环境准备等工作流。
-- `.agents/skills/`：可复用的外部或本地 Agent 技能资产。
-- `scripts/`：用于校验技能契约、规则文档或工作产物的脚本。
+- `scripts/`：用于校验技能契约、Feedback Harness 入口、规则文档或工作产物的脚本。
+- `onboarding/business-project/`：业务项目 Harness 接入编排与验收说明，负责说明技能执行顺序和最小结构校验，不复制技能产物模板。
 - `skills-lock.json`：技能来源与版本锁定信息。
 
 ## 体系分层
@@ -57,7 +57,34 @@ Fons4AI Harness Engineering 按 6 层组织：
 | Skill Harness | 约束 Agent 按角色执行 | `skills/*/SKILL.md`、技能契约、handoff |
 | Rule Harness | 固化团队工程规则 | `.specify/rules/`、规则模板、校验脚本 |
 | Feedback Harness | 证明任务完成并记录失败 | 测试结果、实施报告、失败报告 |
-| Learning Harness | 跨项目沉淀可复用经验 | 失败案例、回放样例、上游反馈单 |
+| Learning Harness | 跨项目沉淀可复用经验 | 失败案例、回放样例、`spec/reports/harness-feedback/` 上游反馈单 |
+
+## 校验入口
+
+当前仓库级校验入口：
+
+```text
+scripts/validate_skill_contracts.py --skills-root skills
+scripts/validate_feedback_harness.py
+scripts/validate_business_project_harness.py --target <业务项目根目录>
+```
+
+其中 `validate_feedback_harness.py` 用于检查 Feedback Harness 的总入口资产是否齐全：实现报告、BUG 修复报告、环境准备度、上游反馈单、反馈路径约定和核心校验器。
+`validate_business_project_harness.py` 用于检查业务项目是否具备最小 Harness 接入结构。
+
+## 业务项目接入
+
+业务项目最小接入包位于：
+
+- [业务项目 Harness 接入编排与验收](onboarding/business-project/README.md)
+
+建议依次执行：
+
+1. `fons4ai-knowledge-bootstrap`
+2. `fons4ai-generate-project-rules`
+3. `fons4ai-agent-env-readiness`
+4. `scripts/validate_business_project_harness.py --target <业务项目根目录>`
+5. 选择一个低风险真实需求做 SDD MVP 回放
 
 ## SDD 的位置
 

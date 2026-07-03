@@ -10,7 +10,7 @@ description: "Fons4AI 受控的 SDD 实现技能。只有当作用域内 AGENTS.
 ### Inputs
 
 - Required: 用户最新消息中的明确实现授权，以及 `spec/features/<yyyymmdd>/<功能中文名>-任务规划.md` 中被选中的未完成任务。
-- Optional: 需求说明书、技术设计说明书、contracts、checklists、相关源码、测试、配置、SQL/schema 证据、项目规则和知识卡片。
+- Optional: 需求说明书、技术设计说明书、contracts、checklists、相关源码、测试、配置、SQL/schema 证据、项目规则、知识卡片、Spec Review、Code Review 和人工 Gate 结论。
 - Forbidden assumptions: 不得从历史对话、任务存在、规划完成或模糊指令推断实现授权；不得实现未规划范围或扩大 AC。
 
 ### Preconditions
@@ -27,14 +27,14 @@ description: "Fons4AI 受控的 SDD 实现技能。只有当作用域内 AGENTS.
 
 ### Exit Criteria
 
-- Success: 选中任务完成且验证通过，任务状态只在验证通过后勾选，实施报告记录授权依据、变更文件、RED/GREEN/REFACTOR 或等价验证、风险、DDL 状态和知识影响。
+- Success: 选中任务完成且验证通过，任务状态只在验证通过后勾选，实施报告记录授权依据、变更文件、RED/GREEN/REFACTOR 或等价验证、Evidence Bundle、Spec Review、Code Review、人工 Gate、风险、DDL 状态和知识影响。
 - Blocked: 缺少实现授权、任务依赖未完成、任务与设计冲突、关键数据/DDL/权限/契约证据缺失、验证失败或需要扩大范围。
 - Failure report: 保留任务未完成状态，汇报阻塞任务、失败命令或验证结果、当前判断和建议回到的技能。
 
 ### Handoff
 
 - Next skill: `fons4ai-knowledge-summary`，仅当存在已验证长期知识影响且用户显式触发时。
-- Required handoff fields: 实施报告路径、完成/未完成任务、验证结果、DDL 状态、变更文件、知识影响、剩余风险。
+- Required handoff fields: 实施报告路径、完成/未完成任务、验证结果、Review 状态、人工 Gate 状态、DDL 状态、变更文件、知识影响、剩余风险。
 - Stop condition: 验证失败、外部 DDL 未确认、任务范围冲突或用户未授权时停止。
 
 ## Evidence Required
@@ -48,12 +48,13 @@ description: "Fons4AI 受控的 SDD 实现技能。只有当作用域内 AGENTS.
 ### Hard Evidence Gates
 
 - 任务完成状态必须有 L3 验证证据；没有验证结果不得勾选完成。
+- 实现 Agent 可以自检，但不能作为最终裁判；没有新鲜验证证据、Spec Review、Code Review 或必要人工 Gate 记录时，不得声明可交付完成。
 - 涉及 DDL 或数据结构的任务，必须有执行型 DDL 草案、执行状态或明确阻塞原因；DDL 未执行前，依赖结构变更的代码任务不得标记为发布就绪。
 - 推断只能作为影响分析，不得单独作为完成状态、发布就绪或长期知识依据。
 
 ### Evidence Output
 
-- 实施报告必须记录验证命令、验证结果、未验证项、DDL 状态和 AC 覆盖证据。
+- 实施报告必须记录 Evidence Bundle：验证命令、验证结果、未验证项、DDL 状态、AC 覆盖证据、Spec Review、Code Review、人工 Gate 和剩余风险。
 - 若任何验证无法执行，必须保留对应任务未完成或标记阻塞，并说明原因。
 
 ## 触发门禁
@@ -163,14 +164,21 @@ description: "Fons4AI 受控的 SDD 实现技能。只有当作用域内 AGENTS.
    - 先运行任务 `Verification:` 指定的聚焦验证。
    - 再运行最小必要回归检查。
    - 自动化测试不可用时，必须记录原因和可复现的手动验证步骤。
-10. 更新任务状态。
+10. 记录 Review 与人工 Gate 状态。
+   - 实现 Agent 必须先完成自检，但自检不能替代 Spec Review 或 Code Review。
+   - 如果存在 `.specify/rules/sdd团队协作规范.md`，必须按其中角色与评审门禁记录 Spec Review、Code Review 和人工 Gate 状态。
+   - Spec Review 用于确认实现是否符合需求、设计和任务 AC，是否漏做、多做或偏离范围。
+   - Code Review 用于确认代码质量、边界条件、异常处理、安全、兼容性和测试证据是否可接受。
+   - 涉及权限、安全、资金、风控、生产配置、数据迁移、敏感数据或外部系统写入时，必须记录人工 Gate 状态；未通过时不得声明可交付完成。
+   - 当前会话无法实际完成独立 Review 时，必须在实施报告中标记 `待执行` 或 `阻塞`，并把最终状态限定为“实现候选完成”或“部分完成”。
+11. 更新任务状态。
    - 只有验证通过后，才能把对应任务从 `[ ]` 改为 `[x]`。
    - DDL 草案生成任务：DDL 草案生成并通过自检后可完成。
    - DDL 执行确认任务：必须用户确认已执行，或通过只读数据库 MCP/查询确认结构生效后才能完成。
    - DDL 未执行、外部接口未就绪、依赖任务未完成或验证失败时，任务保持 `[ ]`，在报告中标记阻塞原因。
-11. 生成实施报告。
+12. 生成实施报告。
     - 报告路径：`spec/features/<yyyymmdd>/reports/<功能中文名>-实施报告.md`。
-    - 记录实现确认依据、任务范围、完成/未完成/阻塞任务、变更文件、TDD 记录、验证结果、AC 覆盖、代码质量复盘、数据验证结果、DDL 状态、长期知识影响和风险。
+    - 记录实现确认依据、任务范围、完成/未完成/阻塞任务、变更文件、TDD 记录、Evidence Bundle、验证结果、AC 覆盖、Spec Review、Code Review、人工 Gate、代码质量复盘、数据验证结果、DDL 状态、长期知识影响和风险。
     - 如果存在 `.specify/rules/sdd团队协作规范.md`，按其中的 SDD 完成定义检查：任务完成状态、验证结果、DDL 状态、知识汇总判断、交付说明和风险记录；未满足项必须写入报告，不得宣称需求已完成。
 
 ## DDL 与 SQL 规则
@@ -205,5 +213,6 @@ description: "Fons4AI 受控的 SDD 实现技能。只有当作用域内 AGENTS.
 - 报告和固定标题以中文为主；`T001`、`AC-001`、`RED`、`GREEN`、`REFACTOR`、路径和命令保持原样。
 - 必须在报告中记录 `实现确认依据`，不得从产物存在或历史对话推断授权。
 - 结束回复包含：完成任务、未完成/阻塞任务、变更文件、验证结果、DDL 状态、长期知识影响、风险和后续建议。
+- 结束回复必须包含 Review 状态和人工 Gate 状态；缺失时明确说明仍是实现候选完成，不得声称可交付完成。
 - 如果存在 `.specify/rules/sdd团队协作规范.md`，结束回复必须说明是否满足其中的 SDD 完成定义；未满足时列出缺口。
 - 可记录“长期知识影响：是/否”，但不得生成知识同步任务或知识汇总交接任务；知识沉淀由 `fons4ai-knowledge-summary` 在用户显式触发后处理。

@@ -453,10 +453,17 @@ def validate_implementation_report(report: Path) -> list[str]:
     text = read(report)
     required = (
         "## 4. 验证结果",
-        "## 5. AC 覆盖",
-        "## 7. DDL 与数据结构状态",
+        "## 5. Evidence Bundle",
+        "## 6. Review 与人工 Gate",
+        "## 7. AC 覆盖",
+        "## 9. DDL 与数据结构状态",
         "验证证据等级",
         "未验证项",
+        "Review 状态",
+        "Spec Review",
+        "Code Review",
+        "人工 Gate",
+        "可交付完成判断",
     )
     for heading in required:
         if heading not in text:
@@ -464,6 +471,7 @@ def validate_implementation_report(report: Path) -> list[str]:
 
     declares_complete = bool(
         re.search(r"实施结果\s*[：:]\s*完成", text)
+        or re.search(r"是否可交付完成\s*[：:]\s*是", text)
         or re.search(r"是否发布就绪\s*[：:]\s*是", text)
     )
     if declares_complete:
@@ -471,6 +479,17 @@ def validate_implementation_report(report: Path) -> list[str]:
             errors.append(f"{report} declares completion but has unverified items or no explicit '未验证项：无'")
         if not re.search(r"验证证据等级\s*[：:]\s*L3", text):
             errors.append(f"{report} declares completion but has no L3 verification evidence")
+        if not re.search(r"Spec Review\s*[：:]\s*(通过|有条件通过)", text):
+            errors.append(f"{report} declares completion but Spec Review is not passed or conditionally passed")
+        if not re.search(r"Code Review\s*[：:]\s*(通过|有条件通过)", text):
+            errors.append(f"{report} declares completion but Code Review is not passed or conditionally passed")
+        if re.search(r"Critical/Important 问题\s*[：:]\s*(?!无|已修复并复审)", text):
+            errors.append(f"{report} declares completion but Critical/Important review issues are not closed")
+        if (
+            re.search(r"人工 Gate 适用性\s*[：:]\s*适用", text)
+            and not re.search(r"人工 Gate 状态\s*[：:]\s*(已通过|有条件通过)", text)
+        ):
+            errors.append(f"{report} declares completion but required human Gate is not passed or conditionally passed")
     if (
         re.search(r"是否涉及 DDL\s*[：:]\s*是", text)
         and re.search(r"DDL 执行状态\s*[：:]\s*未执行", text)

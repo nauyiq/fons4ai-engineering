@@ -15,7 +15,7 @@ Fons4AI Harness Engineering 使用 6 层结构：
 | Skill Harness | 约束 Agent 按角色执行 | 技能契约、触发门禁、职责边界、handoff |
 | Rule Harness | 固化团队工程规则 | 项目 Agent 规则、代码规范、SDD 团队协作规范 |
 | Feedback Harness | 证明完成和失败归因 | 实施报告、验证结果、BUG 修复报告、环境准备度 |
-| Learning Harness | 跨项目抽象可复用经验 | 失败案例、上游反馈单、回放样例、校验器改进 |
+| Learning Harness | 跨项目抽象可复用经验 | 失败案例、`spec/reports/harness-feedback/` 上游反馈单、回放样例、校验器改进 |
 
 一个技能可以横跨多层，但必须有一个主层级，避免职责扩散。
 
@@ -30,10 +30,11 @@ Fons4AI Harness Engineering 使用 6 层结构：
 | `fons4ai-sdd-implement` | Feedback Harness | Skill Harness, Context Harness | 执行已授权 SDD 任务，要求验证证据和实施报告 | 结构完整，可作为实现类技能样板 |
 | `fons4ai-bugfix-workflow` | Feedback Harness | Intent Harness, Skill Harness | 复现、诊断、修复、验证并记录 BUG | Contract 完整；后续补显式角色和职责边界章节 |
 | `fons4ai-agent-env-readiness` | Feedback Harness | Context Harness | 评估 Agent 环境准备度和验证可靠性 | 保留按需增强定位；后续评估是否补 Evidence 章节 |
-| `fons4ai-knowledge-bootstrap` | Context Harness | Skill Harness | 从代码、文档、接口、测试和配置建立项目知识基线 | 优先补统一 Contract 章节 |
-| `fons4ai-domain-knowledge-modeling` | Context Harness | Skill Harness | 对领域或技术能力域进行深度知识建模 | 优先补统一 Contract 章节 |
+| `fons4ai-harness-feedback` | Learning Harness | Feedback Harness | 将业务试点项目中的 Agent 使用问题整理为脱敏上游反馈单 | 新增技能；默认输出到 `spec/reports/harness-feedback/` |
+| `fons4ai-knowledge-bootstrap` | Context Harness | Skill Harness | 从代码、文档、接口、测试和配置建立项目知识基线 | Contract 已补齐；后续按 MVP 试点反馈优化 |
+| `fons4ai-domain-knowledge-modeling` | Context Harness | Skill Harness | 对领域或技术能力域进行深度知识建模 | Contract 已补齐；后续按 MVP 试点反馈优化 |
 | `fons4ai-knowledge-summary` | Context Harness | Feedback Harness, Skill Harness | 汇总已验证事实到知识库、领域文档、知识卡片和 SQL 快照 | 结构完整，可作为知识汇总类技能样板 |
-| `fons4ai-generate-project-rules` | Rule Harness | Context Harness, Skill Harness | 把已验证事实和用户决策转为项目 Agent 规则 | 优先补统一 Contract 章节 |
+| `fons4ai-generate-project-rules` | Rule Harness | Context Harness, Skill Harness | 把已验证事实和用户决策转为项目 Agent 规则 | Contract 已补齐；后续按 MVP 试点反馈优化 |
 
 ## 3. 结构盘点结果
 
@@ -43,29 +44,33 @@ Fons4AI Harness Engineering 使用 6 层结构：
 
 ```text
 scripts/validate_skill_contracts.py --skills-root skills
+scripts/validate_feedback_harness.py
 ```
 
 使用内置 Python 执行结果：
 
 ```text
 OK: core skill contracts are valid
+OK: Feedback Harness entrypoint assets are valid
 ```
+
+其中 `validate_skill_contracts.py` 检查核心技能 Contract 和 Evidence 基线；`validate_feedback_harness.py` 检查 Feedback Harness 总入口，包括实施报告、BUG 修复报告、环境准备度、上游反馈单、反馈路径约定和核心校验器。
 
 含义：
 
 - 脚本当前覆盖 7 个核心技能。
 - 已覆盖核心技能满足当前脚本要求的 Contract 和 Evidence 基线。
-- 该结果不代表全部 12 个技能都已对齐统一 Contract 标准。
+- 全部 12 个 Fons4AI 自有技能均已具备统一 Contract 五要素；脚本覆盖面仍需从核心技能扩展到全量技能。
 
 ### 3.2 全量技能 Contract 盘点
 
-将全部 12 个技能按当前核心 Contract 脚本口径校验时，发现以下技能缺统一 Contract 章节：
+将全部 12 个 Fons4AI 自有技能按统一 Contract 口径盘点时，P1 技能状态如下：
 
 | 技能 | 主要缺口 | 建议优先级 |
 | --- | --- | --- |
-| `fons4ai-domain-knowledge-modeling` | 缺 `## Contract`、Inputs、Preconditions、Outputs、Exit Criteria、Handoff | P1 |
-| `fons4ai-generate-project-rules` | 缺 `## Contract`、Inputs、Preconditions、Outputs、Exit Criteria、Handoff | P1 |
-| `fons4ai-knowledge-bootstrap` | 缺 `## Contract`、Inputs、Preconditions、Outputs、Exit Criteria、Handoff | P1 |
+| `fons4ai-domain-knowledge-modeling` | 已补齐 `## Contract`、Inputs、Preconditions、Outputs、Exit Criteria、Handoff | 完成 |
+| `fons4ai-knowledge-bootstrap` | 已补齐 `## Contract`、Inputs、Preconditions、Outputs、Exit Criteria、Handoff | 完成 |
+| `fons4ai-generate-project-rules` | 已补齐 `## Contract`、Inputs、Preconditions、Outputs、Exit Criteria、Handoff | 完成 |
 
 ### 3.3 全量技能章节盘点
 
@@ -81,9 +86,9 @@ OK: core skill contracts are valid
 | `fons4ai-sdd-requirements` | Contract 完整 | 缺 Evidence 章节；可按需求类技能决定是否需要轻量 Evidence |
 | `fons4ai-sdd-tasks` | Contract 完整 | 缺 Evidence 章节；可按规划类技能决定是否需要轻量 Evidence |
 | `fons4ai-agent-env-readiness` | Contract 完整 | 缺 Evidence 章节；作为验证可靠性技能，建议补轻量 Evidence |
-| `fons4ai-knowledge-bootstrap` | 旧结构 | 需要补统一 Contract |
-| `fons4ai-domain-knowledge-modeling` | 旧结构 | 需要补统一 Contract |
-| `fons4ai-generate-project-rules` | 旧结构 | 需要补统一 Contract |
+| `fons4ai-knowledge-bootstrap` | Contract 已补齐 | 后续按试点反馈调整证据口径和输出边界 |
+| `fons4ai-domain-knowledge-modeling` | Contract 已补齐 | 后续按试点反馈调整建模证据、确认门禁和适配输出粒度 |
+| `fons4ai-generate-project-rules` | Contract 已补齐 | 后续按试点反馈调整规则证据矩阵和 MCP 边界 |
 
 ## 4. 阶段 2 优先级
 
@@ -93,18 +98,19 @@ OK: core skill contracts are valid
 - Evidence 标准不是一刀切；不同技能按风险和职责采用不同证据强度。
 - `fons4ai-project-knowledge-base-init` 已移除；项目知识基线主入口统一收敛到 `fons4ai-knowledge-bootstrap`。
 
-### P1：优先对齐核心缺口
+### P1：统一 Contract 补齐状态
 
-优先补齐以下技能的统一 Contract：
+P1 技能的统一 Contract 已补齐：
 
 1. `fons4ai-knowledge-bootstrap`
-2. `fons4ai-domain-knowledge-modeling`
-3. `fons4ai-generate-project-rules`
+2. `fons4ai-generate-project-rules`
+3. `fons4ai-domain-knowledge-modeling`
 
-原因：
+后续处理：
 
-- 它们分别对应 Context Harness 和 Rule Harness 的核心入口。
-- 当前描述和流程已有较多内容，但缺少统一 Contract，后续 Agent 读取时不如 SDD 核心技能稳定。
+- 不再继续孤立补全所有细节。
+- 使用业务项目 MVP 试点检验这三个入口技能的触发、上下文加载、确认门禁和输出边界。
+- 试点反馈通过 `fons4ai-harness-feedback` 汇总后，再回流优化技能正文、模板或校验器。
 
 ### P2：补齐显式章节
 
@@ -128,4 +134,4 @@ OK: core skill contracts are valid
 - 每次只处理一类技能或一个技能。
 - 保留原有触发门禁和职责边界，不借结构整理扩展技能权限。
 - 不把阶段 3 的自动反馈闭环混入阶段 2。
-- 每次改动后运行 `scripts/validate_skill_contracts.py`，必要时再扩展脚本覆盖更多技能。
+- 每次改动后运行 `scripts/validate_skill_contracts.py`；涉及 Feedback Harness、反馈路径、报告模板或验证脚本时，同时运行 `scripts/validate_feedback_harness.py`。

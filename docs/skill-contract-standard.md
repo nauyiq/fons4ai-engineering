@@ -271,7 +271,7 @@ Evidence 不应一刀切。
 优先顺序：
 
 1. 已完整技能作为样板：`fons4ai-sdd-implement`、`fons4ai-sdd-change`、`fons4ai-knowledge-summary`。
-2. P1 结构缺口技能：`fons4ai-knowledge-bootstrap`、`fons4ai-domain-knowledge-modeling`、`fons4ai-generate-project-rules`。
+2. P1 Contract 已补齐的 MVP 入口技能：`fons4ai-knowledge-bootstrap`、`fons4ai-generate-project-rules`、`fons4ai-domain-knowledge-modeling`。
 3. P2 显式章节缺口技能：`fons4ai-sdd-design`、`fons4ai-bugfix-workflow`、`fons4ai-agent-env-readiness`。
 4. 旧入口处理：`fons4ai-project-knowledge-base-init` 已移除，后续引用应迁移到 `fons4ai-knowledge-bootstrap`。
 
