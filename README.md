@@ -2,7 +2,7 @@
 
 Fons4AI Engineering 是一套用于把业务仓库初始化为 Harness Engineering 项目的 Template Kit。
 
-本仓库不是集中式跨项目 Harness 工程，也不替业务项目定义业务边界、领域边界、团队规则或验证等级。它维护可安装技能、seed 模板、上游校验器、薄 Runner、样例和说明文档。业务项目引入配套技能后，在自己的仓库内生成并维护项目级 Harness Engineering 资产。
+本仓库不是集中式跨项目 Harness 工程，也不替业务项目定义业务边界、领域边界、团队规则或验证等级。它维护可安装技能、模板、上游校验器和说明文档。业务项目引入配套技能后，在自己的仓库内生成并维护项目级 Harness Engineering 资产。
 
 ## 项目定位
 
@@ -22,10 +22,8 @@ Fons4AI Engineering 的定位是：
 
 ```text
 skills/                  # 可安装技能，负责生成/维护项目本地资产
-templates/               # 最小 seed、配置样例、报告模板
+templates/               # 通用交接和报告模板
 scripts/validators/      # 上游校验器
-runtime/                 # 可选薄 Runner，只做 status/next/validate
-examples/                # 最小业务项目样例和回放样例
 docs/                    # Kit 使用说明、契约标准、分层说明
 ```
 
@@ -37,7 +35,6 @@ docs/                    # Kit 使用说明、契约标准、分层说明
 
 ```text
 AGENTS.md
-.specify/fons4ai.yaml
 .specify/memory/
 .specify/rules/
 .specify/agent-readiness/
@@ -53,8 +50,6 @@ spec/reports/harness-feedback/
 4. 运行 `scripts/validators/validate_business_project_harness.py --target <业务项目根目录>`。
 5. 选择一个低风险真实需求做 SDD MVP 回放。
 6. 发现通用 Harness 问题时，使用 `fons4ai-harness-feedback` 生成脱敏上游反馈单。
-
-`templates/fons4ai.yaml` 是业务项目 `.specify/fons4ai.yaml` 的最小 seed，用于记录上游版本、验证器和证据等级要求。正式内容应由使用者或技能结合项目事实确认，不应把 seed 当作业务项目事实。
 
 ## 业务开发入口
 
@@ -89,10 +84,9 @@ scripts/validators/validate_skill_contracts.py --skills-root skills
 scripts/validators/validate_feedback_harness.py
 scripts/validate_all.py
 scripts/validators/validate_business_project_harness.py --target <业务项目根目录>
-runtime/fons4ai_cli.py validate --project <业务项目根目录>
 ```
 
-`scripts/validate_all.py` 是仓库级一键入口。`runtime/fons4ai_cli.py` 是薄 Runner，只做状态判断、下一步建议和校验编排，不调用大模型，不修改业务代码。
+`scripts/validate_all.py` 是仓库级一键入口。业务项目接入校验优先使用 `scripts/validators/validate_business_project_harness.py --target <业务项目根目录>`。
 
 ## 与 Loop Engineering 的关系
 
@@ -127,7 +121,7 @@ fons4ai-sdd-feature-workflow
 ## 设计原则
 
 - 业务项目自治：项目私有边界、规则、验证能力和知识沉淀留在业务项目。
-- 上游只维护通用能力：技能、seed 模板、校验器、样例和脱敏反馈闭环。
+- 上游只维护通用能力：技能、模板、校验器和脱敏反馈闭环。
 - 风险分层，不用同一套重流程处理所有任务。
 - 规则短而硬，解释和样例放到专门文档。
 - 优先机器可验证，其次人工可审查，最后才是文字约束。

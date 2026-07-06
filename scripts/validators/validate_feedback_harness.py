@@ -25,7 +25,6 @@ REQUIRED_FILES = (
     "skills/fons4ai-harness-feedback/assets/templates/upstream-feedback-template.md",
     "skills/fons4ai-harness-feedback/scripts/validate_harness_feedback.py",
     "templates/handoff-template.md",
-    "templates/fons4ai.yaml",
     "scripts/validate_all.py",
     "scripts/validators/validate_business_project_harness.py",
     "scripts/validators/validate_feedback_harness.py",
@@ -86,11 +85,6 @@ TEXT_REQUIREMENTS = (
         ("spec/reports/harness-feedback", "Evidence Required", "PROJECT_LOCAL", "VALIDATOR_GAP", "不自动触发"),
     ),
     (
-        "fons4ai yaml template must describe thin onboarding",
-        "templates/fons4ai.yaml",
-        ("harness:", "project:", "sdd:", "knowledge:", "validators:", "evidence:", "feedback:"),
-    ),
-    (
         "README must describe template kit onboarding",
         "README.md",
         ("Template Kit", "业务项目自治", "fons4ai-knowledge-bootstrap", "fons4ai-sdd-feature-workflow", "scripts/validators/validate_business_project_harness.py"),
@@ -103,7 +97,7 @@ TEXT_REQUIREMENTS = (
     (
         "business project validator must enforce core onboarding assets",
         "scripts/validators/validate_business_project_harness.py",
-        ("AGENTS.md", ".specify/fons4ai.yaml", ".specify/rules/agent运行规则.md", ".specify/memory/index.md", "fons4ai-sdd-feature-workflow", "Evidence Bundle", "人工 Gate"),
+        ("AGENTS.md", ".specify/rules/agent运行规则.md", ".specify/memory/index.md", "fons4ai-sdd-feature-workflow", "Evidence Bundle", "人工 Gate"),
     ),
     (
         "handoff template must carry required handoff sections",

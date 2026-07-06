@@ -16,7 +16,6 @@ REQUIRED_FILES = (
 )
 
 OPTIONAL_FILES = (
-    ".specify/fons4ai.yaml",
     ".specify/agent-readiness",
     ".specify/examples/sdd",
     "spec/features",
