@@ -9,6 +9,7 @@ from pathlib import Path
 
 
 CORE_SKILLS = (
+    "fons4ai-sdd-feature-workflow",
     "fons4ai-sdd-requirements",
     "fons4ai-sdd-design",
     "fons4ai-sdd-tasks",

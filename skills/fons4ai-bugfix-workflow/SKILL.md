@@ -1,6 +1,6 @@
 ---
 name: fons4ai-bugfix-workflow
-description: "Fons4AI 受控的 BUG 修复工作流。只有当作用域内 AGENTS.md 包含 '<!-- fons4ai-skill-routing: enabled -->' 时才允许自动触发；否则仅在用户明确指定该技能，或明确要求使用 Fons4AI/SDD 工作流时使用。用于复现、诊断、修复、验证并记录 BUG 或回归问题。"
+description: "Fons4AI 受控的 BUG 修复工作流。用于复现、诊断、修复、验证并记录 BUG、异常或回归问题。只有当用户明确指定该技能、明确要求修复 BUG/异常/回归，或启用 Fons4AI 路由且当前意图匹配 BUG 修复时使用；泛化的新需求 SDD 开发不触发本技能。"
 ---
 
 # Fons4ai-bugfix-workflow
@@ -61,8 +61,10 @@ description: "Fons4AI 受控的 BUG 修复工作流。只有当作用域内 AGEN
 使用本技能前，必须确认至少满足以下任一条件：
 
 1. 用户明确指定该技能，例如 `$fons4ai-bugfix-workflow`。
-2. 用户明确要求使用 Fons4AI、SDD 或 Fons4AI 工作流。
-3. 当前仓库作用域内存在 `AGENTS.md`，且包含 `<!-- fons4ai-skill-routing: enabled -->`。
+2. 用户明确要求修复 BUG、诊断异常、处理回归失败或纠正不符合既有预期的行为。
+3. 当前仓库作用域内存在启用路由的 `AGENTS.md`，且用户当前意图明确匹配 BUG、异常或回归修复。
+
+如果用户只是泛化要求“用 SDD 开发新功能”或“走 Fons4AI 工作流”，不要触发本技能。
 
 如果以上条件都不满足，不得自动应用本技能。应继续使用普通 AI agent 行为，或询问用户是否希望启用 Fons4AI 工作流。
 
@@ -81,7 +83,7 @@ description: "Fons4AI 受控的 BUG 修复工作流。只有当作用域内 AGEN
 ## 必要上下文
 
 1. 先读取 `AGENTS.md`，再按错误文本、堆栈、模块名、API 路径、表/模型名和受影响功能名搜索上下文，然后再决定是否读取真理源。
-   - 可选运行 `../fons4ai-sdd-requirements/scripts/find_relevant_context.py --root <repo-root> <keyword...>` 获取候选真理源文件，再决定读取范围。
+   - 可选运行 `fons4ai-sdd-requirements` 技能提供的上下文查找脚本：`python <fons4ai-sdd-requirements>/scripts/find_relevant_context.py --root <repo-root> <keyword...>`，获取候选真理源文件后再决定读取范围。
 2. 修改前只读取与问题相关的项目规则和真理源片段：
    - 与受影响区域匹配的 `.specify/rules/*.md`。
    - 当预期行为或架构边界相关时，读取匹配的 `.specify/memory/` 片段。
@@ -96,7 +98,7 @@ description: "Fons4AI 受控的 BUG 修复工作流。只有当作用域内 AGEN
    - 如项目仍保留旧路径，可兼容读取 `specs/features/<feature-slug>/spec.md`、`plan.md`、`tasks.md`。
 4. 修改前读取相关源码、测试、配置、日志和构建文件。
 5. 使用 `assets/templates/bugfix-report-template.md` 生成修复报告。
-6. Python 可用时，写入报告后运行 `scripts/validate_bugfix_report.py --report <report-path>`。
+6. Python 可用时，写入报告后运行本技能提供的校验脚本：`python <fons4ai-bugfix-workflow>/scripts/validate_bugfix_report.py --report <report-path>`。
 
 ## 工作流程
 

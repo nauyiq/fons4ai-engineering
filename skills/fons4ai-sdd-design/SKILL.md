@@ -1,6 +1,6 @@
 ---
 name: fons4ai-sdd-design
-description: "Fons4AI 受控的 SDD 技术设计技能。只有当作用域内 AGENTS.md 包含 '<!-- fons4ai-skill-routing: enabled -->' 时才允许自动触发；否则仅在用户明确指定该技能，或明确要求使用 Fons4AI/SDD 工作流时使用。用于在正式需求说明书之后生成 spec/features/<yyyymmdd>/<功能中文名>-技术设计说明书.md。"
+description: "Fons4AI 受控的 SDD 技术设计技能。用于在正式需求说明书之后生成 spec/features/<yyyymmdd>/<功能中文名>-技术设计说明书.md；完整新需求编排入口是 fons4ai-sdd-feature-workflow。本技能仅在用户明确指定本技能、明确要求技术设计补充/只处理设计阶段，或由 fons4ai-sdd-feature-workflow 编排到设计阶段时使用。"
 ---
 
 # Fons4AI-sdd-design
@@ -61,8 +61,11 @@ description: "Fons4AI 受控的 SDD 技术设计技能。只有当作用域内 A
 使用本技能前，必须确认至少满足以下任一条件：
 
 1. 用户明确指定该技能，例如 `$fons4ai-sdd-design`。
-2. 用户明确要求使用 Fons4AI、SDD 或 Fons4AI 工作流。
-3. 当前仓库作用域内存在 `AGENTS.md`，且包含 `<!-- fons4ai-skill-routing: enabled -->`。
+2. 用户明确要求进行技术设计补充、生成技术设计说明书或只处理设计阶段。
+3. `fons4ai-sdd-feature-workflow` 已编排进入设计阶段。
+4. 当前仓库作用域内存在启用路由的 `AGENTS.md`，且用户当前意图明确匹配技术设计生成或补充。
+
+如果用户只是泛化要求“用 SDD 开发新功能”或“走 Fons4AI 工作流”，优先使用 `fons4ai-sdd-feature-workflow`，不要直接触发本阶段技能。
 
 如果以上条件都不满足，不得自动应用本技能。应继续使用普通 AI agent 行为，或询问用户是否希望启用 Fons4AI 工作流。
 
@@ -93,7 +96,7 @@ description: "Fons4AI 受控的 SDD 技术设计技能。只有当作用域内 A
 1. 读取 `../fons4ai-sdd-requirements/references/sdd-artifact-contract.md`，包括其中的上下文加载规则。
 2. 完整读取 `spec/features/<yyyymmdd>/<功能中文名>-需求说明书.md`，并确认其没有标记为 `文档状态：草案-待确认`。
 3. 先按功能词、AC/REQ 编号、领域、模块、领域对象、API、表名、错误或风险词搜索上下文。不得默认全量读取项目规则、知识库、SQL、specs 或 docs。
-   - 可选运行 `../fons4ai-sdd-requirements/scripts/find_relevant_context.py --root <repo-root> <keyword...>` 获取候选真理源文件，再决定读取范围。
+   - 可选运行 `fons4ai-sdd-requirements` 技能提供的上下文查找脚本：`python <fons4ai-sdd-requirements>/scripts/find_relevant_context.py --root <repo-root> <keyword...>`，获取候选真理源文件后再决定读取范围。
 4. 读取 `AGENTS.md`、相关项目规则、`.specify/rules/sdd团队协作规范.md`、匹配的知识卡片/领域文档、目标 SQL 文件、构建文件，以及受影响模块的代表性源码和测试文件。只有跨领域、S2 或全局约束决策时，才读取项目级知识库总览。
    - 当涉及存量表或已有数据服务结构变更时，必须优先定位现状结构证据：`.specify/sql/**/*.sql`、仓库迁移脚本、schema 文档、只读数据库 MCP 查询结果或数据服务契约文档。
    - 当涉及新增表或新增数据结构时，必须定位项目同类表、同类集合、同类索引、命名规范、审计字段、租户字段、软删除字段、时间字段和主键策略，作为目标结构设计依据。

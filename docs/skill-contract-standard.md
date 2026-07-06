@@ -142,6 +142,7 @@ Evidence 不应一刀切。
 | 知识汇总类 | 强制完整 Evidence | 长期知识沉淀必须有 L3 或明确待确认状态 |
 | 技术设计/变更类 | 强制或中等 Evidence | 高风险设计、DDL、安全和契约必须有证据 |
 | 需求/任务规划类 | 轻量 Evidence | 重点记录用户确认、正式产物和阻塞歧义 |
+| 编排/Runner 类 | 轻量到中等 Evidence | 重点记录阶段出口、handoff、校验结果和停止点 |
 | 规则生成类 | 中等 Evidence | 规则必须来自用户确认或已验证项目事实 |
 | 环境准备类 | 中等 Evidence | 区分已验证能力、未验证能力和建议项 |
 | 知识建模/基线类 | 中等到强制 Evidence | 不得把单点实现或推断写成标准事实 |
@@ -174,9 +175,11 @@ Evidence 不应一刀切。
 使用本技能前，必须满足以下任一条件：
 
 1. 用户明确指定该技能。
-2. 用户明确要求使用 Fons4AI、SDD 或对应工作流。
-3. 当前仓库作用域内存在 AGENTS.md，且包含 Fons4AI 路由标记。
+2. 用户明确要求执行该技能对应的具体工作类型或阶段。
+3. 当前仓库作用域内存在 AGENTS.md，且包含 Fons4AI 路由标记，并且用户当前意图明确匹配该技能职责。
 ```
+
+泛化的“使用 SDD 开发新功能”应优先路由到正常新需求编排技能；需求、设计、任务等阶段技能只能在用户明确指定阶段、补齐阶段产物，或由编排技能进入对应阶段时触发。
 
 实现类技能还必须增加：
 
@@ -211,12 +214,32 @@ Evidence 不应一刀切。
 
 重点防止以下越权：
 
+- 编排型技能替代阶段技能生成细节。
+- 编排型技能绕过用户确认进入实现。
 - 需求技能直接设计或实现。
 - 设计技能直接写业务代码。
 - 任务技能创建知识同步任务。
 - 实现技能扩展 AC 或重写设计。
 - 知识技能生成新的实现任务。
 - 规则技能把项目事实堆成规则。
+
+### 5.1 编排型 Skill 标准
+
+编排型 Skill 可以调度多个阶段 Skill，但只负责：
+
+- 判断请求类型和分流。
+- 控制阶段顺序。
+- 检查阶段出口和 handoff。
+- 运行对应阶段的确定性校验脚本。
+- 在需要用户授权的边界停止。
+
+编排型 Skill 不得：
+
+- 替代阶段 Skill 的产物细节。
+- 跳过阶段 Skill 的阻塞门禁。
+- 写业务代码。
+- 自动进入实现类 Skill。
+- 把历史确认或模糊表达当作实现授权。
 
 ## 6. 必要上下文标准
 
@@ -271,13 +294,14 @@ Evidence 不应一刀切。
 优先顺序：
 
 1. 已完整技能作为样板：`fons4ai-sdd-implement`、`fons4ai-sdd-change`、`fons4ai-knowledge-summary`。
-2. P1 Contract 已补齐的 MVP 入口技能：`fons4ai-knowledge-bootstrap`、`fons4ai-generate-project-rules`、`fons4ai-domain-knowledge-modeling`。
-3. P2 显式章节缺口技能：`fons4ai-sdd-design`、`fons4ai-bugfix-workflow`、`fons4ai-agent-env-readiness`。
-4. 旧入口处理：`fons4ai-project-knowledge-base-init` 已移除，后续引用应迁移到 `fons4ai-knowledge-bootstrap`。
+2. 编排型样板：`fons4ai-sdd-feature-workflow`。
+3. P1 Contract 已补齐的 MVP 入口技能：`fons4ai-knowledge-bootstrap`、`fons4ai-generate-project-rules`、`fons4ai-domain-knowledge-modeling`。
+4. P2 显式章节缺口技能：`fons4ai-sdd-design`、`fons4ai-bugfix-workflow`、`fons4ai-agent-env-readiness`。
+5. 旧入口处理：`fons4ai-project-knowledge-base-init` 已移除，后续引用应迁移到 `fons4ai-knowledge-bootstrap`。
 
 ## 9. 校验脚本演进建议
 
-当前 `scripts/validate_skill_contracts.py` 已能验证 7 个核心技能。
+当前 `scripts/validators/validate_skill_contracts.py` 已能验证 8 个核心技能。
 
 后续建议：
 

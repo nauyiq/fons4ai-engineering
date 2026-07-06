@@ -1,6 +1,6 @@
 ---
 name: fons4ai-domain-knowledge-modeling
-description: "Fons4AI 受控的领域/能力域知识建模技能。只有当作用域内 AGENTS.md 启用 Fons4AI 路由，或用户明确指定该技能/Fons4AI 流程时使用；用于在项目知识基线之后，对业务领域 domains/<domain-slug> 或技术能力域 capabilities/<capability-slug> 进行深度建模，生成中文主文档、适配矩阵、按需适配说明、知识卡片和建模报告。正式生成前必须逐个提出阻塞问题并等待用户逐个确认；没有横向对比或用户确认时，不得把单个实现方、渠道、厂商、协议、策略或流程写成标准流程。"
+description: "Fons4AI 受控的领域/能力域知识建模技能。用于在项目知识基线之后，对业务领域 domains/<domain-slug> 或技术能力域 capabilities/<capability-slug> 进行深度建模，生成中文主文档、适配矩阵、按需适配说明、知识卡片和建模报告。只有当用户明确指定该技能、明确要求领域/能力域知识建模，或启用 Fons4AI 路由且当前意图匹配深度建模时使用。正式生成前必须逐个提出阻塞问题并等待确认。"
 ---
 
 # Fons4ai-domain-knowledge-modeling
@@ -43,7 +43,7 @@ description: "Fons4AI 受控的领域/能力域知识建模技能。只有当作
 
 1. 用户明确指定 `$fons4ai-domain-knowledge-modeling`。
 2. 用户明确要求进行领域知识建模、技术能力域建模、领域深挖、二级知识库建设。
-3. 当前仓库作用域内存在 `AGENTS.md`，且包含 `<!-- fons4ai-skill-routing: enabled -->`。
+3. 当前仓库作用域内存在启用路由的 `AGENTS.md`，且用户当前意图明确匹配领域或能力域深度建模。
 
 如果没有 `.specify/memory/index.md`，先建议运行 `fons4ai-knowledge-bootstrap`。用户明确要求直接建模时，必须先逐问确认建模对象名称、边界和资料依据。
 
@@ -232,7 +232,7 @@ Q1/N：<需要确认的问题>
 
 ## 校验与交付
 
-- 业务领域运行 `scripts/validate_domain_knowledge.py --domain-dir .specify/memory/domains/<domain-slug>`。
-- 技术能力域运行 `scripts/validate_domain_knowledge.py --capability-dir .specify/memory/capabilities/<capability-slug>`。
+- 业务领域运行本技能提供的校验脚本：`python <fons4ai-domain-knowledge-modeling>/scripts/validate_domain_knowledge.py --domain-dir .specify/memory/domains/<domain-slug>`。
+- 技术能力域运行本技能提供的校验脚本：`python <fons4ai-domain-knowledge-modeling>/scripts/validate_domain_knowledge.py --capability-dir .specify/memory/capabilities/<capability-slug>`。
 - 批量建模时逐对象校验。
 - 交付说明包含：建模对象、读取资料、逐问确认结果、关键证据、生成文件、适配矩阵、适配说明、代表性实现、标准判定、待确认问题和校验结果。

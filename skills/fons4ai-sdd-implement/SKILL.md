@@ -1,6 +1,6 @@
 ---
 name: fons4ai-sdd-implement
-description: "Fons4AI 受控的 SDD 实现技能。只有当作用域内 AGENTS.md 启用 Fons4AI 路由，或用户明确指定该技能/SDD 流程，并且最新用户消息明确确认执行时才使用；未指定任务 ID 时默认执行任务规划中的全部未完成任务。"
+description: "Fons4AI 受控的 SDD 实现技能。用于执行已生成且已授权的 SDD 任务规划；只有当用户明确指定该技能、明确要求执行已规划任务，或启用 Fons4AI 路由且当前意图匹配任务实现，并且最新用户消息明确确认执行时才使用。未指定任务 ID 时默认执行任务规划中的全部未完成任务。"
 ---
 
 # Fons4ai-sdd-implement
@@ -63,8 +63,8 @@ description: "Fons4AI 受控的 SDD 实现技能。只有当作用域内 AGENTS.
 
 1. 满足 Fons4AI 路由条件之一：
    - 用户明确指定该技能，例如 `$fons4ai-sdd-implement`。
-   - 用户明确要求使用 Fons4AI、SDD 或 Fons4AI 工作流。
-   - 当前仓库作用域内存在 `AGENTS.md`，且包含 `<!-- fons4ai-skill-routing: enabled -->`。
+   - 用户明确要求执行已生成的 SDD 任务规划、开始实现或继续执行指定任务。
+   - 当前仓库作用域内存在启用路由的 `AGENTS.md`，且用户当前意图明确匹配已规划任务实现。
 2. 最新用户消息明确确认进入实现。
    - 未指定任务 ID 时，默认选择 `<功能中文名>-任务规划.md` 中全部未完成任务。
    - 指定任务 ID 时，只选择用户指定的未完成任务。

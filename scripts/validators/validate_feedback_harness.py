@@ -9,6 +9,8 @@ from pathlib import Path
 
 
 REQUIRED_FILES = (
+    "skills/fons4ai-sdd-feature-workflow/SKILL.md",
+    "skills/fons4ai-sdd-feature-workflow/agents/openai.yaml",
     "skills/fons4ai-sdd-implement/SKILL.md",
     "skills/fons4ai-sdd-implement/assets/templates/implementation-report-template.md",
     "skills/fons4ai-sdd-tasks/scripts/validate_sdd_artifacts.py",
@@ -19,17 +21,27 @@ REQUIRED_FILES = (
     "skills/fons4ai-agent-env-readiness/assets/templates/readiness-report-template.md",
     "skills/fons4ai-agent-env-readiness/scripts/validate_readiness_report.py",
     "skills/fons4ai-knowledge-summary/SKILL.md",
-    "onboarding/business-project/README.md",
+    "skills/fons4ai-harness-feedback/SKILL.md",
+    "skills/fons4ai-harness-feedback/assets/templates/upstream-feedback-template.md",
+    "skills/fons4ai-harness-feedback/scripts/validate_harness_feedback.py",
     "templates/handoff-template.md",
+    "templates/fons4ai.yaml",
     "scripts/validate_all.py",
-    "scripts/validate_business_project_harness.py",
-    "scripts/validate_handoff.py",
-    "scripts/validate_implementation_report.py",
+    "scripts/validators/validate_business_project_harness.py",
+    "scripts/validators/validate_feedback_harness.py",
+    "scripts/validators/validate_handoff.py",
+    "scripts/validators/validate_implementation_report.py",
+    "scripts/validators/validate_skill_contracts.py",
     "docs/harness-engineering.md",
     "docs/harness-layer-map.md",
 )
 
 TEXT_REQUIREMENTS = (
+    (
+        "feature workflow must orchestrate normal SDD planning and stop before implementation",
+        "skills/fons4ai-sdd-feature-workflow/SKILL.md",
+        ("fons4ai-sdd-requirements", "fons4ai-sdd-design", "fons4ai-sdd-tasks", "validate_sdd_artifacts.py", "等待用户确认实现", "不得自动进入实现"),
+    ),
     (
         "implementation skill must require evidence and implementation report",
         "skills/fons4ai-sdd-implement/SKILL.md",
@@ -69,14 +81,29 @@ TEXT_REQUIREMENTS = (
         ("## Evidence Required", "L3 Gate Evidence"),
     ),
     (
-        "business project onboarding guide must describe orchestration and validation",
-        "onboarding/business-project/README.md",
-        ("业务项目 Harness 接入编排与验收", "fons4ai-knowledge-bootstrap", "fons4ai-generate-project-rules", "validate_business_project_harness.py"),
+        "harness feedback skill must generate upstream feedback reports",
+        "skills/fons4ai-harness-feedback/SKILL.md",
+        ("spec/reports/harness-feedback", "Evidence Required", "PROJECT_LOCAL", "VALIDATOR_GAP", "不自动触发"),
+    ),
+    (
+        "fons4ai yaml template must describe thin onboarding",
+        "templates/fons4ai.yaml",
+        ("harness:", "project:", "sdd:", "knowledge:", "validators:", "evidence:", "feedback:"),
+    ),
+    (
+        "README must describe template kit onboarding",
+        "README.md",
+        ("Template Kit", "业务项目自治", "fons4ai-knowledge-bootstrap", "fons4ai-sdd-feature-workflow", "scripts/validators/validate_business_project_harness.py"),
+    ),
+    (
+        "business project AGENTS template must route normal new feature development through feature workflow",
+        "skills/fons4ai-knowledge-bootstrap/references/agents-template.md",
+        ("正常新需求开发", "fons4ai-sdd-feature-workflow", "需求澄清/补需求说明书", "fons4ai-sdd-requirements"),
     ),
     (
         "business project validator must enforce core onboarding assets",
-        "scripts/validate_business_project_harness.py",
-        ("AGENTS.md", ".specify/rules/agent运行规则.md", ".specify/memory/index.md", "Evidence Bundle", "人工 Gate"),
+        "scripts/validators/validate_business_project_harness.py",
+        ("AGENTS.md", ".specify/fons4ai.yaml", ".specify/rules/agent运行规则.md", ".specify/memory/index.md", "fons4ai-sdd-feature-workflow", "Evidence Bundle", "人工 Gate"),
     ),
     (
         "handoff template must carry required handoff sections",
@@ -85,18 +112,18 @@ TEXT_REQUIREMENTS = (
     ),
     (
         "handoff validator must enforce handoff sections",
-        "scripts/validate_handoff.py",
+        "scripts/validators/validate_handoff.py",
         ("REQUIRED_HEADINGS", "## 基本信息", "## 下一步建议", "## 需要用户确认的事项"),
     ),
     (
         "implementation report validator must enforce harness evidence",
-        "scripts/validate_implementation_report.py",
+        "scripts/validators/validate_implementation_report.py",
         ("Harness 校验结果", "校验来源", "上游版本", "是否阻塞交付", "是否可交付"),
     ),
     (
         "validate_all must invoke repository validators",
         "scripts/validate_all.py",
-        ("validate_skill_contracts.py", "validate_feedback_harness.py", "validate_business_project_harness.py"),
+        ("scripts/validators/validate_skill_contracts.py", "scripts/validators/validate_feedback_harness.py", "scripts/validators/validate_business_project_harness.py", "scripts/validators/validate_handoff.py", "scripts/validators/validate_implementation_report.py"),
     ),
     (
         "harness docs must describe Feedback Harness and feedback path",
@@ -121,13 +148,11 @@ TEXT_SCAN_ROOTS = (
     "skills",
     "scripts",
     "templates",
-    "onboarding",
 )
 
 TEXT_SUFFIXES = {".md", ".py", ".yaml", ".yml", ".json", ".toml", ".txt"}
 REMOVED_SKILL = "fons4ai-" + "project-knowledge-base-init"
 OLD_FEEDBACK_PATH = ".specify" + "/reports/harness-feedback"
-UNLANDED_FEEDBACK_SKILL = "fons4ai-" + "harness-feedback"
 
 
 def read_text(path: Path) -> str:
@@ -199,15 +224,6 @@ def validate_removed_skill_refs(root: Path) -> list[str]:
     return errors
 
 
-def validate_unlanded_feedback_skill_refs(root: Path) -> list[str]:
-    errors: list[str] = []
-    for path in collect_text_files(root, ("docs", "scripts")):
-        text = read_text(path)
-        if UNLANDED_FEEDBACK_SKILL in text:
-            errors.append(f"{relative(path, root)} references unlanded skill {UNLANDED_FEEDBACK_SKILL}")
-    return errors
-
-
 def validate_no_shared_skill_dependency(root: Path) -> list[str]:
     errors: list[str] = []
     for path in collect_text_files(root, ("skills",)):
@@ -223,7 +239,6 @@ def validate(root: Path) -> list[str]:
     errors.extend(validate_text_requirements(root))
     errors.extend(validate_feedback_path(root))
     errors.extend(validate_removed_skill_refs(root))
-    errors.extend(validate_unlanded_feedback_skill_refs(root))
     errors.extend(validate_no_shared_skill_dependency(root))
     return errors
 

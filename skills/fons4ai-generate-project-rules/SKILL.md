@@ -1,6 +1,6 @@
 ---
 name: fons4ai-generate-project-rules
-description: "Fons4AI 受控的项目 Agent 规则生成技能。只有当作用域内 AGENTS.md 启用 Fons4AI 路由，或用户明确指定该技能/Fons4AI 流程时使用；用于生成或更新 .specify/rules/agent运行规则.md，并在用户要求时生成 .specify/rules/代码编写规范.md 或 .specify/rules/sdd团队协作规范.md。MCP 只写通用使用边界，只有项目存在明确 MCP 配置或用户明确要求时才生成 MCP 工具清单。"
+description: "Fons4AI 受控的项目 Agent 规则生成技能。用于生成或更新 .specify/rules/agent运行规则.md，并在用户要求时生成 .specify/rules/代码编写规范.md 或 .specify/rules/sdd团队协作规范.md。只有当用户明确指定该技能、明确要求生成/更新项目规则，或启用 Fons4AI 路由且当前意图匹配规则生成时使用。MCP 只写通用使用边界，只有项目存在明确 MCP 配置或用户明确要求时才生成 MCP 工具清单。"
 ---
 
 # Fons4ai-generate-project-rules
@@ -42,8 +42,10 @@ description: "Fons4AI 受控的项目 Agent 规则生成技能。只有当作用
 使用本技能前，必须确认至少满足以下任一条件：
 
 1. 用户明确指定该技能，例如 `$fons4ai-generate-project-rules`。
-2. 用户明确要求使用 Fons4AI、SDD 或 Fons4AI 工作流。
-3. 当前仓库作用域内存在 `AGENTS.md`，且包含 `<!-- fons4ai-skill-routing: enabled -->`。
+2. 用户明确要求生成或更新项目 Agent 运行规则、代码编写规范、SDD 团队协作规范或 Agent 执行边界。
+3. 当前仓库作用域内存在启用路由的 `AGENTS.md`，且用户当前意图明确匹配规则生成或规则更新。
+
+如果用户只是泛化要求“用 SDD 开发新功能”或“走 Fons4AI 工作流”，不要触发本技能。
 
 如果以上条件都不满足，不得自动应用本技能。应继续使用普通 AI agent 行为，或询问用户是否希望启用 Fons4AI 工作流。
 
@@ -125,7 +127,7 @@ description: "Fons4AI 受控的项目 Agent 规则生成技能。只有当作用
    - 不写入平台专有产品名，除非用户明确要求。
 
 5. 校验后交付：
-   - Python 可用时运行 `scripts/validate_rule_docs.py --rules-dir .specify/rules`。
+   - Python 可用时运行本技能提供的校验脚本：`python <fons4ai-generate-project-rules>/scripts/validate_rule_docs.py --rules-dir .specify/rules`。
    - 确认不包含旧五文件默认输出约束。
    - 确认新项目即使没有 `.specify/memory/` 也能独立使用 `agent运行规则.md`。
 

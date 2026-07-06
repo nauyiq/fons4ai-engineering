@@ -45,7 +45,10 @@
 
 | 场景 | 推荐技能 |
 | --- | --- |
-| 全新需求接入 | `fons4ai-sdd-requirements` -> `fons4ai-sdd-design` -> `fons4ai-sdd-tasks` |
+| 正常新需求开发 | `fons4ai-sdd-feature-workflow` |
+| 需求澄清/补需求说明书 | `fons4ai-sdd-requirements` |
+| 技术设计补充 | `fons4ai-sdd-design` |
+| 任务规划补充 | `fons4ai-sdd-tasks` |
 | 用户确认执行 SDD 任务 | `fons4ai-sdd-implement` |
 | 已有功能迭代 | `fons4ai-sdd-change` |
 | BUG、异常、回归失败 | `fons4ai-bugfix-workflow` |
@@ -60,8 +63,9 @@
 
 - SDD 只使用 `S1` 和 `S2`。
 - 全新需求产物默认位于 `spec/features/<yyyymmdd>/`，核心文件为 `<功能中文名>-需求说明书.md`、`<功能中文名>-技术设计说明书.md`、`<功能中文名>-任务规划.md`。
+- 正常新需求开发优先使用 `fons4ai-sdd-feature-workflow` 编排需求、设计和任务规划。
 - 若关键需求含义、业务术语、数据语义、验收口径、兼容性、安全权限、迁移回滚或 SDD 等级存在歧义，必须先澄清，不得直接生成正式三件套。
-- `fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks`、`fons4ai-sdd-change` 只能生成或更新 SDD 产物，不得写业务代码。
+- `fons4ai-sdd-feature-workflow`、`fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks`、`fons4ai-sdd-change` 只能生成或更新 SDD 产物，不得写业务代码。
 - 生成 `<功能中文名>-任务规划.md` 或 CR 增量任务后必须暂停，等待用户确认执行。
 - 用户回复 `执行`、`开始实现`、`继续执行` 时默认执行全部未完成任务；用户回复 `执行 T001,T002` 时只执行指定任务。
 

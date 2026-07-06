@@ -1,6 +1,6 @@
 ---
 name: fons4ai-sdd-tasks
-description: "Fons4AI 受控的 SDD 任务拆解技能。只有当作用域内 AGENTS.md 包含 '<!-- fons4ai-skill-routing: enabled -->' 时才允许自动触发；否则仅在用户明确指定该技能，或明确要求使用 Fons4AI/SDD 工作流时使用。用于把正式需求说明书和技术设计说明书拆解为 spec/features/<yyyymmdd>/<功能中文名>-任务规划.md，并在实现前停止等待用户确认。"
+description: "Fons4AI 受控的 SDD 任务拆解技能。用于把正式需求说明书和技术设计说明书拆解为 spec/features/<yyyymmdd>/<功能中文名>-任务规划.md，并在实现前停止等待用户确认；完整新需求编排入口是 fons4ai-sdd-feature-workflow。本技能仅在用户明确指定本技能、明确要求任务规划补充/只处理任务拆解阶段，或由 fons4ai-sdd-feature-workflow 编排到任务阶段时使用。"
 ---
 
 # Fons4ai-sdd-tasks
@@ -42,8 +42,11 @@ description: "Fons4AI 受控的 SDD 任务拆解技能。只有当作用域内 A
 使用本技能前，必须确认至少满足以下任一条件：
 
 1. 用户明确指定该技能，例如 `$fons4ai-sdd-tasks`。
-2. 用户明确要求使用 Fons4AI、SDD 或 Fons4AI 工作流。
-3. 当前仓库作用域内存在 `AGENTS.md`，且包含 `<!-- fons4ai-skill-routing: enabled -->`。
+2. 用户明确要求进行任务规划补充、生成任务规划或只处理任务拆解阶段。
+3. `fons4ai-sdd-feature-workflow` 已编排进入任务规划阶段。
+4. 当前仓库作用域内存在启用路由的 `AGENTS.md`，且用户当前意图明确匹配任务规划生成或补充。
+
+如果用户只是泛化要求“用 SDD 开发新功能”或“走 Fons4AI 工作流”，优先使用 `fons4ai-sdd-feature-workflow`，不要直接触发本阶段技能。
 
 如果以上条件都不满足，不得自动应用本技能。应继续使用普通 AI agent 行为，或询问用户是否希望启用 Fons4AI 工作流。
 
@@ -144,7 +147,7 @@ description: "Fons4AI 受控的 SDD 任务拆解技能。只有当作用域内 A
     - S2 必须包含适用的风险控制任务：迁移、回滚、兼容、安全权限、事务一致性、缓存/MQ、并发、回归、观测和 checklist 关闭。
     - 风险任务必须可验证，不得只写“注意风险”。
 11. 写入或更新 `<功能中文名>-任务规划.md` 后运行：
-    - `scripts/validate_sdd_artifacts.py --feature-dir <feature-dir> --strict`
+    - `python <fons4ai-sdd-tasks>/scripts/validate_sdd_artifacts.py --feature-dir <feature-dir> --strict`
     - 如果是更新已有任务，也可以补充运行非 strict 校验作兼容检查。
     - 校验失败必须修复后再汇报成功。
 12. 停止在任务规划阶段。
