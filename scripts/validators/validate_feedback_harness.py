@@ -82,7 +82,17 @@ TEXT_REQUIREMENTS = (
     (
         "harness feedback skill must generate upstream feedback reports",
         "skills/fons4ai-harness-feedback/SKILL.md",
-        ("spec/reports/harness-feedback", "Evidence Required", "PROJECT_LOCAL", "VALIDATOR_GAP", "不自动触发"),
+        ("spec/reports/harness-feedback", "Evidence Required", "PROJECT_LOCAL", "VALIDATOR_GAP", "不自动触发", "生成前自检", "占位来源", "跨项目通用性"),
+    ),
+    (
+        "harness feedback template must define status and evidence maturity gates",
+        "skills/fons4ai-harness-feedback/assets/templates/upstream-feedback-template.md",
+        ("## 状态判定", "Draft", "Ready", "Deferred", "证据填写规则", "只有单项目证据"),
+    ),
+    (
+        "harness feedback validator must enforce evidence maturity gates",
+        "skills/fons4ai-harness-feedback/scripts/validate_harness_feedback.py",
+        ("PLACEHOLDER_PATTERN", "validate_status_and_placeholders", "validate_evidence_rows", "validate_repeatability_claims"),
     ),
     (
         "README must describe template kit onboarding",

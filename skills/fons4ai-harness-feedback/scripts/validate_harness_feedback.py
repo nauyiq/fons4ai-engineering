@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -49,9 +50,82 @@ FORBIDDEN_TERMS = (
     ".specify" + "/reports/harness-feedback",
 )
 
+PLACEHOLDER_PATTERN = re.compile(r"<[^>\n]+>")
+STATUS_PATTERN = re.compile(r"^>\s*Status\s*:\s*(?P<status>\S+)", re.MULTILINE)
+EVIDENCE_ROW_PATTERN = re.compile(
+    r"^\|\s*(?P<claim>[^|]+?)\s*\|\s*(?P<source>[^|]+?)\s*\|\s*(?P<level>L[123])\s*\|\s*(?P<state>[^|]+?)\s*\|",
+    re.MULTILINE,
+)
+
+UNCERTAIN_REPEAT_TERMS = (
+    "当前仅基于一个试点项目",
+    "尚未形成多项目重复证据",
+    "跨项目重复性待观察",
+)
+
+OVERSTATED_REPEAT_TERMS = (
+    "具有跨项目通用性",
+    "多项目重复",
+    "跨项目通用问题",
+)
+
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8-sig")
+
+
+def extract_status(text: str) -> str | None:
+    match = STATUS_PATTERN.search(text)
+    return match.group("status") if match else None
+
+
+def validate_status_and_placeholders(text: str) -> list[str]:
+    errors: list[str] = []
+    status = extract_status(text)
+    placeholders = sorted(set(PLACEHOLDER_PATTERN.findall(text)))
+
+    if status == "Ready" and placeholders:
+        errors.append(
+            "Ready report contains unresolved placeholder(s): "
+            + ", ".join(placeholders)
+        )
+
+    if status == "Ready" and "待脱敏" in text:
+        errors.append("Ready report must not contain pending desensitization state: 待脱敏")
+
+    return errors
+
+
+def validate_evidence_rows(text: str) -> list[str]:
+    errors: list[str] = []
+    for match in EVIDENCE_ROW_PATTERN.finditer(text):
+        claim = match.group("claim").strip()
+        source = match.group("source").strip()
+        level = match.group("level").strip()
+        state = match.group("state").strip()
+        has_placeholder = bool(PLACEHOLDER_PATTERN.search(source))
+
+        if "已验证" in state and has_placeholder:
+            errors.append(
+                f"verified evidence row uses unresolved placeholder source: {claim}"
+            )
+
+        if level in {"L2", "L3"} and "已验证" in state and source in {"用户描述", "实施报告", "任务规划", "风险清单"}:
+            errors.append(
+                f"verified {level} evidence row must cite a specific report, script output, or confirmation: {claim}"
+            )
+
+    return errors
+
+
+def validate_repeatability_claims(text: str) -> list[str]:
+    has_uncertain_repeat = any(term in text for term in UNCERTAIN_REPEAT_TERMS)
+    has_overstated_repeat = any(term in text for term in OVERSTATED_REPEAT_TERMS)
+    if has_uncertain_repeat and has_overstated_repeat:
+        return [
+            "report overstates cross-project repeatability while also marking repeatability as unconfirmed"
+        ]
+    return []
 
 
 def validate_report(path: Path) -> list[str]:
@@ -80,6 +154,10 @@ def validate_report(path: Path) -> list[str]:
 
     if len(text.strip()) < 800:
         errors.append("report is too short for useful upstream feedback")
+
+    errors.extend(validate_status_and_placeholders(text))
+    errors.extend(validate_evidence_rows(text))
+    errors.extend(validate_repeatability_claims(text))
 
     return errors
 
