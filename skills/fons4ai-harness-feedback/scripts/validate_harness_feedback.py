@@ -39,7 +39,6 @@ REQUIRED_TERMS = (
     "建议回流",
     "证据等级",
     "敏感信息",
-    "已脱敏",
     "待观察",
 )
 
@@ -65,7 +64,9 @@ UNCERTAIN_REPEAT_TERMS = (
 
 OVERSTATED_REPEAT_TERMS = (
     "具有跨项目通用性",
-    "多项目重复",
+    "已在多个项目重复",
+    "多个项目重复出现",
+    "多项目重复出现",
     "跨项目通用问题",
 )
 
@@ -144,6 +145,9 @@ def validate_report(path: Path) -> list[str]:
     for term in REQUIRED_TERMS:
         if term not in text:
             errors.append(f"missing required term: {term}")
+
+    if "已脱敏" not in text and "敏感信息状态：不涉及" not in text and "敏感信息状态: 不涉及" not in text:
+        errors.append("missing desensitization state: 已脱敏 or 敏感信息状态：不涉及")
 
     for term in FORBIDDEN_TERMS:
         if term in text:

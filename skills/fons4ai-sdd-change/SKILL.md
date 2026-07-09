@@ -193,7 +193,7 @@ description: "Fons4AI 受控的 SDD 增量变更工作流。用于对已有 SDD 
 
 - 命名受影响的 `.specify/sql/<database_or_service>/<business_model>.sql` 当前结构快照文件。
 - 更新技术设计说明书的 `结构变更详设`，写清现状结构证据、目标结构定义、字段/属性明细、索引与约束、迁移/回填/清理、兼容性和回滚影响。
-- 新增表或新增数据服务结构时，必须给出目标结构设计表；存量结构变更时，必须区分当前结构证据和目标结构，不得从实体、Mapper、ORM 注解或 Java 字段反推当前 DDL。
+- 新增表或新增数据服务结构时，必须给出目标结构设计表；存量结构变更时，必须区分当前结构证据和目标结构，不得从语言结构体/类、ORM/Mapper/Repository 元数据或字段定义反推当前 DDL。
 - 若涉及存量表结构变更且已有可靠基线 DDL，命名执行型 DDL 草案输出路径。
 - 增量任务必须包含：
   - 生成执行型 DDL 草案。
@@ -201,7 +201,7 @@ description: "Fons4AI 受控的 SDD 增量变更工作流。用于对已有 SDD 
   - 同步 SQL 当前结构快照。
 - agent 不直接执行生产 DDL；DDL 由用户/DBA 手动执行，或由项目既有迁移流程执行。
 - DDL 未确认执行前，依赖该结构的实现任务不得标记为发布就绪。
-- 不得从实体类、Mapper、ORM 注解或 Java 字段推断 `CREATE TABLE`。
+- 不得从语言结构体/类、ORM/Mapper/Repository 元数据或字段定义推断 `CREATE TABLE`。
 - 多个数据库 MCP 或候选数据库无法唯一确认时，先询问用户选择。
 - SQL 文件和执行型 DDL 草案不得包含 MCP/Tool 标识、查询文本、来源路径或 provenance 头信息。
 

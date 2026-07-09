@@ -296,12 +296,12 @@ Evidence 不应一刀切。
 1. 已完整技能作为样板：`fons4ai-sdd-implement`、`fons4ai-sdd-change`、`fons4ai-knowledge-summary`。
 2. 编排型样板：`fons4ai-sdd-feature-workflow`。
 3. P1 Contract 已补齐的 MVP 入口技能：`fons4ai-knowledge-bootstrap`、`fons4ai-generate-project-rules`、`fons4ai-domain-knowledge-modeling`。
-4. P2 显式章节缺口技能：`fons4ai-sdd-design`、`fons4ai-bugfix-workflow`、`fons4ai-agent-env-readiness`。
+4. P2 显式章节缺口技能：`fons4ai-sdd-design`、`fons4ai-bugfix-workflow`；跨服务运行态与初始化数据证据应回收到 SDD 主链路。
 5. 旧入口处理：`fons4ai-project-knowledge-base-init` 已移除，后续引用应迁移到 `fons4ai-knowledge-bootstrap`。
 
 ## 9. 校验脚本演进建议
 
-当前 `scripts/validators/validate_skill_contracts.py` 已能验证 8 个核心技能。
+当前 `scripts/validators/validate_skill_contracts.py` 已能验证 9 个核心技能。
 
 后续建议：
 

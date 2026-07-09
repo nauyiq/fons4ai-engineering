@@ -1,0 +1,51 @@
+﻿# Fons4AI Harness Template Kit seed.
+# Copy to a business project as `.specify/fons4ai.yaml`, then confirm every
+# project-specific value against that project's facts, rules, and validation
+# capacity. This file is not a project fact source by itself.
+
+harness:
+  name: fons4ai
+  version: "0.1.0"
+  mode: pilot
+  upstream: fons4ai-engineering
+
+project:
+  type: unknown
+  risk_profile: unknown
+
+sdd:
+  enabled: true
+  require_approval_before_implement: true
+  require_task_files: true
+  require_evidence_before_done: true
+  require_handoff_between_stages: true
+
+knowledge:
+  memory_index: .specify/memory/index.md
+  rules_dir: .specify/rules
+
+validators:
+  upstream:
+    - business-project-harness
+    - sdd-artifacts
+    - implementation-report
+    - handoff
+    - quick-change
+  project: []
+
+evidence:
+  requirements:
+    required_level: L1
+  design:
+    required_level: L2
+  tasks:
+    required_level: L2
+  implementation:
+    required_level: L3
+  knowledge_summary:
+    required_level: L3
+  quick_path:
+    required_level: L1
+
+feedback:
+  output_dir: spec/reports/harness-feedback

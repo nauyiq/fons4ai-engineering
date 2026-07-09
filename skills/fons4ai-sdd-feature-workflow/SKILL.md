@@ -1,4 +1,4 @@
----
+﻿---
 name: fons4ai-sdd-feature-workflow
 description: "Fons4AI 正常新需求开发 SDD 编排技能。用于把全新功能需求按 fons4ai-sdd-requirements -> fons4ai-sdd-design -> fons4ai-sdd-tasks 编排为 SDD 三件套，运行 SDD 产物校验，并在实现前停止等待用户确认。只有当用户明确指定该技能、明确要求使用 Fons4AI/SDD 工作流处理全新功能，或启用 Fons4AI 路由且当前意图匹配正常新需求开发时使用。"
 ---
@@ -72,6 +72,7 @@ fons4ai-sdd-requirements
 | BUG、异常、错误行为、回归失败 | 转入 `fons4ai-bugfix-workflow` |
 | 用户只是在已生成任务规划后确认实现 | 转入 `fons4ai-sdd-implement` |
 | 用户只要求沉淀已验证事实 | 转入 `fons4ai-knowledge-summary` |
+| 低风险小变更（文案、样式、小配置、纯重命名、日志级别） | 转入 `fons4ai-sdd-quick-path`（S0） |
 | 类型不清 | 先提出一个最高影响澄清问题 |
 
 分流时只说明推荐技能和原因，不得擅自进入会修改业务代码的技能。

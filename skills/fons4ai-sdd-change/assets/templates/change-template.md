@@ -136,7 +136,7 @@
   - Files: .specify/sql/<database_or_service>/<business_model>.sql
   - Depends: Txxx
   - Verification: 对照已执行 DDL、只读数据库 MCP/查询结果或仓库正式迁移文件，确认 SQL 当前结构快照准确且不包含 MCP/Tool 信息。
-  - Quality: SQL 文件按同库业务模型分组，跨库/跨服务不合并，不从实体、Mapper、ORM 注解或 Java 字段推断 DDL。
+  - Quality: SQL 文件按同库业务模型分组，跨库/跨服务不合并，不从语言结构体/类、ORM/Mapper/Repository 元数据或字段定义推断 DDL。
   - Done: SQL 当前结构快照已在 DDL 执行确认后更新；或已记录暂缓原因、责任方和确认依据。
 
 ## 12. 实现确认门禁

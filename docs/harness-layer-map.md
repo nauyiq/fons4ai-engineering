@@ -1,8 +1,6 @@
-# Harness Layer Map
+﻿# Harness Layer Map
 
-本文档记录当前 Fons4AI Template Kit 中的技能资产在 Harness Engineering 六层体系中的位置，并基于现有 `skills/*/SKILL.md` 做结构盘点。
-
-本次盘点只读取现有技能，不修改技能正文。
+本文档记录当前 Fons4AI Template Kit 中的技能资产在 Harness Engineering 六层体系中的位置，并基于 `skills/*/SKILL.md` 做结构盘点和职责分类。
 
 ## 1. 分层口径
 
@@ -14,7 +12,7 @@ Fons4AI Harness Engineering 使用 6 层结构：
 | Context Harness | 控制上下文加载和知识事实 | 项目知识基线、领域/能力域建模、知识汇总 |
 | Skill Harness | 约束 Agent 按角色执行 | 技能契约、触发门禁、职责边界、handoff |
 | Rule Harness | 固化团队工程规则 | 项目 Agent 规则、代码规范、SDD 团队协作规范 |
-| Feedback Harness | 证明完成和失败归因 | 实施报告、验证结果、BUG 修复报告、环境准备度 |
+| Feedback Harness | 证明完成和失败归因 | 实施报告、验证结果、BUG 修复报告、运行态 Evidence Matrix |
 | Learning Harness | 跨项目抽象可复用经验 | 失败案例、`spec/reports/harness-feedback/` 上游反馈单、回放样例、校验器改进 |
 
 一个技能可以横跨多层，但必须有一个主层级，避免职责扩散。
@@ -23,19 +21,32 @@ Fons4AI Harness Engineering 使用 6 层结构：
 
 | 技能 | 主层级 | 辅助层级 | 当前职责摘要 | 阶段 2 处理建议 |
 | --- | --- | --- | --- | --- |
-| `fons4ai-sdd-feature-workflow` | Skill Harness | Intent Harness, Feedback Harness | 编排正常新需求 SDD 三件套，任务规划校验后停止等待实现确认 | 新增正常新需求 Runner，保持阶段技能单一职责 |
+| `fons4ai-sdd-feature-workflow` | Skill Harness | Intent Harness, Feedback Harness | 编排正常新需求 SDD 三件套，任务规划校验后停止等待实现确认 | 保持正常新需求编排入口，保持阶段技能单一职责 |
 | `fons4ai-sdd-requirements` | Intent Harness | Context Harness, Skill Harness | 澄清需求并生成需求说明书 | 保留现有职责；后续评估是否补充轻量 Evidence 章节 |
 | `fons4ai-sdd-design` | Intent Harness | Skill Harness, Feedback Harness | 在需求后生成技术设计，记录风险、验证策略和知识影响 | 结构较完整；后续补显式 `职责边界` 章节 |
 | `fons4ai-sdd-tasks` | Intent Harness | Skill Harness, Feedback Harness | 把需求和设计拆成任务规划，并停止等待实现确认 | 保留任务规划职责；后续评估是否补充轻量 Evidence 章节 |
 | `fons4ai-sdd-change` | Intent Harness | Skill Harness, Feedback Harness | 对既有 SDD 功能做变更分析、CR 和增量任务 | 结构完整，可作为变更类技能样板 |
 | `fons4ai-sdd-implement` | Feedback Harness | Skill Harness, Context Harness | 执行已授权 SDD 任务，要求验证证据和实施报告 | 结构完整，可作为实现类技能样板 |
 | `fons4ai-bugfix-workflow` | Feedback Harness | Intent Harness, Skill Harness | 复现、诊断、修复、验证并记录 BUG | Contract 完整；后续补显式角色和职责边界章节 |
-| `fons4ai-agent-env-readiness` | Feedback Harness | Context Harness | 评估 Agent 环境准备度和验证可靠性 | 保留按需增强定位；后续评估是否补 Evidence 章节 |
 | `fons4ai-harness-feedback` | Learning Harness | Feedback Harness | 将业务试点项目中的 Agent 使用问题整理为脱敏上游反馈单 | 已落地为独立反馈技能；默认输出到 `spec/reports/harness-feedback/` |
 | `fons4ai-knowledge-bootstrap` | Context Harness | Skill Harness | 从代码、文档、接口、测试和配置建立项目知识基线 | Contract 已补齐；后续按 MVP 试点反馈优化 |
 | `fons4ai-domain-knowledge-modeling` | Context Harness | Skill Harness | 对领域或技术能力域进行深度知识建模 | Contract 已补齐；后续按 MVP 试点反馈优化 |
 | `fons4ai-knowledge-summary` | Context Harness | Feedback Harness, Skill Harness | 汇总已验证事实到知识库、领域文档、知识卡片和 SQL 快照 | 结构完整，可作为知识汇总类技能样板 |
+| `fons4ai-sdd-quick-path` | Skill Harness | Feedback Harness | S0 轻量快路径，低风险小变更用单份快速变更记录替代 SDD 三件套 |
 | `fons4ai-generate-project-rules` | Rule Harness | Context Harness, Skill Harness | 把已验证事实和用户决策转为项目 Agent 规则 | Contract 已补齐；后续按 MVP 试点反馈优化 |
+
+## 2.1 技能职责分类
+
+| 类别 | 技能 | 分类原因 |
+| --- | --- | --- |
+| 流程编排类 | `fons4ai-sdd-feature-workflow` | 控制阶段顺序和停止点，不直接产出业务代码 |
+| SDD 阶段产物类 | `fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks`、`fons4ai-sdd-change` | 负责需求、设计、任务规划和 CR 等正式 SDD 产物 |
+| 实现执行类 | `fons4ai-sdd-implement` | 只执行已规划且已授权任务，更新代码、测试、任务状态和实施报告 |
+| 轻量快路径类 | `fons4ai-sdd-quick-path` | S0 等级，低风险小变更用单份快速变更记录替代 SDD 三件套 |
+| BUG 修复闭环类 | `fons4ai-bugfix-workflow` | 从缺陷复现进入，独立完成修复验证和 BUG 修复报告 |
+| 知识库类 | `fons4ai-knowledge-bootstrap`、`fons4ai-domain-knowledge-modeling`、`fons4ai-knowledge-summary` | 建立项目知识基线、领域/能力域建模和已验证事实沉淀 |
+| 规则生成类 | `fons4ai-generate-project-rules` | 把项目事实、团队决策和治理边界固化为规则文件 |
+| 反馈治理类 | `fons4ai-harness-feedback` | 将业务试点中发现的通用 Harness 问题脱敏回流到上游 |
 
 ## 3. 结构盘点结果
 
@@ -56,17 +67,17 @@ OK: Feedback Harness entrypoint assets are valid
 OK: all Fons4AI Harness validations passed
 ```
 
-其中 `validate_skill_contracts.py` 检查核心技能 Contract 和 Evidence 基线；`validate_feedback_harness.py` 检查 Feedback Harness 总入口，包括实施报告、BUG 修复报告、环境准备度、上游反馈技能、Handoff、反馈路径约定和核心校验器；`scripts/validate_all.py` 是仓库级一键自检入口。
+其中 `validate_skill_contracts.py` 检查核心技能 Contract 和 Evidence 基线；`validate_feedback_harness.py` 检查 Feedback Harness 总入口，包括实施报告、BUG 修复报告、运行态 Evidence Matrix、上游反馈技能、Handoff、反馈路径约定和核心校验器；`scripts/validate_all.py` 是仓库级一键自检入口。
 
 含义：
 
-- 脚本当前覆盖 8 个核心技能。
+- 脚本当前覆盖 9 个核心技能。
 - 已覆盖核心技能满足当前脚本要求的 Contract 和 Evidence 基线。
-- 全部 13 个 Fons4AI 自有技能均已具备统一 Contract 五要素；脚本覆盖面仍需从核心技能扩展到全量技能。
+- 当前推荐技能均已具备统一 Contract 五要素。
 
 ### 3.2 全量技能 Contract 盘点
 
-将全部 13 个 Fons4AI 自有技能按统一 Contract 口径盘点时，P1 技能状态如下：
+将 Fons4AI 推荐技能按统一 Contract 口径盘点时，P1 技能状态如下：
 
 | 技能 | 主要缺口 | 建议优先级 |
 | --- | --- | --- |
@@ -81,6 +92,7 @@ OK: all Fons4AI Harness validations passed
 | 技能 | 结构状态 | 备注 |
 | --- | --- | --- |
 | `fons4ai-sdd-feature-workflow` | Contract 完整 | 编排型技能；不要求完整 Evidence 章节，不得自动进入实现 |
+| `fons4ai-sdd-quick-path` | Contract 完整 | S0 轻量快路径；不要求完整 Evidence 章节，准入条件内直接实现 |
 | `fons4ai-sdd-implement` | 完整 | 可作为实现类技能样板 |
 | `fons4ai-sdd-change` | 完整 | 可作为变更类技能样板 |
 | `fons4ai-knowledge-summary` | 完整 | 可作为知识汇总类技能样板 |
@@ -88,10 +100,10 @@ OK: all Fons4AI Harness validations passed
 | `fons4ai-bugfix-workflow` | Contract 完整 | 缺显式 `## 角色说明`、`## 职责边界` 标题 |
 | `fons4ai-sdd-requirements` | Contract 完整 | 缺 Evidence 章节；可按需求类技能决定是否需要轻量 Evidence |
 | `fons4ai-sdd-tasks` | Contract 完整 | 缺 Evidence 章节；可按规划类技能决定是否需要轻量 Evidence |
-| `fons4ai-agent-env-readiness` | Contract 完整 | 缺 Evidence 章节；作为验证可靠性技能，建议补轻量 Evidence |
 | `fons4ai-knowledge-bootstrap` | Contract 已补齐 | 后续按试点反馈调整证据口径和输出边界 |
 | `fons4ai-domain-knowledge-modeling` | Contract 已补齐 | 后续按试点反馈调整建模证据、确认门禁和适配输出粒度 |
 | `fons4ai-generate-project-rules` | Contract 已补齐 | 后续按试点反馈调整规则证据矩阵和 MCP 边界 |
+| `fons4ai-harness-feedback` | Contract 完整 | 反馈治理类技能；含完整 Evidence 章节，不自动触发 |
 
 ## 4. 阶段 2 优先级
 
@@ -100,6 +112,8 @@ OK: all Fons4AI Harness validations passed
 - 使用 `docs/skill-contract-standard.md` 作为后续技能整理标准。
 - Evidence 标准不是一刀切；不同技能按风险和职责采用不同证据强度。
 - `fons4ai-project-knowledge-base-init` 已移除；项目知识基线主入口统一收敛到 `fons4ai-knowledge-bootstrap`。
+- `fons4ai-sdd-quick-path` 新增 S0 轻量快路径；低风险小变更用单份快速变更记录替代 SDD 三件套。
+- `fons4ai-sdd-recovery` 已合并到 `fons4ai-sdd-implement`；阻塞分类、失败签名、有界重试和恢复报告由 implement 内置。
 
 ### P1：统一 Contract 补齐状态
 
@@ -121,7 +135,7 @@ P1 技能的统一 Contract 已补齐：
 
 - `fons4ai-sdd-design`：补显式职责边界。
 - `fons4ai-bugfix-workflow`：补角色说明和职责边界。
-- `fons4ai-agent-env-readiness`：评估并补轻量 Evidence。
+- 跨服务运行态验证：并入 `fons4ai-sdd-design`、`fons4ai-sdd-tasks`、`fons4ai-sdd-implement` 主链路，通过服务形态、运行闭环任务和 Evidence Matrix 处理。
 - `fons4ai-sdd-requirements`、`fons4ai-sdd-tasks`：评估需求/规划类 Evidence 是否采用轻量版本。
 
 ### P3：保留观察项

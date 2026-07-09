@@ -1,4 +1,4 @@
-# AGENTS.md
+﻿# AGENTS.md
 
 <!-- fons4ai-skill-routing: enabled -->
 
@@ -50,7 +50,9 @@
 | 技术设计补充 | `fons4ai-sdd-design` |
 | 任务规划补充 | `fons4ai-sdd-tasks` |
 | 用户确认执行 SDD 任务 | `fons4ai-sdd-implement` |
+| SDD 实现或验证无法关闭 | `fons4ai-sdd-implement`（内置阻塞诊断和恢复路由） |
 | 已有功能迭代 | `fons4ai-sdd-change` |
+| 低风险小变更（文案、样式、配置、重命名） | `fons4ai-sdd-quick-path`（S0） |
 | BUG、异常、回归失败 | `fons4ai-bugfix-workflow` |
 | 项目知识基线初始化 | `fons4ai-knowledge-bootstrap` |
 | 领域知识深度建模 | `fons4ai-domain-knowledge-modeling` |
@@ -68,6 +70,7 @@
 - `fons4ai-sdd-feature-workflow`、`fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks`、`fons4ai-sdd-change` 只能生成或更新 SDD 产物，不得写业务代码。
 - 生成 `<功能中文名>-任务规划.md` 或 CR 增量任务后必须暂停，等待用户确认执行。
 - 用户回复 `执行`、`开始实现`、`继续执行` 时默认执行全部未完成任务；用户回复 `执行 T001,T002` 时只执行指定任务。
+- 实现或验证阶段无法关闭时，`fons4ai-sdd-implement` 内置阻塞分类、失败签名和有界重试，直接诊断并建议路由到任务、设计、变更或外部 Gate。
 
 ## 知识库建设确认门禁
 

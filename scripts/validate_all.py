@@ -36,6 +36,10 @@ def main() -> int:
             [python, "scripts/validators/validate_feedback_harness.py", "--root", "."],
         ),
         (
+            "loop phase 1 assets",
+            [python, "scripts/validators/validate_loop_phase1.py", "--root", "."],
+        ),
+        (
             "business project validator help",
             [python, "scripts/validators/validate_business_project_harness.py", "--help"],
         ),

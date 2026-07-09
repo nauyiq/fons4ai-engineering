@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Validate core Fons4AI skill contract and evidence sections."""
 
 from __future__ import annotations
@@ -17,6 +17,11 @@ CORE_SKILLS = (
     "fons4ai-sdd-change",
     "fons4ai-bugfix-workflow",
     "fons4ai-knowledge-summary",
+    "fons4ai-sdd-quick-path",
+    "fons4ai-knowledge-bootstrap",
+    "fons4ai-domain-knowledge-modeling",
+    "fons4ai-generate-project-rules",
+    "fons4ai-harness-feedback",
 )
 
 EVIDENCE_REQUIRED_SKILLS = (
@@ -60,8 +65,8 @@ def validate_skill(path: Path, require_evidence: bool = False) -> list[str]:
         for heading in EVIDENCE_HEADINGS:
             if heading not in text:
                 errors.append(f"{path} missing evidence heading: {heading}")
-        for phrase in ("不得从实体类", "任务完成状态必须有 L3", "长期知识沉淀必须有 L3"):
-            if path.parent.name in EVIDENCE_REQUIRED_SKILLS and phrase in ("不得从实体类",) and path.parent.name not in {"fons4ai-sdd-design", "fons4ai-sdd-change", "fons4ai-knowledge-summary"}:
+        for phrase in ("不得从语言结构体/类", "任务完成状态必须有 L3", "长期知识沉淀必须有 L3"):
+            if path.parent.name in EVIDENCE_REQUIRED_SKILLS and phrase in ("不得从语言结构体/类",) and path.parent.name not in {"fons4ai-sdd-design", "fons4ai-sdd-change", "fons4ai-knowledge-summary"}:
                 continue
             if path.parent.name in EVIDENCE_REQUIRED_SKILLS and phrase in ("任务完成状态必须有 L3",) and path.parent.name != "fons4ai-sdd-implement":
                 continue

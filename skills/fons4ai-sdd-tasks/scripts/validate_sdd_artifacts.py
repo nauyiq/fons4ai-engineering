@@ -18,6 +18,31 @@ EXECUTABLE_DDL_PATH_RE = re.compile(
     re.IGNORECASE,
 )
 S2_RE = re.compile(r"(SDD\s*Level|SDD\s*等级)\s*[:：]\s*`?S2`?", re.IGNORECASE)
+RUNTIME_SERVICE_RE = re.compile(
+    r"独立可运行服务|可运行服务|服务形态|启动入口|启动命令|入口文件|入口函数|"
+    r"HTTP\s*API|REST\s*API|RPC|gRPC|消息生产|消息消费|后台\s*worker|worker|"
+    r"服务发现|服务路由|服务网格|健康探测|健康检查|就绪检查|readiness|liveness|"
+    r"main\.go|func\s+main|FastAPI|Flask|Django|uvicorn|gunicorn|express|koa|nest|"
+    r"SpringBootApplication|REST\s*Controller|"
+    r"@RestController|@DubboReference|@FeignClient|@RabbitListener|@KafkaListener|"
+    r"spring\.application\.name|注册中心|服务注册|服务发现|Actuator|健康检查",
+    re.IGNORECASE,
+)
+RUNTIME_SERVICE_TASK_RE = re.compile(
+    r"启动入口|启动验证|服务启动|运行配置|服务注册|注册发现|服务发现|服务路由|健康检查|健康探测|就绪检查|"
+    r"核心\s*(API|RPC|gRPC)|HTTP\s*API|REST\s*API|RPC\s*链路|gRPC\s*链路|消息链路|隔离环境|只读验证|暂缓确认",
+    re.IGNORECASE,
+)
+RUNTIME_INIT_DML_RE = re.compile(
+    r"运行初始化\s*DML|初始化\s*DML|Seed\s*数据|种子数据|初始化数据|默认角色|默认权限|"
+    r"默认配置|系统账号|系统租户|服务账号|白名单|字典",
+    re.IGNORECASE,
+)
+RUNTIME_INIT_DML_TASK_RE = re.compile(
+    r"运行初始化\s*DML|初始化\s*DML|Seed\s*脚本|Seed\s*数据|种子数据|初始化数据脚本|"
+    r"执行状态|只读复核|复核\s*SQL|回滚说明|占位变量|用户/DBA|DBA|暂缓",
+    re.IGNORECASE,
+)
 
 APPROVAL_GATE_HEADINGS = ("## 2. 实现确认门禁", "## 12. 实现确认门禁", "## 实现确认门禁", "## Implementation Approval Gate")
 DOCUMENT_STATUS_RE = re.compile(r"(文档状态|Document Status)\s*[:：]\s*([^\n\r]+)", re.IGNORECASE)
@@ -53,6 +78,7 @@ PLAN_REQUIRED_HEADING_GROUPS = (
 KNOWLEDGE_IMPACT_HEADINGS = ("### 10.4 知识同步影响", "## 知识同步清单", "## 知识同步影响", "## Knowledge Impact")
 RISK_ROLLBACK_HEADINGS = ("### 10.3 风险与回滚", "## 10. 验证策略、AC 映射与风险", "## 风险与回滚", "## Risk and Rollback")
 S2_QUALITY_GATE_HEADINGS = ("## S2 质量门禁", "## S2 Quality Gates")
+EVIDENCE_MATRIX_RE = re.compile(r"Evidence\s+Matrix|证据矩阵|运行态\s*Evidence|服务级\s*Evidence", re.IGNORECASE)
 DATA_IMPACT_HEADINGS = ("### 数据影响判断", "## 数据影响判断", "### Data Impact")
 FIELD_MAPPING_HEADINGS = ("### 4.2 字段映射契约", "### 字段映射契约", "## 字段映射契约", "### Field Mapping Contract")
 DATA_FLOW_HEADINGS = ("### 4.3 数据流设计", "### 数据流设计", "## 数据流设计", "### Data Flow Design")
@@ -328,6 +354,16 @@ def validate(feature_dir: Path, strict: bool = False) -> tuple[list[str], list[s
     if DATA_RISK_RE.search(design_text) and not DATA_VERIFICATION_RE.search(tasks_text):
         errors.append(f"{tasks.name} has no data verification task for triggered data design/governance risk")
 
+    if RUNTIME_SERVICE_RE.search(design_text):
+        if not RUNTIME_SERVICE_TASK_RE.search(tasks_text):
+            errors.append(f"{tasks.name} has no runtime service closure task for triggered service runtime design")
+        if S2_RE.search(all_text) and not EVIDENCE_MATRIX_RE.search(tasks_text + "\n" + design_text):
+            errors.append(f"S2 {tasks.name} must include an Evidence Matrix for runtime service delivery")
+
+    if RUNTIME_INIT_DML_RE.search(design_text):
+        if not RUNTIME_INIT_DML_TASK_RE.search(tasks_text):
+            errors.append(f"{tasks.name} has no runtime initialization DML/Seed deliverable task")
+
     if not has_any_heading(design_text, KNOWLEDGE_IMPACT_HEADINGS):
         errors.append(f"{design.name} is missing knowledge impact section")
     if not has_any_heading(tasks_text, APPROVAL_GATE_HEADINGS):
@@ -454,9 +490,11 @@ def validate_implementation_report(report: Path) -> list[str]:
     required = (
         "## 4. 验证结果",
         "## 5. Evidence Bundle",
+        "## 5.1 服务级 Evidence Matrix",
         "## 6. Review 与人工 Gate",
         "## 7. AC 覆盖",
         "## 9. DDL 与数据结构状态",
+        "## 9.1 运行初始化 DML / Seed 状态",
         "验证证据等级",
         "未验证项",
         "Review 状态",

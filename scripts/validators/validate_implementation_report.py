@@ -17,6 +17,8 @@ REQUIRED_TERMS = (
     "校验结果",
     "未验证项",
     "Evidence Bundle",
+    "服务级 Evidence Matrix",
+    "运行初始化 DML / Seed 状态",
     "Spec Review",
     "Code Review",
     "人工 Gate",

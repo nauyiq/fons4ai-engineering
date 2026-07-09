@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Validate the repository-level Feedback Harness entrypoint."""
 
 from __future__ import annotations
@@ -13,14 +13,16 @@ REQUIRED_FILES = (
     "skills/fons4ai-sdd-feature-workflow/agents/openai.yaml",
     "skills/fons4ai-sdd-implement/SKILL.md",
     "skills/fons4ai-sdd-implement/assets/templates/implementation-report-template.md",
+    "skills/fons4ai-sdd-implement/assets/templates/recovery-report-template.md",
     "skills/fons4ai-sdd-tasks/scripts/validate_sdd_artifacts.py",
     "skills/fons4ai-bugfix-workflow/SKILL.md",
     "skills/fons4ai-bugfix-workflow/assets/templates/bugfix-report-template.md",
     "skills/fons4ai-bugfix-workflow/scripts/validate_bugfix_report.py",
-    "skills/fons4ai-agent-env-readiness/SKILL.md",
-    "skills/fons4ai-agent-env-readiness/assets/templates/readiness-report-template.md",
-    "skills/fons4ai-agent-env-readiness/scripts/validate_readiness_report.py",
     "skills/fons4ai-knowledge-summary/SKILL.md",
+    "skills/fons4ai-sdd-quick-path/SKILL.md",
+    "skills/fons4ai-sdd-quick-path/agents/openai.yaml",
+    "skills/fons4ai-sdd-quick-path/assets/templates/quick-change-record-template.md",
+    "skills/fons4ai-sdd-quick-path/scripts/validate_quick_change.py",
     "skills/fons4ai-harness-feedback/SKILL.md",
     "skills/fons4ai-harness-feedback/assets/templates/upstream-feedback-template.md",
     "skills/fons4ai-harness-feedback/scripts/validate_harness_feedback.py",
@@ -30,9 +32,12 @@ REQUIRED_FILES = (
     "scripts/validators/validate_feedback_harness.py",
     "scripts/validators/validate_handoff.py",
     "scripts/validators/validate_implementation_report.py",
+    "scripts/validators/validate_loop_phase1.py",
     "scripts/validators/validate_skill_contracts.py",
     "docs/harness-engineering.md",
     "docs/harness-layer-map.md",
+    "docs/loop-phase-1.md",
+    "templates/loop-improvement-record-template.md",
 )
 
 TEXT_REQUIREMENTS = (
@@ -41,6 +46,8 @@ TEXT_REQUIREMENTS = (
         "skills/fons4ai-sdd-feature-workflow/SKILL.md",
         ("fons4ai-sdd-requirements", "fons4ai-sdd-design", "fons4ai-sdd-tasks", "validate_sdd_artifacts.py", "等待用户确认实现", "不得自动进入实现"),
     ),
+    (
+    (
     (
         "implementation skill must require evidence and implementation report",
         "skills/fons4ai-sdd-implement/SKILL.md",
@@ -70,9 +77,24 @@ TEXT_REQUIREMENTS = (
         ("## Evidence Required", "L3 Gate Evidence", "spec/bugfixes/<yyyymmdd>", "validate_bugfix_report.py"),
     ),
     (
-        "environment readiness skill must produce a readiness report",
-        "skills/fons4ai-agent-env-readiness/SKILL.md",
-        ("Agent", "readiness-report-template.md", "validate_readiness_report.py"),
+        "SDD design must model runtime services and initialization data",
+        "skills/fons4ai-sdd-design/assets/templates/technical-design-template.md",
+        ("服务形态与运行态设计", "运行初始化 DML / Seed 数据", "启动入口", "执行后复核"),
+    ),
+    (
+        "SDD tasks must plan runtime service and initialization data closure",
+        "skills/fons4ai-sdd-tasks/assets/templates/tasks-template.md",
+        ("可运行服务闭环任务", "运行初始化 DML / Seed 数据任务", "服务级 Evidence Matrix", "只读复核"),
+    ),
+    (
+        "SDD implement report must carry runtime service and DML evidence",
+        "skills/fons4ai-sdd-implement/assets/templates/implementation-report-template.md",
+        ("服务级 Evidence Matrix", "运行初始化 DML / Seed 状态"),
+    ),
+    (
+        "SDD artifact validator must enforce runtime service and DML closure",
+        "skills/fons4ai-sdd-tasks/scripts/validate_sdd_artifacts.py",
+        ("RUNTIME_SERVICE_RE", "RUNTIME_INIT_DML_RE", "RUNTIME_SERVICE_TASK_RE", "RUNTIME_INIT_DML_TASK_RE", "EVIDENCE_MATRIX_RE"),
     ),
     (
         "knowledge summary must accept verified evidence",
@@ -80,9 +102,14 @@ TEXT_REQUIREMENTS = (
         ("## Evidence Required", "L3 Gate Evidence"),
     ),
     (
+        "quick path skill must provide S0 admission criteria and escalation",
+        "skills/fons4ai-sdd-quick-path/SKILL.md",
+        ("S0", "准入条件", "升级", "实现确认门禁", "不得自动进入实现"),
+    ),
+    (
         "harness feedback skill must generate upstream feedback reports",
         "skills/fons4ai-harness-feedback/SKILL.md",
-        ("spec/reports/harness-feedback", "Evidence Required", "PROJECT_LOCAL", "VALIDATOR_GAP", "不自动触发", "生成前自检", "占位来源", "跨项目通用性"),
+        ("spec/reports/harness-feedback", "Evidence Required", "PROJECT_LOCAL", "VALIDATOR_GAP", "不自动触发", "生成前自检", "占位来源", "跨项目通用性", "Loop Phase 1"),
     ),
     (
         "harness feedback template must define status and evidence maturity gates",
@@ -102,7 +129,7 @@ TEXT_REQUIREMENTS = (
     (
         "business project AGENTS template must route normal new feature development through feature workflow",
         "skills/fons4ai-knowledge-bootstrap/references/agents-template.md",
-        ("正常新需求开发", "fons4ai-sdd-feature-workflow", "需求澄清/补需求说明书", "fons4ai-sdd-requirements"),
+        ("正常新需求开发", "fons4ai-sdd-feature-workflow", "需求澄清/补需求说明书", "fons4ai-sdd-requirements", "SDD 实现或验证无法关闭", "fons4ai-sdd-implement"),
     ),
     (
         "business project validator must enforce core onboarding assets",
@@ -127,7 +154,17 @@ TEXT_REQUIREMENTS = (
     (
         "validate_all must invoke repository validators",
         "scripts/validate_all.py",
-        ("scripts/validators/validate_skill_contracts.py", "scripts/validators/validate_feedback_harness.py", "scripts/validators/validate_business_project_harness.py", "scripts/validators/validate_handoff.py", "scripts/validators/validate_implementation_report.py"),
+        ("scripts/validators/validate_skill_contracts.py", "scripts/validators/validate_feedback_harness.py", "scripts/validators/validate_loop_phase1.py", "scripts/validators/validate_business_project_harness.py", "scripts/validators/validate_handoff.py", "scripts/validators/validate_implementation_report.py"),
+    ),
+    (
+        "Loop Phase 1 docs and template must describe manual feedback closure",
+        "docs/loop-phase-1.md",
+        ("Loop Phase 1", "上游反馈单", "Loop 改进记录", "全局 skills", "Phase 1 完成定义"),
+    ),
+    (
+        "Loop improvement record template must carry decision, validation, and sync sections",
+        "templates/loop-improvement-record-template.md",
+        ("## 2. 用户决策", "## 4. 修改清单", "## 5. 验证记录", "## 6. 全局同步", "哈希比对"),
     ),
     (
         "harness docs must describe Feedback Harness and feedback path",

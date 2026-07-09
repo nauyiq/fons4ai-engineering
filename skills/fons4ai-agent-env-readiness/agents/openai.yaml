@@ -1,4 +1,0 @@
-﻿interface:
-  display_name: "Fons4AI Agent Env Readiness"
-  short_description: "按需评估并增强 Agent 对数据库、缓存、消息、配置等外部环境的验证能力。"
-  default_prompt: "Use $fons4ai-agent-env-readiness to assess whether this project has enough environment access for reliable Agent verification and produce a readiness checklist."

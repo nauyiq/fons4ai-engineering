@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Validate minimal Fons4AI Harness assets in a business project."""
 
 from __future__ import annotations
