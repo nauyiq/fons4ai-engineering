@@ -27,6 +27,47 @@ scripts/validators/      # 上游校验器
 docs/                    # Kit 使用说明、契约标准、分层说明
 ```
 
+## 平台中立与多 Agent 协作
+
+Fons4AI 技能体系支持跨 AI 平台协作。团队中不同成员可以使用不同 AI 工具（Codex、Claude Code、Qder、Trace 等），但产出的 SDD 产物、handoff 记录和 Evidence Bundle 格式完全一致，可以互相衔接和审查。
+
+### 三层分离
+
+| 层 | 内容 | 文件 | 平台中立 |
+| --- | --- | --- | --- |
+| 契约层 | 技能 Contract / Evidence / Handoff | `skills/*/SKILL.md` | 是 |
+| Agent 清单层 | 角色 / 上下文预算 / 权限 / Evidence 级别 | `skills/*/agents/manifest.yaml` | 是 |
+| 平台适配层 | 线程管理 / 并行能力 / spawn 方式 | `skills/*/agents/<platform>.yaml` | 否 |
+
+### 多 Agent 能力分级
+
+| Tier | 能力 | 说明 |
+| --- | --- | --- |
+| Tier 0 | 单 Agent + 技能切换 + 文件 handoff | 所有平台基线，降级不降质 |
+| Tier 1 | Orchestrator 创建子线程，串行调度 | 支持多 Agent 的平台（Codex、Claude Code） |
+| Tier 2 | 并行多 Agent + 跨 Agent Evidence 信任 | 支持并行执行的平台 |
+
+平台不支持高 Tier 时自动降级到 Tier 0，但 handoff YAML、Evidence Bundle 和校验器对所有 Tier 一视同仁。
+
+### 结构化 Handoff 协议
+
+除了现有的 Markdown handoff 模板，新增了机器可读的结构化 handoff YAML：
+
+```text
+templates/handoff-yaml-template.yaml
+```
+
+任何 AI 工具都能读写这个 YAML，校验器 `validate_handoff_schema.py` 校验其 schema 合规性。
+
+### 校验入口
+
+```text
+scripts/validators/validate_platform_neutrality.py --root .
+scripts/validators/validate_handoff_schema.py --file <handoff.yaml>
+```
+
+`scripts/validate_all.py` 已集成以上校验器。
+
 ## 业务项目自治
 
 业务项目接入后，自己就是一个 Harness Engineering 项目。上游 Template Kit 只提供生成方法、默认骨架、校验标准和反馈通道。

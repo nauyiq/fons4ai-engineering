@@ -1,0 +1,27 @@
+# Platform-Neutral Agent Manifest
+
+schema_version: "1.0"
+
+agent:
+  role: quick-path-handler
+  category: quick-path
+  context_budget:
+    required:
+      - target files in scope
+    optional:
+      - AGENTS.md
+      - .specify/rules/
+    forbidden_full_scan: true
+  permissions:
+    read: true
+    write:
+      - spec/quick/<yyyymmdd>/
+      - scoped source files
+    execute:
+      - minimal verification commands
+  evidence_level: L1
+  spawn_by: null
+  handoff_targets:
+    - fons4ai-sdd-implement
+  stop_for_user_confirm: true
+  multi_agent_tier: 1

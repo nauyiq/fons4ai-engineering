@@ -1,0 +1,26 @@
+# Platform-Neutral Agent Manifest
+
+schema_version: "1.0"
+
+agent:
+  role: rule-generator
+  category: rules
+  context_budget:
+    required:
+      - AGENTS.md
+      - verified project facts
+    optional:
+      - .specify/memory/index.md
+      - team decisions
+      - existing .specify/rules/
+    forbidden_full_scan: true
+  permissions:
+    read: true
+    write:
+      - .specify/rules/
+    execute: false
+  evidence_level: L2
+  spawn_by: null
+  handoff_targets: []
+  stop_for_user_confirm: true
+  multi_agent_tier: 0

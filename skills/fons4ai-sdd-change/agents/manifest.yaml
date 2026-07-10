@@ -1,0 +1,27 @@
+# Platform-Neutral Agent Manifest
+
+schema_version: "1.0"
+
+agent:
+  role: change-manager
+  category: sdd-stage
+  context_budget:
+    required:
+      - existing SDD feature directory
+      - spec/features/<yyyymmdd>/<feature>-需求说明书.md
+    optional:
+      - AGENTS.md
+      - .specify/memory/index.md
+      - source code
+    forbidden_full_scan: true
+  permissions:
+    read: true
+    write:
+      - spec/features/<yyyymmdd>/
+    execute: false
+  evidence_level: L2
+  spawn_by: null
+  handoff_targets:
+    - fons4ai-sdd-implement
+  stop_for_user_confirm: true
+  multi_agent_tier: 1

@@ -1,4 +1,14 @@
 interface:
-  display_name: "Fons4AI-sdd-design"
+  display_name: "Fons4AI SDD Design"
   short_description: "受控的 Fons4AI SDD 技术设计说明书生成流程。"
   default_prompt: "Use $fons4ai-sdd-design only for the technical design stage: when explicitly requested, when supplementing an existing design, or when $fons4ai-sdd-feature-workflow has reached the design phase. For complete normal new feature SDD orchestration, use $fons4ai-sdd-feature-workflow."
+
+adapter:
+  platform: codex
+  capabilities:
+    multi_agent: true
+    parallel: false
+    thread_handoff: true
+  spawn_method: create_thread
+  handoff_method: handoff_thread
+  context_isolation: true

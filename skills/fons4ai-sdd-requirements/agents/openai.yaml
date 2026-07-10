@@ -1,4 +1,14 @@
 interface:
-  display_name: "Fons4ai-sdd-requirements"
+  display_name: "Fons4AI SDD Requirements"
   short_description: "正常新需求开发中的需求澄清阶段，生成 SDD 需求说明书。"
   default_prompt: "Use $fons4ai-sdd-requirements for the requirements clarification stage only. For complete normal new feature SDD orchestration, use $fons4ai-sdd-feature-workflow."
+
+adapter:
+  platform: codex
+  capabilities:
+    multi_agent: true
+    parallel: false
+    thread_handoff: true
+  spawn_method: create_thread
+  handoff_method: handoff_thread
+  context_isolation: true

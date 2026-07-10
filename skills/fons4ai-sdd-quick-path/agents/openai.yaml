@@ -2,3 +2,13 @@ interface:
   display_name: "Fons4AI SDD Quick Path (S0)"
   short_description: "低风险小范围变更的轻量快路径：用单份快速变更记录替代 SDD 三件套。"
   default_prompt: "Use $fons4ai-sdd-quick-path for low-risk, small-scope changes that do not touch business logic, data models, public contracts, security, or cross-module behavior. Generate a single quick-change record under spec/quick/<yyyymmdd>/, validate it, then stop for implementation approval. Escalate to S1/S2 if the change exceeds S0 admission criteria."
+
+adapter:
+  platform: codex
+  capabilities:
+    multi_agent: true
+    parallel: false
+    thread_handoff: false
+  spawn_method: create_thread
+  handoff_method: file_based
+  context_isolation: true

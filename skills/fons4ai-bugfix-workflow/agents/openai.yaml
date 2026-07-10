@@ -1,4 +1,14 @@
-openai:
-  display_name: "Fons4ai-bugfix-workflow"
+interface:
+  display_name: "Fons4AI Bugfix Workflow"
   short_description: "受路由门禁控制的 Fons4AI BUG 修复工作流。"
   default_prompt: "Use $fons4ai-bugfix-workflow only when the user asks to fix, diagnose, reproduce, or verify a BUG, exception, or regression. Do not use it for generic new feature SDD work."
+
+adapter:
+  platform: codex
+  capabilities:
+    multi_agent: true
+    parallel: true
+    thread_handoff: true
+  spawn_method: create_thread
+  handoff_method: handoff_thread
+  context_isolation: true

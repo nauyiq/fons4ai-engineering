@@ -32,6 +32,10 @@ def main() -> int:
             [python, "scripts/validators/validate_skill_contracts.py", "--skills-root", "skills"],
         ),
         (
+            "skill stack neutrality",
+            [python, "scripts/validators/validate_stack_neutrality.py", "--root", "."],
+        ),
+        (
             "feedback harness entrypoint",
             [python, "scripts/validators/validate_feedback_harness.py", "--root", "."],
         ),
@@ -46,6 +50,18 @@ def main() -> int:
         (
             "handoff template",
             [python, "scripts/validators/validate_handoff.py", "--file", "templates/handoff-template.md"],
+        ),
+        (
+            "structured handoff YAML template",
+            [python, "scripts/validators/validate_handoff_schema.py", "--file", "templates/handoff-yaml-template.yaml"],
+        ),
+        (
+            "platform neutrality",
+            [python, "scripts/validators/validate_platform_neutrality.py", "--root", "."],
+        ),
+        (
+            "multi-agent runtime validator help",
+            [python, "scripts/validators/validate_multi_agent_runtime.py", "--help"],
         ),
         (
             "implementation report template",

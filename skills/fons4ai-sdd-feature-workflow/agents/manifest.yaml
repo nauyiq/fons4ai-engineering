@@ -1,0 +1,37 @@
+# Platform-Neutral Agent Manifest
+#
+# Defines agent role, context budget, permissions, and evidence level.
+# Platform-specific execution adapters live in <platform>.yaml (e.g. openai.yaml).
+# This file is shared across all AI tools (Codex, Claude Code, Qder, Trace, etc.).
+
+schema_version: "1.0"
+
+agent:
+  role: orchestrator
+  category: orchestration
+  context_budget:
+    required:
+      - AGENTS.md
+      - .specify/memory/index.md
+    optional:
+      - spec/features/<yyyymmdd>/handoff/*.yaml
+    forbidden_full_scan: true
+  permissions:
+    read: true
+    write:
+      - spec/features/<yyyymmdd>/handoff/
+    execute:
+      - scripts/validators/validate_sdd_artifacts.py
+      - scripts/validators/validate_handoff_schema.py
+  evidence_level: L1
+  spawn_by: null
+  handoff_targets:
+    - fons4ai-sdd-requirements
+    - fons4ai-sdd-design
+    - fons4ai-sdd-tasks
+    - fons4ai-sdd-implement
+    - fons4ai-sdd-change
+    - fons4ai-sdd-quick-path
+    - fons4ai-bugfix-workflow
+  stop_for_user_confirm: true
+  multi_agent_tier: 1

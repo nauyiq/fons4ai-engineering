@@ -1,0 +1,30 @@
+# Platform-Neutral Agent Manifest
+
+schema_version: "1.0"
+
+agent:
+  role: knowledge-bootstrapper
+  category: knowledge
+  context_budget:
+    required:
+      - user docs
+      - source code
+      - interfaces
+      - tests
+      - config
+    optional:
+      - existing .specify/memory/
+    forbidden_full_scan: false
+  permissions:
+    read: true
+    write:
+      - AGENTS.md
+      - .specify/memory/
+    execute: false
+  evidence_level: L2
+  spawn_by: null
+  handoff_targets:
+    - fons4ai-generate-project-rules
+    - fons4ai-domain-knowledge-modeling
+  stop_for_user_confirm: true
+  multi_agent_tier: 0

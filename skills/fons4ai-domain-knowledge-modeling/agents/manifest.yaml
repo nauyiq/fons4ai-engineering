@@ -1,0 +1,27 @@
+# Platform-Neutral Agent Manifest
+
+schema_version: "1.0"
+
+agent:
+  role: domain-modeler
+  category: knowledge
+  context_budget:
+    required:
+      - .specify/memory/index.md
+      - AGENTS.md
+    optional:
+      - source code
+      - user docs
+      - existing domain docs
+    forbidden_full_scan: true
+  permissions:
+    read: true
+    write:
+      - .specify/memory/domains/
+      - .specify/memory/capabilities/
+    execute: false
+  evidence_level: L2
+  spawn_by: null
+  handoff_targets: []
+  stop_for_user_confirm: true
+  multi_agent_tier: 0

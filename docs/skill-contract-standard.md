@@ -312,3 +312,73 @@ Evidence 不应一刀切。
 - 支持 Evidence 强度分级。
 
 脚本演进前，不应因为新标准存在就立即判定所有旧技能失败；应先通过文档盘点和用户确认确定迁移范围。
+
+## 10. 平台中立与多 Agent 协作标准
+
+### 10.1 三层分离
+
+Fons4AI 技能在多 Agent 协作场景下按三层分离组织：
+
+| 层 | 文件 | 职责 | 平台中立 |
+| --- | --- | --- | --- |
+| 契约层 | `SKILL.md` | 定义 Contract、Evidence、Handoff、角色边界 | 是 |
+| Agent 清单层 | `agents/manifest.yaml` | 定义角色、上下文预算、权限、Evidence 级别、multi_agent_tier | 是 |
+| 平台适配层 | `agents/<platform>.yaml` | 定义线程管理、并行能力、spawn/handoff 方式 | 否 |
+
+### 10.2 manifest.yaml 标准章节
+
+每个正式技能必须包含 `agents/manifest.yaml`，包含以下字段：
+
+```text
+schema_version: "1.0"
+agent:
+  role:                    # Agent 角色名
+  category:                # 技能类别
+  context_budget:          # 上下文预算（required / optional / forbidden_full_scan）
+  permissions:             # 权限（read / write / execute）
+  evidence_level:          # Evidence 级别（L1 / L2 / L3）
+  spawn_by:                # 由哪个编排技能创建（null 表示可独立触发）
+  handoff_targets:         # 可交接的下游技能列表
+  stop_for_user_confirm:   # 是否需要用户确认才能继续
+  multi_agent_tier:        # 多 Agent 能力等级（0 / 1 / 2）
+```
+
+### 10.3 平台适配标准
+
+平台适配文件（如 `agents/openai.yaml`）必须包含 `adapter` 段：
+
+```text
+adapter:
+  platform:                # 平台标识（codex / claude / qder / trace）
+  capabilities:            # 能力声明
+    multi_agent:           # 是否支持多 Agent
+    parallel:              # 是否支持并行执行
+    thread_handoff:        # 是否支持线程级 handoff
+  spawn_method:            # 创建子 Agent 的方式
+  handoff_method:          # 交接方式（handoff_thread / file_based）
+  context_isolation:       # 是否支持上下文隔离
+```
+
+### 10.4 平台中立约束
+
+- `SKILL.md` 不得包含平台专属执行逻辑（`adapter:`、`create_thread`、`handoff_thread`、`subagent` 等）。
+- `manifest.yaml` 不得包含平台标识（`platform: codex`、`platform: claude` 等）或平台专属 API。
+- 平台专属内容只能出现在 `agents/<platform>.yaml` 中。
+- 结构化 handoff YAML（`templates/handoff-yaml-template.yaml`）是平台中立的文件格式，所有平台共用。
+
+### 10.5 多 Agent 能力分级
+
+| Tier | 能力 | 说明 |
+| --- | --- | --- |
+| 0 | 单 Agent + 技能切换 + 文件 handoff | 所有平台基线 |
+| 1 | Orchestrator 创建子线程，串行调度 | 需要多 Agent 能力 |
+| 2 | 并行多 Agent + 跨 Agent Evidence 信任 | 需要并行能力 |
+
+平台不支持高 Tier 时自动降级到 Tier 0，但产物格式、handoff 协议和校验器对所有 Tier 一视同仁。
+
+### 10.6 校验入口
+
+```text
+scripts/validators/validate_platform_neutrality.py --root .
+scripts/validators/validate_handoff_schema.py --file <handoff.yaml>
+```

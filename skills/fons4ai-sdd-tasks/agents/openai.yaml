@@ -1,4 +1,14 @@
 interface:
   display_name: "Fons4AI SDD Tasks"
   short_description: "Routing-gated Fons4AI SDD task planning."
-  default_prompt: "Use $fons4ai-sdd-tasks only for the task planning stage: when explicitly requested, when supplementing an existing task plan, or when $fons4ai-sdd-feature-workflow has reached the task phase. Generate spec/features/<yyyymmdd>/<功能中文名>-任务规划.md, then stop for implementation approval."
+  default_prompt: "Use $fons4ai-sdd-tasks only for the task planning stage: when explicitly requested, when supplementing an existing task plan, or when $fons4ai-sdd-feature-workflow has reached the task phase. Generate spec/features/<yyyymmdd>/<feature>-任务规划.md, then stop for implementation approval."
+
+adapter:
+  platform: codex
+  capabilities:
+    multi_agent: true
+    parallel: false
+    thread_handoff: true
+  spawn_method: create_thread
+  handoff_method: handoff_thread
+  context_isolation: true

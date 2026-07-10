@@ -2,3 +2,13 @@ interface:
   display_name: "Fons4AI Harness Feedback"
   short_description: "将业务试点项目中的 Agent 使用问题整理为脱敏的上游反馈单。"
   default_prompt: "Use $fons4ai-harness-feedback to generate a sanitized upstream feedback report under spec/reports/harness-feedback/ from an implementation report, bugfix report, failed Agent run, or user-described Harness issue. Before marking the report Ready, verify that every L2/L3 verified evidence item has a concrete source, no placeholders remain, and cross-project repeatability is not overstated."
+
+adapter:
+  platform: codex
+  capabilities:
+    multi_agent: false
+    parallel: false
+    thread_handoff: false
+  spawn_method: none
+  handoff_method: file_based
+  context_isolation: false

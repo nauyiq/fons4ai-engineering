@@ -1,0 +1,49 @@
+# Fons4AI Structured Handoff (Platform-Neutral)
+#
+# This YAML is the machine-readable companion to handoff-template.md.
+# Any AI tool (Codex, Claude Code, Qder, Trace, etc.) can read and write it.
+# Validators check schema compliance, not platform-specific execution.
+#
+# File location convention:
+#   spec/features/<yyyymmdd>/handoff/<from-skill>-to-<to-skill>.yaml
+
+schema_version: "1.0"
+
+from:
+  skill: ""              # e.g. fons4ai-sdd-requirements
+  agent_thread_id: ""    # platform-specific thread/session id (empty in Tier 0)
+  stage: ""              # e.g. requirements
+  status: ""             # success | partial | blocked
+
+to:
+  skill: ""              # e.g. fons4ai-sdd-design
+  allowed: false         # orchestrator sets true after validation passes
+
+artifacts:
+  - path: ""             # relative path from repo root
+    type: ""             # requirements-spec | design-spec | task-plan | implementation-report | etc.
+    validator: ""        # validator command (empty if none)
+
+evidence:
+  level: ""              # L1 | L2 | L3
+  items:
+    - type: ""           # user-confirmation | test-result | build-result | source-fact | etc.
+      summary: ""
+      source: ""         # file path or command output reference
+
+confirmed_facts: []      # list of strings; facts the downstream agent may rely on
+
+pending_questions: []    # list of strings; questions that still need user answer
+
+risk_and_blockers: []    # list of strings; known risks or blockers
+
+validator_results:
+  - command: ""
+    result: ""           # pass | fail | not-run
+    failures: []         # list of failure detail strings
+    blocking: false      # true if this failure blocks downstream
+
+stop_condition:
+  auto_proceed: false    # false = must wait for user confirmation
+  requires_user_confirm: true
+  trigger_words: []      # e.g. ["执行", "开始实现", "继续执行"]

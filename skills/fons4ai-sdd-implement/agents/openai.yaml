@@ -1,4 +1,14 @@
 interface:
-  display_name: "Fons4AI SDD 实现"
+  display_name: "Fons4AI SDD Implement"
   short_description: "受控执行 SDD 任务规划，必须有最新用户执行确认、Evidence Bundle、Review 状态和人工 Gate 记录。"
   default_prompt: "Use $fons4ai-sdd-implement only when an SDD task plan already exists and the latest user message explicitly confirms implementation, such as 执行, 开始实现, 继续执行, or 执行 T001,T002. Record Evidence Bundle, Review status, Gate status, verification, and unresolved items."
+
+adapter:
+  platform: codex
+  capabilities:
+    multi_agent: true
+    parallel: true
+    thread_handoff: true
+  spawn_method: create_thread
+  handoff_method: handoff_thread
+  context_isolation: true

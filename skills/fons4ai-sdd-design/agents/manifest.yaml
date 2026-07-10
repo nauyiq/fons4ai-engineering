@@ -1,0 +1,28 @@
+# Platform-Neutral Agent Manifest
+
+schema_version: "1.0"
+
+agent:
+  role: solution-architect
+  category: sdd-stage
+  context_budget:
+    required:
+      - spec/features/<yyyymmdd>/<feature>-需求说明书.md
+      - AGENTS.md
+    optional:
+      - .specify/memory/index.md
+      - source code
+      - existing contracts
+      - tech stack docs
+    forbidden_full_scan: true
+  permissions:
+    read: true
+    write:
+      - spec/features/<yyyymmdd>/
+    execute: false
+  evidence_level: L2
+  spawn_by: fons4ai-sdd-feature-workflow
+  handoff_targets:
+    - fons4ai-sdd-tasks
+  stop_for_user_confirm: true
+  multi_agent_tier: 1

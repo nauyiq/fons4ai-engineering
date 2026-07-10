@@ -36,6 +36,7 @@ description: "Fons4AI 受控的 SDD 增量变更工作流。用于对已有 SDD 
 - Next skill: 仅当用户最新消息明确确认执行后，交给 `fons4ai-sdd-implement`。
 - Required handoff fields: CR 路径、变更类型、SDD 等级、已更新产物、新增任务 ID、数据结构影响、验证结果和长期知识影响。
 - Stop condition: 生成 CR 和增量任务后停止，不自动进入实现。
+- Structured handoff: 阶段交接时同时输出结构化 handoff YAML（参考 `templates/handoff-yaml-template.yaml`），供跨平台多 Agent 协作使用。
 
 ## Evidence Required
 
@@ -177,15 +178,21 @@ description: "Fons4AI 受控的 SDD 增量变更工作流。用于对已有 SDD 
    - 技术路径改动：同步更新技术设计说明书。
    - DDL 改动：同步更新技术设计说明书和任务规划。
    - 不允许为了一个 CR 重写整个需求或设计文档，除非用户确认。
-9. 创建 `changes/CR-xxx.md`。
-10. 将可执行增量任务追加到 `<功能中文名>-任务规划.md`。
+   - 任何正式 SDD 文档的正文修改必须同步更新文档头部 `更新日期` 为本次修改日期，并在 `版本修订记录` 中追加本次变更记录。
+9. UI 变更设计 Gate（仅当变更涉及页面、控制台、前端、模板引擎等交互型交付物时触发）。
+   - 如果变更范围涉及页面、控制台、前端、模板引擎页面（如 Freemarker、Vue、React）、管理后台或可视化界面，必须检查是否已存在 UI 设计确认。
+   - 若已有 UI 设计确认（如技术设计说明书中包含页面信息架构、布局方案、交互流），直接引用。
+   - 若缺少 UI 设计确认，必须在 CR 中标注"UI 设计待确认"，并在增量任务中追加 UI 设计确认任务。
+   - 不得在缺少 UI 设计确认的情况下，将页面类增量任务标记为可直接执行。
+10. 创建 `changes/CR-xxx.md`。
+11. 将可执行增量任务追加到 `<功能中文名>-任务规划.md`。
     - CR 只记录任务摘要和新增任务 ID。
     - `fons4ai-sdd-implement` 只从 `<功能中文名>-任务规划.md` 执行任务。
     - 每个增量任务必须包含 `AC:`、`Files:`、`Verification:`、`Quality:`、`Done:`。
-    - 如果 CR 引用了专业工作流，必须把关键约束拆入新增任务的 `Quality:`、`Verification:` 或 `Done:`，不得只写“参考某工作流”。
-11. 写入 CR 后运行：
+    - 如果 CR 引用了专业工作流，必须把关键约束拆入新增任务的 `Quality:`、`Verification:` 或 `Done:`，不得只写"参考某工作流"。
+12. 写入 CR 后运行：
     - `python <fons4ai-sdd-tasks>/scripts/validate_sdd_artifacts.py --change-file <CR-file>`
-12. 停止在变更规划阶段，提示用户确认执行。
+13. 停止在变更规划阶段，提示用户确认执行。
 
 ## DDL 与 SQL 规则
 

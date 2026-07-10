@@ -1,0 +1,27 @@
+# Platform-Neutral Agent Manifest
+
+schema_version: "1.0"
+
+agent:
+  role: requirements-analyst
+  category: sdd-stage
+  context_budget:
+    required:
+      - AGENTS.md
+      - .specify/memory/index.md
+    optional:
+      - domain docs
+      - knowledge cards
+      - user-provided requirement materials
+    forbidden_full_scan: true
+  permissions:
+    read: true
+    write:
+      - spec/features/<yyyymmdd>/
+    execute: false
+  evidence_level: L2
+  spawn_by: fons4ai-sdd-feature-workflow
+  handoff_targets:
+    - fons4ai-sdd-design
+  stop_for_user_confirm: true
+  multi_agent_tier: 1

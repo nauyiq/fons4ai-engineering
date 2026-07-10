@@ -18,16 +18,27 @@ EXECUTABLE_DDL_PATH_RE = re.compile(
     re.IGNORECASE,
 )
 S2_RE = re.compile(r"(SDD\s*Level|SDD\s*等级)\s*[:：]\s*`?S2`?", re.IGNORECASE)
-RUNTIME_SERVICE_RE = re.compile(
-    r"独立可运行服务|可运行服务|服务形态|启动入口|启动命令|入口文件|入口函数|"
-    r"HTTP\s*API|REST\s*API|RPC|gRPC|消息生产|消息消费|后台\s*worker|worker|"
-    r"服务发现|服务路由|服务网格|健康探测|健康检查|就绪检查|readiness|liveness|"
+RUNTIME_SERVICE_DECLARATION_RE = re.compile(
+    r"(?:独立可运行服务|服务运行态门禁)\s*[：:]\s*(?:是|适用|yes|true)",
+    re.IGNORECASE,
+)
+LEGACY_RUNTIME_SERVICE_ENTRY_RE = re.compile(
+    r"启动入口|启动命令|入口文件|入口函数|消息生产|消息消费|后台\s*worker|worker|"
     r"main\.go|func\s+main|FastAPI|Flask|Django|uvicorn|gunicorn|express|koa|nest|"
     r"SpringBootApplication|REST\s*Controller|"
     r"@RestController|@DubboReference|@FeignClient|@RabbitListener|@KafkaListener|"
     r"spring\.application\.name|注册中心|服务注册|服务发现|Actuator|健康检查",
     re.IGNORECASE,
 )
+
+
+def requires_runtime_service_closure(design_text: str) -> bool:
+    """Require runtime closure only for declared or unambiguously runnable services."""
+
+    return bool(
+        RUNTIME_SERVICE_DECLARATION_RE.search(design_text)
+        or LEGACY_RUNTIME_SERVICE_ENTRY_RE.search(design_text)
+    )
 RUNTIME_SERVICE_TASK_RE = re.compile(
     r"启动入口|启动验证|服务启动|运行配置|服务注册|注册发现|服务发现|服务路由|健康检查|健康探测|就绪检查|"
     r"核心\s*(API|RPC|gRPC)|HTTP\s*API|REST\s*API|RPC\s*链路|gRPC\s*链路|消息链路|隔离环境|只读验证|暂缓确认",
@@ -120,6 +131,18 @@ DATA_VERIFICATION_RE = re.compile(
     r"field\s+mapping|sample\s+data|target\s+data|data\s+security",
     re.IGNORECASE,
 )
+
+UI_KEYWORD_RE = re.compile(
+    r"页面|前端|控制台|模板引擎|Freemarker|Vue|React|管理后台|可视化界面|交互型交付物",
+    re.IGNORECASE,
+)
+
+UI_DESIGN_EVIDENCE_RE = re.compile(
+    r"UI 设计确认|UI 设计方案|页面信息架构|布局方案|关键交互流|视觉验收|用户跳过.*设计确认|跳过 UI 设计|页面/交互型交付物设计确认",
+    re.IGNORECASE,
+)
+
+DOC_UPDATE_DATE_RE = re.compile(r"更新日期\s*[:：]\s*(\d{4}-\d{2}-\d{2})", re.IGNORECASE)
 
 
 def read(path: Path) -> str:
@@ -354,7 +377,7 @@ def validate(feature_dir: Path, strict: bool = False) -> tuple[list[str], list[s
     if DATA_RISK_RE.search(design_text) and not DATA_VERIFICATION_RE.search(tasks_text):
         errors.append(f"{tasks.name} has no data verification task for triggered data design/governance risk")
 
-    if RUNTIME_SERVICE_RE.search(design_text):
+    if requires_runtime_service_closure(design_text):
         if not RUNTIME_SERVICE_TASK_RE.search(tasks_text):
             errors.append(f"{tasks.name} has no runtime service closure task for triggered service runtime design")
         if S2_RE.search(all_text) and not EVIDENCE_MATRIX_RE.search(tasks_text + "\n" + design_text):
@@ -394,6 +417,21 @@ def validate(feature_dir: Path, strict: bool = False) -> tuple[list[str], list[s
             if label not in block:
                 errors.append(f"{task_id} is missing '{label}'")
         errors.extend(validate_quality_domain_check(task_id, block, str(tasks.name)))
+
+    # UI Gate check: page/UI deliverables must have UI design confirmation evidence
+    if UI_KEYWORD_RE.search(design_text) or UI_KEYWORD_RE.search(tasks_text):
+        if not UI_DESIGN_EVIDENCE_RE.search(tasks_text):
+            errors.append(f"{tasks.name} contains UI/page deliverables but has no UI design confirmation task or evidence")
+
+    # Document update time consistency check
+    for doc_name, doc_path, doc_text in [
+        ("requirement", spec, spec_text),
+        ("technical design", design, design_text),
+        ("task planning", tasks, tasks_text),
+    ]:
+        update_match = DOC_UPDATE_DATE_RE.search(doc_text)
+        if update_match and update_match.group(1) == "YYYY-MM-DD":
+            warnings.append(f"{doc_path.name} has template placeholder date 'YYYY-MM-DD' as update date; update to actual date")
 
     return errors, warnings
 
@@ -445,6 +483,10 @@ def validate_change_file(change_file: Path) -> list[str]:
             errors.append(f"{change_file} declares an existing-table change with baseline DDL but names no executable change DDL file")
         if not re.search(r"(执行型变更\s*DDL|Executable\s+change\s+DDL|ALTER\s+TABLE)", text, re.IGNORECASE):
             errors.append(f"{change_file} has no executable change DDL task for the existing-table structural change")
+
+    # UI Gate check for change files
+    if UI_KEYWORD_RE.search(text) and not UI_DESIGN_EVIDENCE_RE.search(text):
+        errors.append(f"{change_file} involves UI/page changes but has no UI design confirmation Gate or evidence")
 
     return errors
 
@@ -534,6 +576,10 @@ def validate_implementation_report(report: Path) -> list[str]:
         and re.search(r"是否发布就绪\s*[：:]\s*是", text)
     ):
         errors.append(f"{report} is release-ready while DDL execution is not confirmed")
+
+    # UI Gate check for implementation reports
+    if UI_KEYWORD_RE.search(text) and not UI_DESIGN_EVIDENCE_RE.search(text):
+        errors.append(f"{report} mentions UI/page deliverables but has no UI design confirmation status record")
 
     return errors
 

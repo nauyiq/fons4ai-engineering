@@ -1,0 +1,31 @@
+# Platform-Neutral Agent Manifest
+
+schema_version: "1.0"
+
+agent:
+  role: developer
+  category: implementation
+  context_budget:
+    required:
+      - spec/features/<yyyymmdd>/<feature>-任务规划.md
+    optional:
+      - spec/features/<yyyymmdd>/<feature>-需求说明书.md
+      - spec/features/<yyyymmdd>/<feature>-技术设计说明书.md
+      - .specify/rules/
+      - source code
+      - tests
+      - config
+    forbidden_full_scan: true
+  permissions:
+    read: true
+    write:
+      - task Files: scoped paths only
+      - spec/features/<yyyymmdd>/reports/
+    execute:
+      - task Verification: commands only
+  evidence_level: L3
+  spawn_by: fons4ai-sdd-feature-workflow
+  handoff_targets:
+    - fons4ai-knowledge-summary
+  stop_for_user_confirm: true
+  multi_agent_tier: 2

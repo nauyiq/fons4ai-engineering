@@ -1,4 +1,14 @@
 interface:
-  display_name: "Fons4ai-knowledge-summary"
+  display_name: "Fons4AI Knowledge Summary"
   short_description: "将已验证的业务、技术、数据、接口和治理事实汇总到分层知识库。"
   default_prompt: "Use $fons4ai-knowledge-summary only when the user explicitly asks for knowledge summary, knowledge governance, or persistence of verified facts. Do not trigger automatically after implementation; only summarize verified facts."
+
+adapter:
+  platform: codex
+  capabilities:
+    multi_agent: false
+    parallel: false
+    thread_handoff: false
+  spawn_method: none
+  handoff_method: file_based
+  context_isolation: false

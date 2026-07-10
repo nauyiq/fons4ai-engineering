@@ -1,4 +1,14 @@
 interface:
-  display_name: "Fons4ai-generate-project-rules"
+  display_name: "Fons4AI Generate Project Rules"
   short_description: "生成受控的项目 Agent 运行规则、代码规范和 SDD 团队协作规范。"
   default_prompt: "Use $fons4ai-generate-project-rules only when the user explicitly asks to generate or update project Agent rules, code rules, SDD team rules, or Agent execution boundaries. Generate .specify/rules/agent运行规则.md by default; generate other rule files only when requested."
+
+adapter:
+  platform: codex
+  capabilities:
+    multi_agent: false
+    parallel: false
+    thread_handoff: false
+  spawn_method: none
+  handoff_method: file_based
+  context_isolation: false

@@ -29,6 +29,20 @@ TEXT_SUFFIXES = {
     ".py",
     ".ts",
     ".js",
+    ".tsx",
+    ".jsx",
+    ".vue",
+    ".svelte",
+    ".go",
+    ".rs",
+    ".cs",
+    ".fs",
+    ".rb",
+    ".php",
+    ".html",
+    ".css",
+    ".scss",
+    ".toml",
 }
 MAX_BYTES = 1_000_000
 CJK_RE = re.compile(r"[\u4e00-\u9fff]")

@@ -1,0 +1,30 @@
+# Platform-Neutral Agent Manifest
+
+schema_version: "1.0"
+
+agent:
+  role: knowledge-curator
+  category: knowledge
+  context_budget:
+    required:
+      - verified implementation reports
+      - verified bugfix reports
+    optional:
+      - .specify/memory/index.md
+      - .specify/sql/
+      - domain docs
+    forbidden_full_scan: true
+  permissions:
+    read: true
+    write:
+      - .specify/memory/
+      - project-level docs
+      - domain docs
+      - knowledge cards
+    execute:
+      - read-only SQL/schema queries
+  evidence_level: L2
+  spawn_by: null
+  handoff_targets: []
+  stop_for_user_confirm: true
+  multi_agent_tier: 0

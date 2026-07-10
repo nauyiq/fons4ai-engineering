@@ -47,8 +47,6 @@ TEXT_REQUIREMENTS = (
         ("fons4ai-sdd-requirements", "fons4ai-sdd-design", "fons4ai-sdd-tasks", "validate_sdd_artifacts.py", "等待用户确认实现", "不得自动进入实现"),
     ),
     (
-    (
-    (
         "implementation skill must require evidence and implementation report",
         "skills/fons4ai-sdd-implement/SKILL.md",
         (
@@ -94,7 +92,7 @@ TEXT_REQUIREMENTS = (
     (
         "SDD artifact validator must enforce runtime service and DML closure",
         "skills/fons4ai-sdd-tasks/scripts/validate_sdd_artifacts.py",
-        ("RUNTIME_SERVICE_RE", "RUNTIME_INIT_DML_RE", "RUNTIME_SERVICE_TASK_RE", "RUNTIME_INIT_DML_TASK_RE", "EVIDENCE_MATRIX_RE"),
+        ("RUNTIME_SERVICE_DECLARATION_RE", "requires_runtime_service_closure", "RUNTIME_INIT_DML_RE", "RUNTIME_SERVICE_TASK_RE", "RUNTIME_INIT_DML_TASK_RE", "EVIDENCE_MATRIX_RE"),
     ),
     (
         "knowledge summary must accept verified evidence",

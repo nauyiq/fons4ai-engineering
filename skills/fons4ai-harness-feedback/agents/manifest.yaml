@@ -1,0 +1,24 @@
+# Platform-Neutral Agent Manifest
+
+schema_version: "1.0"
+
+agent:
+  role: feedback-reporter
+  category: feedback
+  context_budget:
+    required:
+      - implementation report or bugfix report or failure description
+    optional:
+      - AGENTS.md
+      - .specify/rules/
+    forbidden_full_scan: true
+  permissions:
+    read: true
+    write:
+      - spec/reports/harness-feedback/
+    execute: false
+  evidence_level: L2
+  spawn_by: null
+  handoff_targets: []
+  stop_for_user_confirm: true
+  multi_agent_tier: 0

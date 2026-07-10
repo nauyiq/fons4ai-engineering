@@ -1,0 +1,31 @@
+# Platform-Neutral Agent Manifest
+
+schema_version: "1.0"
+
+agent:
+  role: bug-fixer
+  category: bugfix
+  context_budget:
+    required:
+      - bug report or failure description
+    optional:
+      - AGENTS.md
+      - .specify/rules/
+      - source code
+      - tests
+      - logs
+    forbidden_full_scan: true
+  permissions:
+    read: true
+    write:
+      - scoped source files
+      - spec/features/<yyyymmdd>/reports/
+    execute:
+      - reproduction commands
+      - test commands
+  evidence_level: L3
+  spawn_by: null
+  handoff_targets:
+    - fons4ai-knowledge-summary
+  stop_for_user_confirm: true
+  multi_agent_tier: 2
