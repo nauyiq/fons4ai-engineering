@@ -57,6 +57,8 @@ def validate_skill(path: Path, require_evidence: bool = False) -> list[str]:
     errors: list[str] = []
     if not path.exists():
         return [f"missing skill file: {path}"]
+    if not path.read_bytes().startswith(b"---"):
+        errors.append(f"{path} must start with YAML front matter and must not contain a UTF-8 BOM")
     text = read(path)
     for heading in REQUIRED_HEADINGS:
         if heading not in text:
