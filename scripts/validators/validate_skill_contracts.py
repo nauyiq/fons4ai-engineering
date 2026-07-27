@@ -17,7 +17,6 @@ CORE_SKILLS = (
     "fons4ai-sdd-change",
     "fons4ai-bugfix-workflow",
     "fons4ai-knowledge-summary",
-    "fons4ai-sdd-quick-path",
     "fons4ai-knowledge-bootstrap",
     "fons4ai-domain-knowledge-modeling",
     "fons4ai-generate-project-rules",

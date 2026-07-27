@@ -19,7 +19,7 @@ agent:
     read: true
     write:
       - scoped source files
-      - spec/features/<yyyymmdd>/reports/
+      - spec/bugfixes/<yyyymmdd>/
     execute:
       - reproduction commands
       - test commands
@@ -27,5 +27,6 @@ agent:
   spawn_by: null
   handoff_targets:
     - fons4ai-knowledge-summary
-  stop_for_user_confirm: true
+    - fons4ai-sdd-change
+  stop_for_user_confirm: conditional
   multi_agent_tier: 2

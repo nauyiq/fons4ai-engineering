@@ -1,7 +1,7 @@
 interface:
   display_name: "Fons4AI Bugfix Workflow"
-  short_description: "受路由门禁控制的 Fons4AI BUG 修复工作流。"
-  default_prompt: "Use $fons4ai-bugfix-workflow only when the user asks to fix, diagnose, reproduce, or verify a BUG, exception, or regression. Do not use it for generic new feature SDD work."
+  short_description: "BUG 风险分级工作流：S0 快速修复，复杂问题执行完整闭环。"
+  default_prompt: "Use $fons4ai-bugfix-workflow for BUGs, exceptions, and regressions. Apply the built-in S0 Fast Fix gate first: directly fix and run focused verification for low-risk localized defects with established expected behavior, without a repository report. Use the standard evidence and report workflow for other defects, and route requirement changes to $fons4ai-sdd-change."
 
 adapter:
   platform: codex

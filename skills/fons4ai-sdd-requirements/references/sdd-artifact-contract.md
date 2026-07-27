@@ -4,7 +4,7 @@
 
 This contract defines the shared SDD artifact rules for all `fons4ai-sdd-*` skills.
 Feature artifacts use `spec/features/<yyyymmdd>/`. Bugfix artifacts use `spec/bugfixes/<yyyymmdd>/<bug中文名>-BUG修复报告.md`. The default project truth sources are `.specify/memory/` and `.specify/sql/`, but projects may declare additional truth sources. Do not require branch hooks or GitHub issue conversion.
-S0 quick-change artifacts use `spec/quick/<yyyymmdd>/<变更中文名>-快速变更记录.md`. The default project truth sources are `.specify/memory/` and `.specify/rules/`, but projects may declare additional truth sources. Do not require branch hooks or GitHub issue conversion.
+S0 does not create a required artifact. BUG S0 is executed by `fons4ai-bugfix-workflow` Fast Fix, and non-BUG S0 is executed by `fons4ai-sdd-change` Fast Change. Historical `spec/quick/` records remain valid history but are not a current workflow dependency.
 
 ## Artifact Responsibilities
 
@@ -60,7 +60,7 @@ Incremental CRs must use `长期知识影响` to record source-of-truth impact. 
 - Optionally use `scripts/find_relevant_context.py --root <repo-root> <keyword...>` from this skill to get a first-pass candidate list for index, cards, domain memory, SQL, rules, specs, and docs. Treat its output as navigation help, not as verified evidence.
 - For S1, read only relevant rules, knowledge cards, domain documents, related SQL files, and affected code paths.
 - For S2, expand context around the impacted domain, module, contract, security, transaction, or data model, but still avoid unrelated full-document loading. Cross-domain work may require project-level overview sections.
-- For S0, read only the affected files and relevant project rules. Do not load domain documents, SQL files, or knowledge cards unless the change directly touches them.
+- For S0, read only the affected files, direct tests/configuration, and relevant project rules. Do not load domain documents, SQL files, historical SDD, or knowledge cards unless a discovered risk requires escalation.
 - For standard-extension work such as adding a payment channel, funding partner, third-party service channel, OSS provider, MQ provider, strategy type, approval flow, or report type, read the relevant adaptation matrix and adaptation detail before designing or implementing. Do not infer a standard flow from a single adaptation object.
 - For `.specify/sql/`, prefer `index.md`, domain `<领域中文名>数据文档.md`, capability `<能力域中文名>配置与资源文档.md`, and targeted path search. Read only the database/service and business-model SQL files involved in the work; use `.specify/sql/pending/` when ownership is unknown.
 - Full scans are appropriate for knowledge-base initialization, rule generation, explicit audits, or broad refactors, but should still start with a file inventory and evidence matrix.
@@ -98,9 +98,9 @@ When SDD work adds, removes, renames, or changes a concrete persistent data mode
 - `S1` is the default for small changes, normal features, and one-module or small multi-module collaboration.
 - `S2` is required for cross-core-module changes, database migrations, public API or public contract changes, permission/security changes, cache/MQ/rate-limit/transaction boundaries, compatibility risk, or high rollback cost.
 - S1 artifacts use the minimal complete profile: keep required sections, AC coverage, task quality fields, and verification details, but mark truly absent state transitions, API changes, data changes, migrations, rollback, and diagrams as `不适用，原因` instead of generating speculative content.
-- `S0` is the quick path for low-risk, small-scope changes that do not touch business logic, data models, public contracts, security, or cross-module behavior. S0 replaces the SDD three-piece set with a single quick-change record under `spec/quick/<yyyymmdd>/`. S0 still requires an admission self-check, an implementation approval gate, and verification evidence. Use `fons4ai-sdd-quick-path` for S0.
+- `S0` is the direct-execution level for low-risk, small-scope work. BUG S0 uses `fons4ai-bugfix-workflow` Fast Fix; non-BUG existing-content S0 uses `fons4ai-sdd-change` Fast Change. S0 creates no required repository artifact, treats an explicit fix/change/execute request as authorization, and requires focused verification evidence in the final response.
 - Keep the classification limited to `S0`, `S1`, and `S2`; small safe changes use S0 or concise S1 artifacts.
-- S0 artifacts use the quick-change record: a single file with change description, affected files, admission self-check, risk judgment, verification, and implementation approval gate. S0 must escalate to S1/S2 if the change exceeds S0 admission criteria.
+- S0 must escalate to S1/S2 when it changes business rules/AC/state flow, public contracts, data structures/semantics, security or critical business behavior, crosses core modules, exceeds five manual files, or lacks clear focused verification.
 
 ## Paths
 

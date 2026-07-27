@@ -52,14 +52,23 @@
 | 用户确认执行 SDD 任务 | `fons4ai-sdd-implement` |
 | SDD 实现或验证无法关闭 | `fons4ai-sdd-implement`（内置阻塞诊断和恢复路由） |
 | 已有功能迭代 | `fons4ai-sdd-change` |
-| 低风险小变更（文案、样式、配置、重命名） | `fons4ai-sdd-quick-path`（S0） |
-| BUG、异常、回归失败 | `fons4ai-bugfix-workflow` |
+| 低风险小变更（文案、样式、配置、重命名） | `fons4ai-sdd-change`（内置 S0 Fast Change） |
+| BUG、异常、回归失败 | `fons4ai-bugfix-workflow`（内置 S0 Fast Fix/标准模式） |
 | 项目知识基线初始化 | `fons4ai-knowledge-bootstrap` |
 | 领域知识深度建模 | `fons4ai-domain-knowledge-modeling` |
 | 汇总已验证知识 | `fons4ai-knowledge-summary` |
 | 生成项目规则 | `fons4ai-generate-project-rules` |
 
 无法判断场景时，先询问用户要执行哪类工作流，并给出推荐理由。
+
+### S0 默认执行规则
+
+- S0 是风险等级，不是独立技能；BUG 由 `fons4ai-bugfix-workflow` 判断，非 BUG 已有内容变更由 `fons4ai-sdd-change` 判断。
+- 无项目专属规则时使用技能内置默认值；项目规则可以收紧，不得默认放宽数据、契约、安全和关键业务硬门禁。
+- 任何业务规则/AC/状态流转、公共契约、数据结构/语义、权限安全、资金库存监管、跨核心模块或高回滚成本变化都不是 S0。
+- S0 默认不超过 5 个手工修改文件，必须目标明确、容易回滚且可快速聚焦验证。
+- 用户已经明确要求修复、修改、实现或执行时直接处理，不生成 CR、任务规划或仓库报告，不重复请求实现确认。
+- 仅要求分析、查看、评估或方案时不得修改文件；实现中范围扩大时立即升级。
 
 ## SDD 规范
 

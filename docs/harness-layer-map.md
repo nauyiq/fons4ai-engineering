@@ -25,14 +25,13 @@ Fons4AI Harness Engineering 使用 6 层结构：
 | `fons4ai-sdd-requirements` | Intent Harness | Context Harness, Skill Harness | 澄清需求并生成需求说明书 | 保留现有职责；后续评估是否补充轻量 Evidence 章节 |
 | `fons4ai-sdd-design` | Intent Harness | Skill Harness, Feedback Harness | 在需求后生成技术设计，记录风险、验证策略和知识影响 | 结构较完整；后续补显式 `职责边界` 章节 |
 | `fons4ai-sdd-tasks` | Intent Harness | Skill Harness, Feedback Harness | 把需求和设计拆成任务规划，并停止等待实现确认 | 保留任务规划职责；后续评估是否补充轻量 Evidence 章节 |
-| `fons4ai-sdd-change` | Intent Harness | Skill Harness, Feedback Harness | 对既有 SDD 功能做变更分析、CR 和增量任务 | 结构完整，可作为变更类技能样板 |
+| `fons4ai-sdd-change` | Intent Harness | Skill Harness, Feedback Harness | S0 Fast Change 直接执行；S1/S2 做变更分析、CR 和增量任务 | 内置风险分级，无项目规则时仍可判断 S0 |
 | `fons4ai-sdd-implement` | Feedback Harness | Skill Harness, Context Harness | 执行已授权 SDD 任务，要求验证证据和实施报告 | 结构完整，可作为实现类技能样板 |
-| `fons4ai-bugfix-workflow` | Feedback Harness | Intent Harness, Skill Harness | 复现、诊断、修复、验证并记录 BUG | Contract 完整；后续补显式角色和职责边界章节 |
+| `fons4ai-bugfix-workflow` | Feedback Harness | Intent Harness, Skill Harness | S0 Fast Fix 或标准复现、诊断、修复、验证并记录 BUG | 内置风险分级，标准模式保留完整 Evidence |
 | `fons4ai-harness-feedback` | Learning Harness | Feedback Harness | 将业务试点项目中的 Agent 使用问题整理为脱敏上游反馈单 | 已落地为独立反馈技能；默认输出到 `spec/reports/harness-feedback/` |
 | `fons4ai-knowledge-bootstrap` | Context Harness | Skill Harness | 从代码、文档、接口、测试和配置建立项目知识基线 | Contract 已补齐；后续按 MVP 试点反馈优化 |
 | `fons4ai-domain-knowledge-modeling` | Context Harness | Skill Harness | 对领域或技术能力域进行深度知识建模 | Contract 已补齐；后续按 MVP 试点反馈优化 |
 | `fons4ai-knowledge-summary` | Context Harness | Feedback Harness, Skill Harness | 汇总已验证事实到知识库、领域文档、知识卡片和 SQL 快照 | 结构完整，可作为知识汇总类技能样板 |
-| `fons4ai-sdd-quick-path` | Skill Harness | Feedback Harness | S0 轻量快路径，低风险小变更用单份快速变更记录替代 SDD 三件套 |
 | `fons4ai-generate-project-rules` | Rule Harness | Context Harness, Skill Harness | 把已验证事实和用户决策转为项目 Agent 规则 | Contract 已补齐；后续按 MVP 试点反馈优化 |
 
 ## 2.1 技能职责分类
@@ -40,10 +39,10 @@ Fons4AI Harness Engineering 使用 6 层结构：
 | 类别 | 技能 | 分类原因 |
 | --- | --- | --- |
 | 流程编排类 | `fons4ai-sdd-feature-workflow` | 控制阶段顺序和停止点，不直接产出业务代码 |
-| SDD 阶段产物类 | `fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks`、`fons4ai-sdd-change` | 负责需求、设计、任务规划和 CR 等正式 SDD 产物 |
+| SDD 阶段产物类 | `fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks` | 负责需求、设计和任务规划等正式 SDD 产物 |
 | 实现执行类 | `fons4ai-sdd-implement` | 只执行已规划且已授权任务，更新代码、测试、任务状态和实施报告 |
-| 轻量快路径类 | `fons4ai-sdd-quick-path` | S0 等级，低风险小变更用单份快速变更记录替代 SDD 三件套 |
-| BUG 修复闭环类 | `fons4ai-bugfix-workflow` | 从缺陷复现进入，独立完成修复验证和 BUG 修复报告 |
+| 变更执行与规划类 | `fons4ai-sdd-change` | S0 直接修改；S1/S2 生成 CR 和增量任务 |
+| BUG 修复闭环类 | `fons4ai-bugfix-workflow` | S0 Fast Fix；复杂缺陷完成标准修复验证和 BUG 报告 |
 | 知识库类 | `fons4ai-knowledge-bootstrap`、`fons4ai-domain-knowledge-modeling`、`fons4ai-knowledge-summary` | 建立项目知识基线、领域/能力域建模和已验证事实沉淀 |
 | 规则生成类 | `fons4ai-generate-project-rules` | 把项目事实、团队决策和治理边界固化为规则文件 |
 | 反馈治理类 | `fons4ai-harness-feedback` | 将业务试点中发现的通用 Harness 问题脱敏回流到上游 |
@@ -92,7 +91,6 @@ OK: all Fons4AI Harness validations passed
 | 技能 | 结构状态 | 备注 |
 | --- | --- | --- |
 | `fons4ai-sdd-feature-workflow` | Contract 完整 | 编排型技能；不要求完整 Evidence 章节，不得自动进入实现 |
-| `fons4ai-sdd-quick-path` | Contract 完整 | S0 轻量快路径；不要求完整 Evidence 章节，准入条件内直接实现 |
 | `fons4ai-sdd-implement` | 完整 | 可作为实现类技能样板 |
 | `fons4ai-sdd-change` | 完整 | 可作为变更类技能样板 |
 | `fons4ai-knowledge-summary` | 完整 | 可作为知识汇总类技能样板 |
@@ -112,7 +110,7 @@ OK: all Fons4AI Harness validations passed
 - 使用 `docs/skill-contract-standard.md` 作为后续技能整理标准。
 - Evidence 标准不是一刀切；不同技能按风险和职责采用不同证据强度。
 - `fons4ai-project-knowledge-base-init` 已移除；项目知识基线主入口统一收敛到 `fons4ai-knowledge-bootstrap`。
-- `fons4ai-sdd-quick-path` 新增 S0 轻量快路径；低风险小变更用单份快速变更记录替代 SDD 三件套。
+- S0 已从独立技能迁移为风险等级：BUG 由 `fons4ai-bugfix-workflow` Fast Fix 承接，非 BUG 变更由 `fons4ai-sdd-change` Fast Change 承接；历史 `spec/quick/` 记录仅作为历史资产保留。
 - `fons4ai-sdd-recovery` 已合并到 `fons4ai-sdd-implement`；阻塞分类、失败签名、有界重试和恢复报告由 implement 内置。
 
 ### P1：统一 Contract 补齐状态

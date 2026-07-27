@@ -7,8 +7,7 @@ agent:
   category: sdd-stage
   context_budget:
     required:
-      - existing SDD feature directory
-      - spec/features/<yyyymmdd>/<feature>-需求说明书.md
+      - affected files or existing SDD feature directory
     optional:
       - AGENTS.md
       - .specify/memory/index.md
@@ -18,10 +17,14 @@ agent:
     read: true
     write:
       - spec/features/<yyyymmdd>/
-    execute: false
+      - scoped source files
+      - scoped tests and configuration
+    execute:
+      - minimal verification commands for S0
+      - SDD artifact validators for S1/S2
   evidence_level: L2
   spawn_by: null
   handoff_targets:
     - fons4ai-sdd-implement
-  stop_for_user_confirm: true
+  stop_for_user_confirm: conditional
   multi_agent_tier: 1

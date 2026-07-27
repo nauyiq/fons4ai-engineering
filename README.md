@@ -97,10 +97,9 @@ spec/reports/harness-feedback/
 | 场景 | 推荐入口 | 说明 |
 | --- | --- | --- |
 | 正常新需求开发 | `fons4ai-sdd-feature-workflow` | 编排需求、设计和任务规划，校验后停止等待实现确认 |
-| 已有功能迭代 | `fons4ai-sdd-change` | 生成 CR 和增量任务，停止等待实现确认 |
-| BUG、异常、回归失败 | `fons4ai-bugfix-workflow` | 复现、修复、验证并生成 BUG 修复报告 |
+| 已有功能迭代或低风险非 BUG 小变更 | `fons4ai-sdd-change` | S0 直接修改验证；S1/S2 生成 CR 和增量任务 |
+| BUG、异常、回归失败 | `fons4ai-bugfix-workflow` | S0 Fast Fix 直接修复验证；复杂问题执行完整报告闭环 |
 | 用户确认实现 | `fons4ai-sdd-implement` | 只执行已规划且已授权的任务 |
-| 低风险小变更 | `fons4ai-sdd-quick-path` | S0 快路径，生成快速变更记录，确认后实现 |
 
 ## 技能分类
 
@@ -109,10 +108,10 @@ Fons4AI 技能按用户入口和职责边界分为以下类型：
 | 类别 | 技能 | 分类原因 |
 | --- | --- | --- |
 | 流程编排类 | `fons4ai-sdd-feature-workflow` | 串联阶段、控制停止点，不直接写业务代码 |
-| SDD 阶段产物类 | `fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks`、`fons4ai-sdd-change` | 生成或调整需求、设计、任务规划和 CR |
+| SDD 阶段产物类 | `fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks` | 生成或调整需求、设计和任务规划 |
 | 实现执行类 | `fons4ai-sdd-implement` | 执行已规划且已授权的任务，更新代码、测试、任务状态和实施报告 |
-| 轻量快路径类 | `fons4ai-sdd-quick-path` | S0 等级，低风险小变更用单份快速变更记录替代 SDD 三件套 |
-| BUG 修复闭环类 | `fons4ai-bugfix-workflow` | 面向缺陷、异常和回归失败，独立完成复现、修复、验证和报告 |
+| 变更执行与规划类 | `fons4ai-sdd-change` | S0 直接修改验证；S1/S2 生成 CR 和增量任务 |
+| BUG 修复闭环类 | `fons4ai-bugfix-workflow` | S0 Fast Fix 或标准复现、修复、验证和报告 |
 | 知识库类 | `fons4ai-knowledge-bootstrap`、`fons4ai-domain-knowledge-modeling`、`fons4ai-knowledge-summary` | 建立、深化和汇总项目知识事实 |
 | 规则生成类 | `fons4ai-generate-project-rules` | 把已验证项目事实和团队决策固化为 `.specify/rules/` |
 | 反馈治理类 | `fons4ai-harness-feedback` | 把业务试点中的通用 Harness 问题整理为脱敏上游反馈单 |

@@ -15,14 +15,12 @@ REQUIRED_FILES = (
     "skills/fons4ai-sdd-implement/assets/templates/implementation-report-template.md",
     "skills/fons4ai-sdd-implement/assets/templates/recovery-report-template.md",
     "skills/fons4ai-sdd-tasks/scripts/validate_sdd_artifacts.py",
+    "skills/fons4ai-sdd-change/SKILL.md",
+    "skills/fons4ai-sdd-change/agents/openai.yaml",
     "skills/fons4ai-bugfix-workflow/SKILL.md",
     "skills/fons4ai-bugfix-workflow/assets/templates/bugfix-report-template.md",
     "skills/fons4ai-bugfix-workflow/scripts/validate_bugfix_report.py",
     "skills/fons4ai-knowledge-summary/SKILL.md",
-    "skills/fons4ai-sdd-quick-path/SKILL.md",
-    "skills/fons4ai-sdd-quick-path/agents/openai.yaml",
-    "skills/fons4ai-sdd-quick-path/assets/templates/quick-change-record-template.md",
-    "skills/fons4ai-sdd-quick-path/scripts/validate_quick_change.py",
     "skills/fons4ai-harness-feedback/SKILL.md",
     "skills/fons4ai-harness-feedback/assets/templates/upstream-feedback-template.md",
     "skills/fons4ai-harness-feedback/scripts/validate_harness_feedback.py",
@@ -44,7 +42,7 @@ TEXT_REQUIREMENTS = (
     (
         "feature workflow must orchestrate normal SDD planning and stop before implementation",
         "skills/fons4ai-sdd-feature-workflow/SKILL.md",
-        ("fons4ai-sdd-requirements", "fons4ai-sdd-design", "fons4ai-sdd-tasks", "validate_sdd_artifacts.py", "等待用户确认实现", "不得自动进入实现"),
+        ("fons4ai-sdd-requirements", "fons4ai-sdd-design", "fons4ai-sdd-tasks", "fons4ai-sdd-change", "S0 Fast Change", "validate_sdd_artifacts.py", "等待用户确认实现", "不得自动进入实现"),
     ),
     (
         "implementation skill must require evidence and implementation report",
@@ -72,7 +70,7 @@ TEXT_REQUIREMENTS = (
     (
         "bugfix skill must require evidence and bugfix report",
         "skills/fons4ai-bugfix-workflow/SKILL.md",
-        ("## Evidence Required", "L3 Gate Evidence", "spec/bugfixes/<yyyymmdd>", "validate_bugfix_report.py"),
+        ("## Evidence Required", "## S0 Fast Fix", "标准模式", "S0 硬性排除项", "5 个手工修改文件", "没有项目规则", "L3 Gate Evidence", "spec/bugfixes/<yyyymmdd>", "validate_bugfix_report.py"),
     ),
     (
         "SDD design must model runtime services and initialization data",
@@ -100,9 +98,9 @@ TEXT_REQUIREMENTS = (
         ("## Evidence Required", "L3 Gate Evidence"),
     ),
     (
-        "quick path skill must provide S0 admission criteria and escalation",
-        "skills/fons4ai-sdd-quick-path/SKILL.md",
-        ("S0", "准入条件", "升级", "实现确认门禁", "不得自动进入实现"),
+        "change skill must provide built-in S0 Fast Change and standard S1/S2 planning",
+        "skills/fons4ai-sdd-change/SKILL.md",
+        ("## S0 Fast Change", "## S1/S2 变更规划流程", "S0 硬性排除项", "5 个手工修改文件", "没有项目规则", "不生成 CR", "最小充分验证"),
     ),
     (
         "harness feedback skill must generate upstream feedback reports",

@@ -13,7 +13,7 @@ from:
   skill: ""              # e.g. fons4ai-sdd-requirements
   agent_thread_id: ""    # platform-specific thread/session id (empty in Tier 0)
   stage: ""              # e.g. requirements
-  status: ""             # success | partial | blocked
+  status: blocked         # success | partial | blocked
 
 to:
   skill: ""              # e.g. fons4ai-sdd-design
@@ -25,7 +25,7 @@ artifacts:
     validator: ""        # validator command (empty if none)
 
 evidence:
-  level: ""              # L1 | L2 | L3
+  level: L1               # L1 | L2 | L3
   items:
     - type: ""           # user-confirmation | test-result | build-result | source-fact | etc.
       summary: ""
@@ -39,7 +39,7 @@ risk_and_blockers: []    # list of strings; known risks or blockers
 
 validator_results:
   - command: ""
-    result: ""           # pass | fail | not-run
+    result: not-run       # pass | fail | not-run
     failures: []         # list of failure detail strings
     blocking: false      # true if this failure blocks downstream
 

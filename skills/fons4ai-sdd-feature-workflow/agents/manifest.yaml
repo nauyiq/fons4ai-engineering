@@ -31,7 +31,6 @@ agent:
     - fons4ai-sdd-tasks
     - fons4ai-sdd-implement
     - fons4ai-sdd-change
-    - fons4ai-sdd-quick-path
     - fons4ai-bugfix-workflow
   stop_for_user_confirm: true
   multi_agent_tier: 1
