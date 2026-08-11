@@ -17,6 +17,11 @@ REQUIRED_TERMS = (
     "校验结果",
     "未验证项",
     "Evidence Bundle",
+    "Test Decision",
+    "Evidence Ledger",
+    "回归范围",
+    "全量回归触发",
+    "证据复用",
     "服务级 Evidence Matrix",
     "运行初始化 DML / Seed 状态",
     "Spec Review",
@@ -59,6 +64,15 @@ def validate(path: Path) -> list[str]:
     missing = [term for term in REQUIRED_TERMS if term not in text]
     if missing:
         errors.append(f"{path} missing required terms: {', '.join(missing)}")
+
+    full_scope = re.search(r"回归范围\s*[：:]\s*full\b", text, re.IGNORECASE)
+    full_trigger = field_value(text, "全量回归触发")
+    if full_scope and (not full_trigger or full_trigger in {"无", "不适用"} or "更稳妥" in full_trigger):
+        errors.append(f"{path} uses full regression without an explicit risk trigger")
+    if re.search(r"证据复用\s*[：:]\s*是", text) and not re.search(
+        r"输入指纹|源码指纹|测试指纹|依赖/构建指纹", text
+    ):
+        errors.append(f"{path} reuses evidence without input fingerprints")
 
     if declares_completion(text):
         if not re.search(r"未验证项\s*[：:]\s*无", text):

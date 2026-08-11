@@ -1,6 +1,6 @@
 interface:
   display_name: "Fons4AI SDD Design"
-  short_description: "受控的 Fons4AI SDD 技术设计说明书生成流程。"
+  short_description: "生成精简的 Fons4AI SDD 技术设计，并在高风险场景执行设计确认 Gate。"
   default_prompt: "Use $fons4ai-sdd-design only for the technical design stage: when explicitly requested, when supplementing an existing design, or when $fons4ai-sdd-feature-workflow has reached the design phase. For complete normal new feature SDD orchestration, use $fons4ai-sdd-feature-workflow."
 
 adapter:

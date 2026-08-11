@@ -18,6 +18,8 @@ Fons4AI Engineering 的定位是：
 - 用项目规则和验证门禁限制高风险行为。
 - 将失败、验证和评审结果沉淀为项目本地资产或脱敏上游反馈。
 
+测试与 TDD 采用风险驱动策略：实现任务先经过 Test Decision Gate，只有可观察行为变化且现有覆盖存在缺口时才新增或更新测试；开发阶段默认执行聚焦或受影响测试，全量回归仅用于明确风险门禁。完整约定见 `docs/test-decision-policy.md`。
+
 ## 目录结构
 
 ```text
@@ -96,7 +98,7 @@ spec/reports/harness-feedback/
 
 | 场景 | 推荐入口 | 说明 |
 | --- | --- | --- |
-| 正常新需求开发 | `fons4ai-sdd-feature-workflow` | 编排需求、设计和任务规划，校验后停止等待实现确认 |
+| 正常新需求开发 | `fons4ai-sdd-feature-workflow` | 以需求就绪和设计确认门禁编排 SDD；大型需求按 Feature 与 Task Pack 拆分，校验后停止等待实现确认 |
 | 已有功能迭代或低风险非 BUG 小变更 | `fons4ai-sdd-change` | S0 直接修改验证；S1/S2 生成 CR 和增量任务 |
 | BUG、异常、回归失败 | `fons4ai-bugfix-workflow` | S0 Fast Fix 直接修复验证；复杂问题执行完整报告闭环 |
 | 用户确认实现 | `fons4ai-sdd-implement` | 只执行已规划且已授权的任务 |
@@ -108,7 +110,7 @@ Fons4AI 技能按用户入口和职责边界分为以下类型：
 | 类别 | 技能 | 分类原因 |
 | --- | --- | --- |
 | 流程编排类 | `fons4ai-sdd-feature-workflow` | 串联阶段、控制停止点，不直接写业务代码 |
-| SDD 阶段产物类 | `fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks` | 生成或调整需求、设计和任务规划 |
+| SDD 阶段产物类 | `fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks` | 生成或调整需求、7 章技术设计，以及 V1 单文件或 V2 任务索引/Task Pack |
 | 实现执行类 | `fons4ai-sdd-implement` | 执行已规划且已授权的任务，更新代码、测试、任务状态和实施报告 |
 | 变更执行与规划类 | `fons4ai-sdd-change` | S0 直接修改验证；S1/S2 生成 CR 和增量任务 |
 | BUG 修复闭环类 | `fons4ai-bugfix-workflow` | S0 Fast Fix 或标准复现、修复、验证和报告 |

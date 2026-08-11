@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -26,6 +27,12 @@ REQUIRED_FIELDS = (
     "Knowledge Sync Needed",
     "SQL DDL files",
     "Suggested follow-up",
+    "ExistingCoverage",
+    "TestAction",
+    "TestLevel",
+    "AffectedTests",
+    "全量回归触发",
+    "证据复用",
 )
 
 REQUIRED_EVIDENCE_ROWS = (
@@ -59,6 +66,10 @@ def validate(report: Path) -> list[str]:
             errors.append(f"Missing evidence row: {row}")
     if ("Status: Fixed" in text or "Status: Verified" in text) and "L3" not in text:
         errors.append("Fixed/Verified report must include L3 verification evidence")
+    if re.search(r"回归范围\s*[：:]\s*full\b", text, re.IGNORECASE) and re.search(
+        r"全量回归触发\s*[：:]\s*(?:无|不适用)\b", text
+    ):
+        errors.append("Full regression requires an explicit risk trigger")
     return errors
 
 

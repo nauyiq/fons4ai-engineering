@@ -5,9 +5,10 @@
 # Validators check schema compliance, not platform-specific execution.
 #
 # File location convention:
-#   spec/features/<yyyymmdd>/handoff/<from-skill>-to-<to-skill>.yaml
+#   V1: spec/features/<yyyymmdd>/handoff/<from-skill>-to-<to-skill>.yaml
+#   V2: spec/features/<yyyymmdd>/<feature-slug>/handoff/<from-skill>-to-<to-skill>.yaml
 
-schema_version: "1.0"
+schema_version: "2.0"
 
 from:
   skill: ""              # e.g. fons4ai-sdd-requirements
@@ -19,9 +20,18 @@ to:
   skill: ""              # e.g. fons4ai-sdd-design
   allowed: false         # orchestrator sets true after validation passes
 
+scope:
+  initiative: ""         # optional initiative slug/path
+  feature_dir: ""        # relative feature directory
+  planning_mode: ""      # single-file | task-pack | empty before task planning
+  design_approval: ""    # pending | approved | not-required
+  task_index: ""         # V2 task index path
+  active_task_pack: ""   # V2 TP-xxx
+  selected_task_ids: []  # selected Txxx IDs when handing off to implementation
+
 artifacts:
   - path: ""             # relative path from repo root
-    type: ""             # requirements-spec | design-spec | task-plan | implementation-report | etc.
+    type: ""             # initiative | requirements-spec | design-spec | task-plan | task-index | task-pack | implementation-report | etc.
     validator: ""        # validator command (empty if none)
 
 evidence:
@@ -46,4 +56,4 @@ validator_results:
 stop_condition:
   auto_proceed: false    # false = must wait for user confirmation
   requires_user_confirm: true
-  trigger_words: []      # e.g. ["执行", "开始实现", "继续执行"]
+  trigger_words: []      # e.g. ["执行", "执行 TP-001", "执行 T001,T002"]

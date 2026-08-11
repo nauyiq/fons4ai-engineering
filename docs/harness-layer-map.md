@@ -21,12 +21,12 @@ Fons4AI Harness Engineering 使用 6 层结构：
 
 | 技能 | 主层级 | 辅助层级 | 当前职责摘要 | 阶段 2 处理建议 |
 | --- | --- | --- | --- | --- |
-| `fons4ai-sdd-feature-workflow` | Skill Harness | Intent Harness, Feedback Harness | 编排正常新需求 SDD 三件套，任务规划校验后停止等待实现确认 | 保持正常新需求编排入口，保持阶段技能单一职责 |
+| `fons4ai-sdd-feature-workflow` | Skill Harness | Intent Harness, Feedback Harness | 编排正常新需求 SDD 三类职责；大型需求拆分 Feature 与 Task Pack，校验后停止等待实现确认 | 保持正常新需求编排入口，保持阶段技能单一职责 |
 | `fons4ai-sdd-requirements` | Intent Harness | Context Harness, Skill Harness | 澄清需求并生成需求说明书 | 保留现有职责；后续评估是否补充轻量 Evidence 章节 |
 | `fons4ai-sdd-design` | Intent Harness | Skill Harness, Feedback Harness | 在需求后生成技术设计，记录风险、验证策略和知识影响 | 结构较完整；后续补显式 `职责边界` 章节 |
-| `fons4ai-sdd-tasks` | Intent Harness | Skill Harness, Feedback Harness | 把需求和设计拆成任务规划，并停止等待实现确认 | 保留任务规划职责；后续评估是否补充轻量 Evidence 章节 |
+| `fons4ai-sdd-tasks` | Intent Harness | Skill Harness, Feedback Harness | 把需求和设计拆成 V1 单文件规划，或 V2 任务索引与 Task Pack，并停止等待实现确认 | 保留任务规划职责与 V1 兼容；用拆分阈值控制上下文规模 |
 | `fons4ai-sdd-change` | Intent Harness | Skill Harness, Feedback Harness | S0 Fast Change 直接执行；S1/S2 做变更分析、CR 和增量任务 | 内置风险分级，无项目规则时仍可判断 S0 |
-| `fons4ai-sdd-implement` | Feedback Harness | Skill Harness, Context Harness | 执行已授权 SDD 任务，要求验证证据和实施报告 | 结构完整，可作为实现类技能样板 |
+| `fons4ai-sdd-implement` | Feedback Harness | Skill Harness, Context Harness | 执行已授权 SDD 任务，通过 Test Decision Gate、风险驱动回归和 Evidence Ledger 约束测试成本与验证证据 | 作为实现类技能样板，保持覆盖缺口驱动测试和证据可失效复用 |
 | `fons4ai-bugfix-workflow` | Feedback Harness | Intent Harness, Skill Harness | S0 Fast Fix 或标准复现、诊断、修复、验证并记录 BUG | 内置风险分级，标准模式保留完整 Evidence |
 | `fons4ai-harness-feedback` | Learning Harness | Feedback Harness | 将业务试点项目中的 Agent 使用问题整理为脱敏上游反馈单 | 已落地为独立反馈技能；默认输出到 `spec/reports/harness-feedback/` |
 | `fons4ai-knowledge-bootstrap` | Context Harness | Skill Harness | 从代码、文档、接口、测试和配置建立项目知识基线 | Contract 已补齐；后续按 MVP 试点反馈优化 |
@@ -39,7 +39,7 @@ Fons4AI Harness Engineering 使用 6 层结构：
 | 类别 | 技能 | 分类原因 |
 | --- | --- | --- |
 | 流程编排类 | `fons4ai-sdd-feature-workflow` | 控制阶段顺序和停止点，不直接产出业务代码 |
-| SDD 阶段产物类 | `fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks` | 负责需求、设计和任务规划等正式 SDD 产物 |
+| SDD 阶段产物类 | `fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks` | 负责需求、设计，以及 V1 任务规划或 V2 任务索引/Task Pack 等正式 SDD 产物 |
 | 实现执行类 | `fons4ai-sdd-implement` | 只执行已规划且已授权任务，更新代码、测试、任务状态和实施报告 |
 | 变更执行与规划类 | `fons4ai-sdd-change` | S0 直接修改；S1/S2 生成 CR 和增量任务 |
 | BUG 修复闭环类 | `fons4ai-bugfix-workflow` | S0 Fast Fix；复杂缺陷完成标准修复验证和 BUG 报告 |

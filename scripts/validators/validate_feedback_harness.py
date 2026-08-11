@@ -34,6 +34,7 @@ REQUIRED_FILES = (
     "scripts/validators/validate_skill_contracts.py",
     "docs/harness-engineering.md",
     "docs/harness-layer-map.md",
+    "docs/test-decision-policy.md",
     "docs/loop-phase-1.md",
     "templates/loop-improvement-record-template.md",
 )
@@ -53,6 +54,8 @@ TEXT_REQUIREMENTS = (
             "spec/features/<yyyymmdd>/reports",
             "implementation-report-template.md",
             "Evidence Bundle",
+            "Test Decision",
+            "Evidence Ledger",
             "Spec Review",
             "Code Review",
         ),
@@ -60,7 +63,7 @@ TEXT_REQUIREMENTS = (
     (
         "implementation report template must carry evidence and review gates",
         "skills/fons4ai-sdd-implement/assets/templates/implementation-report-template.md",
-        ("Evidence Bundle", "Spec Review", "Code Review"),
+        ("Evidence Bundle", "Test Decision", "Evidence Ledger", "Spec Review", "Code Review"),
     ),
     (
         "SDD artifact validator must enforce implementation report review gates",
@@ -145,7 +148,7 @@ TEXT_REQUIREMENTS = (
     (
         "implementation report validator must enforce harness evidence",
         "scripts/validators/validate_implementation_report.py",
-        ("Harness 校验结果", "校验来源", "上游版本", "是否阻塞交付", "是否可交付"),
+        ("Harness 校验结果", "校验来源", "上游版本", "Test Decision", "Evidence Ledger", "是否阻塞交付", "是否可交付"),
     ),
     (
         "validate_all must invoke repository validators",

@@ -1,7 +1,7 @@
 interface:
   display_name: "Fons4AI SDD Tasks"
-  short_description: "Routing-gated Fons4AI SDD task planning."
-  default_prompt: "Use $fons4ai-sdd-tasks only for the task planning stage: when explicitly requested, when supplementing an existing task plan, or when $fons4ai-sdd-feature-workflow has reached the task phase. Generate spec/features/<yyyymmdd>/<feature>-任务规划.md, then stop for implementation approval."
+  short_description: "生成带 Test Decision Gate 的 V1 任务规划或 V2 Task Pack。"
+  default_prompt: "Use $fons4ai-sdd-tasks only for task planning. Every implementation task must decide observable behavior change, existing coverage, test action, test level, affected tests, and regression scope. Do not default to changing tests or full regression. Keep small S1 work in a V1 single file; use V2 Task Packs for large or evolving work. Stop for implementation approval."
 
 adapter:
   platform: codex

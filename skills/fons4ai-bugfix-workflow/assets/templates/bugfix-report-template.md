@@ -53,8 +53,12 @@
 
 ## 自动化测试
 
-- RED 证据：
-- 新增/更新测试：
+- ExistingCoverage: covered | partial | missing | not-applicable
+- TestAction: none | reuse | update | add
+- TestLevel: none | unit | contract | integration | e2e | manual
+- AffectedTests: none | 测试路径、测试类或命令
+- RED 证据：复用已有失败测试/可执行复现 | 新增或更新测试 | 不适用，原因
+- 新增/更新测试：无，复用已有覆盖 | 测试路径与覆盖缺口
 - 测试命令：
 - 测试结果：
 - 若无法自动化测试，原因：
@@ -69,7 +73,9 @@
 
 ## 回归验证
 
-- 回归范围：
+- 回归范围：none | focused | affected | module | full
+- 全量回归触发：无 | <明确风险触发条件>
+- 证据复用：否 | 是，输入指纹与原始输出位置
 - 验证命令或步骤：
 - 验证结果：
 

@@ -7,22 +7,27 @@ agent:
   category: implementation
   context_budget:
     required:
-      - spec/features/<yyyymmdd>/<feature>-任务规划.md
+      - V1 spec/features/<yyyymmdd>/<feature>-任务规划.md or V2 task index plus selected Task Pack
     optional:
       - spec/features/<yyyymmdd>/<feature>-需求说明书.md
       - spec/features/<yyyymmdd>/<feature>-技术设计说明书.md
+      - spec/features/<yyyymmdd>/<feature-slug>/<feature>-需求说明书.md
+      - spec/features/<yyyymmdd>/<feature-slug>/<feature>-技术设计说明书.md
       - .specify/rules/
       - source code
       - tests
       - config
+      - prior Evidence Ledger entries and original test outputs
     forbidden_full_scan: true
   permissions:
     read: true
     write:
       - task Files: scoped paths only
       - spec/features/<yyyymmdd>/reports/
+      - spec/features/<yyyymmdd>/<feature-slug>/reports/
+      - selected task pack status only
     execute:
-      - task Verification: commands only
+      - task Verification and risk-approved RegressionScope commands only
   evidence_level: L3
   spawn_by: fons4ai-sdd-feature-workflow
   handoff_targets:

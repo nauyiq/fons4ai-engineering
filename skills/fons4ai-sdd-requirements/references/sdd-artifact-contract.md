@@ -3,15 +3,17 @@
 ## Scope
 
 This contract defines the shared SDD artifact rules for all `fons4ai-sdd-*` skills.
-Feature artifacts use `spec/features/<yyyymmdd>/`. Bugfix artifacts use `spec/bugfixes/<yyyymmdd>/<bug中文名>-BUG修复报告.md`. The default project truth sources are `.specify/memory/` and `.specify/sql/`, but projects may declare additional truth sources. Do not require branch hooks or GitHub issue conversion.
+Feature artifacts use either the legacy V1 layout `spec/features/<yyyymmdd>/` or the V2 layout `spec/features/<yyyymmdd>/<feature-slug>/`. Bugfix artifacts use `spec/bugfixes/<yyyymmdd>/<bug中文名>-BUG修复报告.md`. The default project truth sources are `.specify/memory/` and `.specify/sql/`, but projects may declare additional truth sources. Do not require branch hooks or GitHub issue conversion.
+
+The three-piece SDD model means three artifact responsibilities, not exactly three physical files: requirements, technical design, and executable task planning. V2 task planning may consist of one task index plus multiple task packs. Large zero-to-one systems may additionally use a lightweight initiative map under `spec/initiatives/`; each independently acceptable capability still owns its own SDD feature artifacts.
 S0 does not create a required artifact. BUG S0 is executed by `fons4ai-bugfix-workflow` Fast Fix, and non-BUG S0 is executed by `fons4ai-sdd-change` Fast Change. Historical `spec/quick/` records remain valid history but are not a current workflow dependency.
 
 ## Artifact Responsibilities
 
 - `需求说明书.md` is the business-oriented requirement specification. It records a concise clarification summary, business background and goals, scope, roles and scenarios, requirement list, business rules, simple workflows when useful, lightweight business-data meaning, impact, AC, quality requirements, risks, assumptions, and open items. It should use plain business language and avoid unnecessary professional or technical terminology. It must not expose repository-fact inventories, knowledge-context inventories, modules, classes, tables, columns, DDL paths, MCP details, or technical architecture details.
 - `<功能中文名>-技术设计说明书.md` is the technical design specification. It records design summary, architecture and call chain, API/RPC/message contracts, data-model and DDL impact, core logic, DDD-lite/domain-rule landing, state transitions, error/security/transaction/performance decisions, technical decisions, AC mapping, risk/rollback, and concise knowledge-sync impact. It must not repeat requirement-only sections such as clarification summary, requirement scope, roles/scenarios, or business-data wording. It must not expose repository-fact inventories, knowledge-base-fact inventories, or search traces, and it must not replace executable tasks.
-- `<功能中文名>-任务规划.md` is the executable task breakdown. It converts `需求说明书.md` and `<功能中文名>-技术设计说明书.md` into task IDs with AC mapping, files, verification, quality checks, and done criteria.
-- `changes/CR-xxx.md` is the incremental change record for an existing feature. It records change type, impact analysis, affected artifacts, DDL impact, rollback/regression risks, long-term knowledge impact, and the task IDs appended to `<功能中文名>-任务规划.md`.
+- Task planning is either a V1 `<功能中文名>-任务规划.md` or a V2 `<功能中文名>-任务索引.md` plus `tasks/TP-*.md`. It converts requirements and design into globally unique task IDs with AC mapping, files, verification, quality checks, dependencies, approval state, and done criteria. The index is the active routing surface; task packs are the executable units.
+- `changes/CR-xxx.md` is the incremental change record for an existing feature. It records change type, impact analysis, affected artifacts, DDL impact, rollback/regression risks, long-term knowledge impact, and references to dedicated change task packs. A CR must not duplicate complete executable task bodies when a task pack exists.
 - Planning artifacts are not implementation approval; implementation still requires the approval gate below.
 
 ## Clarification Approval Gate
@@ -21,10 +23,12 @@ Requirements and change planning must close blocking ambiguity before formal art
 - `使用 SDD`, `继续`, `先生成`, `看一下`, existing artifact files, or a partially inferred plan are not clarification approval.
 - `fons4ai-sdd-requirements` must ask the highest-impact requirement question first when blocking ambiguity can change scope, AC, business terms, data meaning, compatibility, security, integration, SDD level, or task breakdown.
 - `fons4ai-sdd-change` must ask the highest-impact change question first when blocking ambiguity can change existing feature semantics, AC changes, naming/ownership, public behavior, data model, DDL source, migration, rollback, risk gates, or affected modules.
-- While a blocking ambiguity exists, requirements and change skills must not write a formal `需求说明书.md`, formal CR, `<功能中文名>-技术设计说明书.md`, `<功能中文名>-任务规划.md`, or business code.
+- While a blocking ambiguity exists, requirements and change skills must not write formal requirements, a formal CR, technical design, V1/V2 task planning artifacts, or business code.
 - If the user explicitly asks for a draft before answering, the artifact may be written only with `文档状态：草案-待确认`; it must not be used by design, task, or implementation skills.
 - Formal `需求说明书.md` and CR artifacts must not expose clarification-gate tables, clarification status, or internal question logs. Clarification remains an internal pre-generation workflow.
 - Design and task skills must stop if the input `需求说明书.md` or CR is marked `文档状态：草案-待确认`, `阻塞-等待回答`, `草案-含待确认`, `blocking`, or `draft`.
+- Requirement clarification uses a readiness gate rather than a hard question-count gate. Five questions are the default review budget and checkpoint, not a maximum. After the checkpoint, continue one question at a time only while a blocking ambiguity remains; defer non-blocking items to risks or open items.
+- Formal requirements must cover business goal, participants, scope, core flow, rules/exceptions, acceptance signals, and applicable data/security/integration constraints. One user answer may close several dimensions; no dimension requires a separate question when evidence is already sufficient.
 
 ## Project Knowledge
 
@@ -80,11 +84,11 @@ When SDD work adds, removes, renames, or changes a concrete persistent data mode
 - Field-mapping contracts are mandatory for file import, API import, data synchronization, reconciliation, reporting, migration, and cross-system data flows. Critical fields such as amount, date, state, serial number, customer identifier, contract number, external identifier, and sensitive fields must not stay `待确认` before implementation.
 - Sensitive data scenarios must define applicable handling for transport security, storage encryption, display/log masking, permissions, audit, retention, deletion, and archival. If not applicable, record `不适用，原因`.
 - `<功能中文名>-技术设计说明书.md` must name each impacted `.specify/sql/<database_or_service>/<business_model>.sql` file and state whether the action is add, update, rename, or no-op. It must also point to the structure-detail section when the action is add, update, or rename.
-- `<功能中文名>-任务规划.md` must include an explicit DDL synchronization task for every impacted SQL file, unless the technical design records a user-approved deferral with owner and reason.
+- V1 task planning or the applicable V2 Task Pack must include an explicit DDL synchronization task for every impacted SQL file, unless the technical design records a user-approved deferral with owner and reason.
 - `fons4ai-sdd-implement` may create or update `.specify/sql/**/*.sql` only when the selected task names the SQL file or when the implementation reveals a necessary schema change and the user approves updating the task/artifact scope.
 - Generated SQL knowledge files are documentation artifacts, not migration scripts. Keep migration scripts in the repository's normal migration location when the project has one.
 - When an approved implementation changes columns, indexes, constraints, defaults, or relationships of an existing table and the corresponding `.specify/sql/<database_or_service>/<business_model>.sql` already contains confirmed baseline DDL, the plan and task planning must require an executable change DDL script containing the needed `ALTER TABLE` or equivalent statements.
-- Prefer the repository's established migration-script location for executable change DDL. If no migration location is established, use `spec/features/<yyyymmdd>/ddl-changes/<change-id>-<database_or_service>-<business_model>.sql`, where `<change-id>` is `INIT` for initial feature work or `CR-xxx` for an incremental change.
+- Prefer the repository's established migration-script location for executable change DDL. If no migration location is established, use `<feature-dir>/ddl-changes/<change-id>-<database_or_service>-<business_model>.sql`, where `<change-id>` is `INIT` for initial feature work or `CR-xxx` for an incremental change.
 - Executable change DDL is generated only during approved implementation, not during requirements, design, task planning, or change planning. It records the operation to execute; `.specify/sql/**/*.sql` separately records the resulting current structure. Like other generated SQL artifacts, it must not contain MCP/Tool identifiers, query text, or source-path/provenance metadata.
 - Agents must not directly execute production DDL. Executable DDL is provided for user/DBA review and manual execution, or for the project's established migration process. A DDL execution-confirmation task is complete only after user confirmation or read-only verification proves that the structure is effective.
 - Tasks depending on an unexecuted DDL change must not be marked release-ready. Keep the task unchecked or record a blocker in the implementation report until the execution state is confirmed.
@@ -104,7 +108,7 @@ When SDD work adds, removes, renames, or changes a concrete persistent data mode
 
 ## Paths
 
-Use this feature layout:
+V1 remains valid for an existing or small S1 feature:
 
 ```text
 spec/features/<yyyymmdd>/
@@ -120,6 +124,34 @@ spec/features/<yyyymmdd>/
 
 Only create optional folders when they are needed.
 
+Use V2 when a feature needs multiple independently reviewable or executable task packs:
+
+```text
+spec/features/<yyyymmdd>/<feature-slug>/
+  <功能中文名>-需求说明书.md
+  <功能中文名>-技术设计说明书.md
+  <功能中文名>-任务索引.md
+  tasks/
+    TP-001-<任务包名称>.md
+    TP-002-<任务包名称>.md
+  checklists/
+  contracts/
+  ddl-changes/
+  dml-seed/
+  changes/
+  reports/
+  handoff/
+  archive/
+```
+
+For a large zero-to-one system, use an optional initiative map only as orchestration context:
+
+```text
+spec/initiatives/<yyyymmdd>/<initiative-slug>/initiative.md
+```
+
+The initiative map contains system goals, capability map, dependencies, architecture principles, and links to child features. It does not replace any child feature's requirements, technical design, or task planning.
+
 ## Naming
 
 - `<yyyymmdd>` is the artifact creation date in local project time, for example `20260618`.
@@ -127,6 +159,7 @@ Only create optional folders when they are needed.
 - Requirement IDs use `REQ-001`, `REQ-002`, ...
 - AC IDs use `AC-001`, `AC-002`, ...
 - Task IDs use `T001`, `T002`, ...
+- Task pack IDs use `TP-001`, `TP-002`, ... and remain stable after approval.
 - Change records use `CR-001`, `CR-002`, ...
 - CR change types use `微调`, `扩展`, `重构`, `数据结构变更`, `契约变更`, or `纯文档修正`.
 
@@ -135,17 +168,18 @@ Only create optional folders when they are needed.
 - Every `REQ-###` in `需求说明书.md` must map to at least one `AC-###` through the requirement summary table or AC text.
 - Every AC in `需求说明书.md` must be covered by at least one design decision in `<功能中文名>-技术设计说明书.md`.
 - `<功能中文名>-技术设计说明书.md` should preserve REQ context in AC mapping when it materially affects implementation.
-- Every implementation task in `<功能中文名>-任务规划.md` must include `AC:`, `Files:`, `Verification:`, `Quality:`, and `Done:`.
+- Every implementation task in a V1 task plan or V2 task pack must include `AC:`, `Files:`, `Verification:`, `Quality:`, and `Done:`.
 - Every task should map to at least one AC ID. If a task is pure setup, use the nearest AC it enables and explain that relationship in `Done:`.
 - S2 tasks must include explicit regression and risk-control tasks.
 - S2 implementation reports must state whether checklist, rollback, compatibility, and risk-control tasks were closed or explicitly deferred.
-- Executable incremental tasks from CRs must be appended to `<功能中文名>-任务规划.md`. CR files may summarize and reference task IDs, but must not be the only location of executable implementation tasks.
+- V2 task IDs must be unique across every active and archived pack in the feature. Dependencies must not contain cycles.
+- Executable incremental work from a CR must live in a dedicated change task pack and be referenced by both the CR and task index. Do not append it to an approved, completed, superseded, or archived base pack. V1 features may continue appending only while they remain below the split threshold and the user explicitly accepts that choice.
 
 ## Detailed Document Requirements
 
 - Generated artifact headings and fixed prose should be Chinese-first. Keep file names, IDs, paths, and machine-readable task labels such as `AC:`, `Files:`, `Verification:`, `Quality:`, and `Done:` in English when compatibility requires it.
-- New `需求说明书.md` artifacts should use the simplified requirement-spec structure: `## 一句话说明`, `## 需求澄清摘要`, `## 背景与目标`, `## 需求范围`, `## 角色与场景`, `## 需求列表`, `## 业务规则`, `## 业务流程`, `## 业务数据口径`, `## 影响说明`, `## 验收标准`, `## 质量要求`, `## 风险与待确认`, and `## 版本修订记录`.
-- New `<功能中文名>-技术设计说明书.md` artifacts must include `## 1. 设计概要`, `## 2. 架构与调用链路`, `## 3. API / RPC / 消息契约设计`, `## 4. 数据模型与 DDL 影响`, `## 5. 核心逻辑设计`, `## 6. 领域建模与业务规则落地`, `## 7. 状态流转设计`, `## 8. 异常、安全、事务与性能`, `## 9. 技术决策`, and `## 10. 验证策略、AC 映射与风险`.
+- New `需求说明书.md` artifacts should use the simplified requirement-spec structure: `## 一句话说明`, `## 需求就绪摘要`, `## 背景与目标`, `## 需求范围`, `## 角色与场景`, `## 需求列表`, `## 业务规则`, `## 业务流程`, `## 业务数据口径`, `## 影响说明`, `## 验收标准`, `## 质量要求`, `## 风险与待确认`, and `## 版本修订记录`. Existing V1 artifacts that use `## 需求澄清摘要` remain valid history.
+- New V2 `<功能中文名>-技术设计说明书.md` artifacts use seven core sections: `## 1. 设计摘要与关键决策`, `## 2. 系统边界、模块与调用链`, `## 3. 接口、消息与外部契约`, `## 4. 核心业务、领域规则与状态流转`, `## 5. 数据结构、迁移与初始化`, `## 6. 横切质量设计`, and `## 7. AC、验证、风险与回滚`. Conditional content may be marked `不适用，原因`; evidence and large contracts belong in appendices or `contracts/`. Existing V1 ten-section designs remain valid history.
 - The business-rule and strategy section must map core rules or policies to modules, domain/application objects, data dependencies, extension points, and verification. Use Mermaid sequence, flow, or state diagrams for important business or strategy flows when facts support them.
 - Code sketches in `<功能中文名>-技术设计说明书.md` are design snippets or pseudocode for key rules, validation, status checks, and data transformations. They must be based on repository facts and must not be treated as production code.
 - Use Mermaid `sequenceDiagram` for core call chains, `flowchart` for complex decisions, `stateDiagram-v2` for state changes, and `erDiagram` for new tables, relationship changes, or multi-table collaboration when facts support them. A single-column or single-index adjustment may mark the ER diagram as `不适用，原因`.
@@ -153,13 +187,14 @@ Only create optional folders when they are needed.
 
 ## Implementation Approval Gate
 
-- Planning artifacts are not implementation approval: `需求说明书.md`, `<功能中文名>-技术设计说明书.md`, `<功能中文名>-任务规划.md`, and CR files define scope and tasks but do not authorize business-code implementation.
-- `<功能中文名>-任务规划.md` and each CR with incremental tasks must contain `## 实现确认门禁`.
+- Planning artifacts are not implementation approval: requirements, technical design, task indexes/plans/packs, and CR files define scope and tasks but do not authorize business-code implementation.
+- A V1 task plan or V2 task index must contain `## 实现确认门禁`; each V2 task pack records its own approval state.
 - Requirements, design, task, and change skills must stop after writing planning artifacts and must not invoke implementation.
 - Implementation approval must come from the user's latest message.
 - `fons4ai-sdd-implement` must record approval evidence in the implementation report, quoting or summarizing the latest user message that authorized execution. If that evidence cannot be identified, implementation must stop.
-- If the latest user message confirms execution without task IDs, `fons4ai-sdd-implement` executes all unfinished tasks in dependency order.
-- If the latest user message names task IDs such as `执行 T001,T002`, only those unfinished tasks are selected.
+- For V1, if the latest user message confirms execution without task IDs, `fons4ai-sdd-implement` may execute all unfinished tasks in dependency order.
+- For V2, a generic `执行` selects only the current active approved task pack. Cross-pack execution requires an explicit pack ID, task IDs, or `执行全部活动任务包`.
+- If the latest user message names task IDs such as `执行 T001,T002` or a pack such as `执行 TP-002`, only that approved scope is selected.
 - Ambiguous messages such as `看看`, `下一步是什么`, or generated planning artifacts alone are not implementation approval.
 - Implementation may mark a selected task complete only after its verification passes. DDL execution-confirmation tasks require user confirmation or read-only database verification; blocked or externally pending tasks remain unchecked and must be reported as blockers.
 - If implementation reveals missing scope, missing DDL work, changed AC, changed public behavior, or conflicts with design, stop and return to task/change planning instead of expanding implementation scope.
@@ -172,3 +207,4 @@ Only create optional folders when they are needed.
 - Do not write business code from requirements, design, task, or change skills.
 - Treat truth sources such as `.specify/memory/`, `.specify/sql/`, `.specify/rules/`, and `docs/` as read-only unless the active skill is explicitly responsible for knowledge-base initialization/summary, or a selected SDD task explicitly requires rules or DDL synchronization. SDD task planning must not create knowledge-sync or knowledge-summary handoff tasks.
 - `fons4ai-sdd-implement` may record long-term knowledge impact in its report, but must not create knowledge-sync tasks, knowledge-summary handoff tasks, or `.specify/memory/` content. Verified knowledge updates are handled by `fons4ai-knowledge-summary` when explicitly triggered.
+- Treat approved, completed, superseded, and archived task packs as immutable execution history. Correct pre-approval planning in place with a version update; represent post-approval changes through a new CR task pack, new feature, or successor feature.

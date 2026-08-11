@@ -32,6 +32,14 @@ def main() -> int:
             [python, "scripts/validators/validate_skill_contracts.py", "--skills-root", "skills"],
         ),
         (
+            "SDD V1/V2 artifact regressions",
+            [python, "-B", "-m", "unittest", "tests.test_sdd_artifacts_v2"],
+        ),
+        (
+            "risk-driven test decision policy",
+            [python, "-B", "-m", "unittest", "tests.test_test_decision_policy"],
+        ),
+        (
             "skill stack neutrality",
             [python, "scripts/validators/validate_stack_neutrality.py", "--root", "."],
         ),

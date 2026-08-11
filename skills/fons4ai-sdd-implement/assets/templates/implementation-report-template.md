@@ -1,6 +1,8 @@
 # <功能名称>实施报告
 
 > 功能标识：`<feature-slug>`
+> 规划模式：single-file | task-pack
+> Task Pack：不适用 | TP-xxx
 > 任务范围：`Txxx`
 > 实现确认依据：<用户最新消息原文或简要摘要>
 > SDD 等级：`S1|S2`
@@ -12,6 +14,10 @@
 - 未完成任务：无 | Txxx，原因
 - 阻塞任务：无 | Txxx，原因
 - 实施结果：完成 | 部分完成 | 阻塞
+- Development 状态：Done | Partial | Blocked
+- Integration 状态：Not Applicable | Ready | Done | Deferred | Blocked
+- Deployment 状态：Not Applicable | Ready | Done | Deferred | Blocked
+- Release 状态：Not Applicable | Ready | Done | Deferred | Blocked
 - 是否可交付完成：是 | 否，原因
 - 是否发布就绪：是 | 否，原因
 - UI 设计确认状态：不适用 | 已通过 | 用户跳过 | 待确认，原因
@@ -20,14 +26,18 @@
 ## 2. 变更文件
 
 - path/to/file：
-- spec/features/<yyyymmdd>/ddl-changes/<INIT|CR-xxx>-<database_or_service>-<business_model>.sql | <project-migration-path>.sql：
+- <feature-dir>/ddl-changes/<INIT|CR-xxx>-<database_or_service>-<business_model>.sql | <project-migration-path>.sql：
 - .specify/sql/<database_or_service>/<business_model>.sql：
 
-## 3. TDD 记录
+## 3. Test Decision 与 TDD 记录
+
+| 任务 | BehaviorChange | ExistingCoverage | TestAction | TestLevel | AffectedTests | RegressionScope | TestReason |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T001 | none/changed/new | covered/partial/missing/not-applicable | none/reuse/update/add | none/unit/contract/integration/e2e/manual | 测试路径、类或命令 | none/focused/affected/module/full | 可观察行为、覆盖缺口和范围依据 |
 
 | 任务 | RED | GREEN | REFACTOR |
 | --- | --- | --- | --- |
-| T001 | 失败命令与原因 | 通过命令与结果 | 重构内容或不适用原因 |
+| T001 | 失败命令与原因；复用已有失败证据；或不适用原因 | 通过命令与结果 | 重构内容或不适用原因 |
 
 ## 4. 验证结果
 
@@ -35,6 +45,9 @@
 - 聚焦验证结果：
 - 回归验证命令：
 - 回归验证结果：
+- 回归范围：none | focused | affected | module | full
+- 全量回归触发：无 | <明确触发条件；不得仅写“更稳妥”>
+- 证据复用：否 | 是，Evidence ID、输入指纹核验结果和原始输出位置
 - 手动验证：不适用 | 步骤与结果
 - 未验证项：无 | 原因
 - 验证证据等级：L3 | 不足，原因
@@ -43,7 +56,7 @@
 
 | 项目 | 内容 |
 | --- | --- |
-| 任务来源 | <任务规划路径、任务 ID、用户授权依据> |
+| 任务来源 | <V1 任务规划，或 V2 任务索引/Task Pack 路径、任务 ID、用户授权依据> |
 | 变更范围 | <涉及文件、模块和行为> |
 | 验证命令 | <命令、结果、关键输出摘要> |
 | 测试说明 | <新增、修改、覆盖和未覆盖场景> |
@@ -52,7 +65,13 @@
 | 人工 Gate | 不适用 | 已通过 | 有条件通过 | 待执行 | 阻塞，原因 |
 | 风险声明 | <高风险项、未验证项、后续事项> |
 
-## 5.1 服务级 Evidence Matrix
+## 5.1 Evidence Ledger
+
+| Evidence ID | 命令 | 范围 | 结果 | 源码指纹 | 测试指纹 | 依赖/构建指纹 | 适用任务 | 复用状态 | 失效条件 | 原始输出 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| EV-001 | <命令> | focused/affected/module/full | passed/failed | <hash> | <hash> | <hash> | T001 | fresh/reused/invalidated | <哪些输入变化时失效> | <日志路径或关键输出> |
+
+## 5.2 服务级 Evidence Matrix
 
 仅当涉及独立可运行服务、HTTP API/RPC/gRPC/消息链路、服务发现、健康探测、配置治理或对外服务能力时填写；不涉及时写 `不适用，原因`。
 

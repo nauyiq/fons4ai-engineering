@@ -18,6 +18,7 @@ agent:
     read: true
     write:
       - spec/features/<yyyymmdd>/
+      - spec/features/<yyyymmdd>/<feature-slug>/
     execute: false
   evidence_level: L2
   spawn_by: fons4ai-sdd-feature-workflow

@@ -64,20 +64,21 @@
 - 上下文：同 Tier 1，但多个实现 Agent 同时运行
 - Handoff：编排者收集所有并行 Agent 的产出，合并 Evidence Bundle
 - 并行：无依赖关系的任务组可并行
-- L3 Evidence：编排者必须重新运行全量回归验证
+- L3 Evidence：编排者核验原始输出和输入指纹，默认重跑受影响测试并集；仅在明确风险触发时运行全量回归
 
 ## 4. Handoff YAML 协议
 
 ### 文件位置
 
 ```
-spec/features/<yyyymmdd>/handoff/<from-skill>-to-<to-skill>.yaml
+V1: spec/features/<yyyymmdd>/handoff/<from-skill>-to-<to-skill>.yaml
+V2: spec/features/<yyyymmdd>/<feature-slug>/handoff/<from-skill>-to-<to-skill>.yaml
 ```
 
 ### Schema 概要
 
 ```yaml
-schema_version: "1.0"
+schema_version: "2.0"
 from:
   skill: fons4ai-sdd-requirements
   agent_thread_id: <platform-specific-id>
@@ -86,8 +87,16 @@ from:
 to:
   skill: fons4ai-sdd-design
   allowed: true
+scope:
+  initiative: ""
+  feature_dir: spec/features/20260710/order-cancel
+  planning_mode: ""
+  design_approval: ""
+  task_index: ""
+  active_task_pack: ""
+  selected_task_ids: []
 artifacts:
-  - path: spec/features/20260710/XX-需求说明书.md
+  - path: spec/features/20260710/order-cancel/订单取消-需求说明书.md
     type: requirements-spec
     validator: validate_sdd_artifacts.py
 evidence:
@@ -101,7 +110,7 @@ confirmed_facts:
 pending_questions: []
 risk_and_blockers: []
 validator_results:
-  - command: "validate_sdd_artifacts.py --feature-dir spec/features/20260710"
+  - command: "validate_sdd_artifacts.py --feature-dir spec/features/20260710/order-cancel"
     result: pass
     failures: []
     blocking: false
@@ -133,7 +142,7 @@ python scripts/validators/validate_handoff_schema.py --file <handoff.yaml>
 | Requirements | AGENTS.md, .specify/memory/index.md | domain docs, knowledge cards | true |
 | Design | 需求说明书, AGENTS.md | source code, existing contracts | true |
 | Tasks | 需求说明书, 技术设计说明书 | source code | true |
-| Implement | 任务规划 | 需求/设计/规则/代码/测试 | true |
+| Implement | V1 任务规划，或 V2 任务索引 + 当前获批 Task Pack | 需求/设计/规则/代码/测试 | true |
 | Bugfix | bug report | source code, tests, logs | true |
 
 ## 6. 跨 Agent Evidence 信任
@@ -149,7 +158,9 @@ python scripts/validators/validate_handoff_schema.py --file <handoff.yaml>
 ### 并行 Agent 的 Evidence 合并
 
 - 每个 Agent 的 L3 Evidence 只对自己的任务子集有效。
-- 编排者必须在所有并行 Agent 完成后，重新运行全量回归验证。
+- 编排者必须核验原始输出、输入指纹、适用任务和失效条件；源码、测试、依赖和构建配置未变化的证据可以复用。
+- 所有并行 Agent 完成后，默认执行 `AffectedTests` 去重并集和冲突接口的最小集成验证，不默认执行全量回归。
+- 只有发布/合并门禁、公共契约或共享基础模块变化、依赖或构建配置变化、数据库结构或安全权限广泛影响、影响范围无法可靠判断，或用户/CI 明确要求时执行全量回归，并记录触发原因。
 - 如果并行 Agent 的修改产生冲突，编排者必须停止并报告冲突。
 
 ## 7. 降级策略

@@ -17,6 +17,8 @@ agent:
     read: true
     write:
       - spec/features/<yyyymmdd>/
+      - spec/features/<yyyymmdd>/<feature-slug>/
+      - spec/features/<yyyymmdd>/<feature-slug>/tasks/
       - scoped source files
       - scoped tests and configuration
     execute:

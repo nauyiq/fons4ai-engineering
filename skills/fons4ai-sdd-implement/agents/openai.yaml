@@ -1,7 +1,7 @@
 interface:
   display_name: "Fons4AI SDD Implement"
-  short_description: "受控执行 SDD 任务规划，必须有最新用户执行确认、Evidence Bundle、Review 状态和人工 Gate 记录。"
-  default_prompt: "Use $fons4ai-sdd-implement only when an SDD task plan already exists and the latest user message explicitly confirms implementation, such as 执行, 开始实现, 继续执行, or 执行 T001,T002. Record Evidence Bundle, Review status, Gate status, verification, and unresolved items."
+  short_description: "受控执行 SDD 任务，先做 Test Decision，再按覆盖缺口编写测试并执行风险驱动回归。"
+  default_prompt: "Use $fons4ai-sdd-implement only when a V1 task plan or approved V2 Task Pack exists and the latest user message explicitly confirms implementation. Before changing tests, perform the Test Decision Gate: observable behavior, existing coverage, coverage gap, test action, test level, affected tests, and regression scope. Reuse valid fingerprinted evidence; do not default to full regression. Record the Evidence Ledger, Review status, Gate status, verification, and unresolved items."
 
 adapter:
   platform: codex

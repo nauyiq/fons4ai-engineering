@@ -1,7 +1,7 @@
 interface:
   display_name: "Fons4AI SDD Feature Workflow"
   short_description: "编排正常新需求的 SDD 需求、设计和任务规划流程。"
-  default_prompt: "Use $fons4ai-sdd-feature-workflow for normal new feature development: clarify requirements, create technical design, generate task planning, validate SDD artifacts, then stop for implementation approval."
+  default_prompt: "Use $fons4ai-sdd-feature-workflow for normal new feature development. Split large zero-to-one systems into an initiative and independently acceptable features, enforce requirement readiness and applicable design approval, choose V1 or V2 Task Pack planning, and require Test Decision fields. During parallel implementation aggregation, verify fingerprinted evidence and run the affected-test union; do not default to full regression. Validate artifacts, then stop for implementation approval."
 
 adapter:
   platform: codex

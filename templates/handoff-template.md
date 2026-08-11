@@ -8,6 +8,16 @@
 - 输出时间：
 - 当前状态：完成 | 部分完成 | 阻塞
 
+## SDD 范围
+
+- Initiative 路径：无 | `spec/initiatives/<yyyymmdd>/<initiative-slug>/initiative.md`
+- Feature 目录：`spec/features/<yyyymmdd>/` | `spec/features/<yyyymmdd>/<feature-slug>/`
+- 规划模式：single-file | task-pack | 尚未进入任务阶段
+- 设计确认状态：pending | approved | not-required
+- 任务入口：V1 任务规划路径 | V2 任务索引路径
+- 当前活动 Task Pack：无 | TP-001
+- 本次选中任务：无 | T001,T002
+
 ## 输入产物
 
 - 

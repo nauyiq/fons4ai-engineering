@@ -12,6 +12,13 @@ from pathlib import Path
 AC_RE = re.compile(r"\bAC-\d{3}\b")
 REQ_RE = re.compile(r"\bREQ-\d{3}\b")
 TASK_RE = re.compile(r"^- \[[ xX]\] (T\d{3})(?:\s|$)", re.MULTILINE)
+TASK_PACK_RE = re.compile(r"\bTP-\d{3}\b")
+TASK_PACK_HEADER_RE = re.compile(r"^>\s*TaskPack[：:]\s*`?(TP-\d{3})`?", re.MULTILINE)
+TASK_PACK_INDEX_ROW_RE = re.compile(r"^\|\s*(TP-\d{3})\s*\|", re.MULTILINE)
+PACK_STATUS_RE = re.compile(r"^>\s*PackStatus[：:]\s*([a-z-]+)", re.MULTILINE | re.IGNORECASE)
+APPROVAL_STATUS_RE = re.compile(r"^>\s*ApprovalStatus[：:]\s*([a-z-]+)", re.MULTILINE | re.IGNORECASE)
+PACK_DEPENDS_RE = re.compile(r"^>\s*DependsOn[：:]\s*([^\n\r]+)", re.MULTILINE | re.IGNORECASE)
+ACTIVE_PACK_RE = re.compile(r"当前活动任务包\s*[：:]\s*(?:`?(TP-\d{3})`?|无)", re.IGNORECASE)
 SQL_PATH_RE = re.compile(r"\.specify/sql/[A-Za-z0-9_./-]+\.sql")
 EXECUTABLE_DDL_PATH_RE = re.compile(
     r"\.?[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*\.sql",
@@ -20,6 +27,10 @@ EXECUTABLE_DDL_PATH_RE = re.compile(
 S2_RE = re.compile(r"(SDD\s*Level|SDD\s*等级)\s*[:：]\s*`?S2`?", re.IGNORECASE)
 RUNTIME_SERVICE_DECLARATION_RE = re.compile(
     r"(?:独立可运行服务|服务运行态门禁)\s*[：:]\s*(?:是|适用|yes|true)",
+    re.IGNORECASE,
+)
+RUNTIME_SERVICE_NEGATIVE_RE = re.compile(
+    r"(?:独立可运行服务|服务运行态门禁)\s*[：:]\s*(?:否|不适用|no|false)",
     re.IGNORECASE,
 )
 LEGACY_RUNTIME_SERVICE_ENTRY_RE = re.compile(
@@ -35,6 +46,8 @@ LEGACY_RUNTIME_SERVICE_ENTRY_RE = re.compile(
 def requires_runtime_service_closure(design_text: str) -> bool:
     """Require runtime closure only for declared or unambiguously runnable services."""
 
+    if RUNTIME_SERVICE_NEGATIVE_RE.search(design_text):
+        return False
     return bool(
         RUNTIME_SERVICE_DECLARATION_RE.search(design_text)
         or LEGACY_RUNTIME_SERVICE_ENTRY_RE.search(design_text)
@@ -54,13 +67,18 @@ RUNTIME_INIT_DML_TASK_RE = re.compile(
     r"执行状态|只读复核|复核\s*SQL|回滚说明|占位变量|用户/DBA|DBA|暂缓",
     re.IGNORECASE,
 )
+RUNTIME_INIT_DML_HEADINGS = (
+    "### 4.8 运行初始化 DML / Seed 数据",
+    "### 5.4 运行初始化 DML / Seed 数据",
+    "### 5.4 运行初始化 DML / Seed",
+)
 
 APPROVAL_GATE_HEADINGS = ("## 2. 实现确认门禁", "## 12. 实现确认门禁", "## 实现确认门禁", "## Implementation Approval Gate")
 DOCUMENT_STATUS_RE = re.compile(r"(文档状态|Document Status)\s*[:：]\s*([^\n\r]+)", re.IGNORECASE)
 BLOCKING_ARTIFACT_RE = re.compile(r"草案-待确认|草案-含待确认|阻塞|blocking|draft", re.IGNORECASE)
 SPEC_REQUIRED_HEADING_GROUPS = (
     ("一句话说明", ("## 一句话说明",)),
-    ("需求澄清摘要", ("## 需求澄清摘要",)),
+    ("需求就绪摘要", ("## 需求就绪摘要", "## 需求澄清摘要")),
     ("背景与目标", ("## 背景与目标",)),
     ("需求范围", ("## 需求范围",)),
     ("角色与场景", ("## 角色与场景",)),
@@ -86,16 +104,25 @@ PLAN_REQUIRED_HEADING_GROUPS = (
     ("技术决策", ("## 9. 技术决策", "## 技术决策")),
     ("验证策略、AC 映射与风险", ("## 10. 验证策略、AC 映射与风险", "## 验证策略、AC 映射与风险")),
 )
-KNOWLEDGE_IMPACT_HEADINGS = ("### 10.4 知识同步影响", "## 知识同步清单", "## 知识同步影响", "## Knowledge Impact")
-RISK_ROLLBACK_HEADINGS = ("### 10.3 风险与回滚", "## 10. 验证策略、AC 映射与风险", "## 风险与回滚", "## Risk and Rollback")
+DESIGN_V2_REQUIRED_HEADING_GROUPS = (
+    ("设计摘要与关键决策", ("## 1. 设计摘要与关键决策",)),
+    ("系统边界、模块与调用链", ("## 2. 系统边界、模块与调用链",)),
+    ("接口、消息与外部契约", ("## 3. 接口、消息与外部契约",)),
+    ("核心业务、领域规则与状态流转", ("## 4. 核心业务、领域规则与状态流转",)),
+    ("数据结构、迁移与初始化", ("## 5. 数据结构、迁移与初始化",)),
+    ("横切质量设计", ("## 6. 横切质量设计",)),
+    ("AC、验证、风险与回滚", ("## 7. AC、验证、风险与回滚",)),
+)
+KNOWLEDGE_IMPACT_HEADINGS = ("### 10.4 知识同步影响", "### 7.2 知识同步影响", "## 知识同步清单", "## 知识同步影响", "## Knowledge Impact")
+RISK_ROLLBACK_HEADINGS = ("### 10.3 风险与回滚", "## 10. 验证策略、AC 映射与风险", "## 7. AC、验证、风险与回滚", "## 风险与回滚", "## Risk and Rollback")
 S2_QUALITY_GATE_HEADINGS = ("## S2 质量门禁", "## S2 Quality Gates")
 EVIDENCE_MATRIX_RE = re.compile(r"Evidence\s+Matrix|证据矩阵|运行态\s*Evidence|服务级\s*Evidence", re.IGNORECASE)
 DATA_IMPACT_HEADINGS = ("### 数据影响判断", "## 数据影响判断", "### Data Impact")
-FIELD_MAPPING_HEADINGS = ("### 4.2 字段映射契约", "### 字段映射契约", "## 字段映射契约", "### Field Mapping Contract")
-DATA_FLOW_HEADINGS = ("### 4.3 数据流设计", "### 数据流设计", "## 数据流设计", "### Data Flow Design")
-DATA_SECURITY_HEADINGS = ("### 4.4 数据安全与合规设计", "### 数据安全与合规设计", "## 数据安全与合规设计", "### Data Security")
-DATA_STRUCTURE_DETAIL_HEADINGS = ("### 4.5 结构变更详设", "### 结构变更详设", "## 结构变更详设", "### Data Structure Detail")
-EVIDENCE_LIST_HEADINGS = ("## 11. 证据清单", "## 证据清单", "## Evidence List")
+FIELD_MAPPING_HEADINGS = ("### 4.2 字段映射契约", "### 5.2 字段映射与数据流", "### 字段映射契约", "## 字段映射契约", "### Field Mapping Contract")
+DATA_FLOW_HEADINGS = ("### 4.3 数据流设计", "### 5.2 字段映射与数据流", "### 数据流设计", "## 数据流设计", "### Data Flow Design")
+DATA_SECURITY_HEADINGS = ("### 4.4 数据安全与合规设计", "### 5.5 数据安全与生命周期", "### 数据安全与合规设计", "## 数据安全与合规设计", "### Data Security")
+DATA_STRUCTURE_DETAIL_HEADINGS = ("### 4.5 结构变更详设", "### 5.3 结构变更详设", "### 结构变更详设", "## 结构变更详设", "### Data Structure Detail")
+EVIDENCE_LIST_HEADINGS = ("## 11. 证据清单", "## 附录 A. 证据清单", "## 证据清单", "## Evidence List")
 CHANGE_REQUIRED_HEADING_GROUPS = (
     ("变更摘要", ("## 1. 变更摘要", "## 变更摘要")),
     ("影响范围", ("## 4. 影响范围", "## 影响范围", "## 影响分析", "## Impact Analysis")),
@@ -141,8 +168,26 @@ UI_DESIGN_EVIDENCE_RE = re.compile(
     r"UI 设计确认|UI 设计方案|页面信息架构|布局方案|关键交互流|视觉验收|用户跳过.*设计确认|跳过 UI 设计|页面/交互型交付物设计确认",
     re.IGNORECASE,
 )
+UI_DELIVERY_NEGATIVE_RE = re.compile(r"页面/交互型交付物\s*[：:]\s*(?:否|不适用|no|false)", re.IGNORECASE)
+UI_DELIVERY_POSITIVE_RE = re.compile(r"页面/交互型交付物\s*[：:]\s*(?:是|适用|yes|true)", re.IGNORECASE)
 
 DOC_UPDATE_DATE_RE = re.compile(r"更新日期\s*[:：]\s*(\d{4}-\d{2}-\d{2})", re.IGNORECASE)
+DESIGN_APPROVAL_RE = re.compile(r"设计确认状态\s*[:：]\s*`?(pending|approved|not-required)`?", re.IGNORECASE)
+VALID_PACK_STATUS = {"draft", "ready", "approved", "in-progress", "done", "deferred", "superseded", "archived"}
+VALID_PACK_APPROVAL = {"pending", "approved", "rejected", "not-required"}
+TEST_DECISION_MARKER = "TestDecisionVersion: 1"
+TEST_DECISION_FIELDS = {
+    "BehaviorChange:": {"none", "changed", "new"},
+    "ExistingCoverage:": {"covered", "partial", "missing", "not-applicable"},
+    "TestAction:": {"none", "reuse", "update", "add"},
+    "TestLevel:": {"none", "unit", "contract", "integration", "e2e", "manual"},
+    "RegressionScope:": {"none", "focused", "affected", "module", "full"},
+}
+FULL_REGRESSION_TRIGGER_RE = re.compile(
+    r"发布|合并|公共契约|共享基础|依赖|构建配置|数据库结构|安全|权限|影响范围|用户|CI|"
+    r"release|merge|contract|shared|dependency|build|database|security|permission|unknown|user",
+    re.IGNORECASE,
+)
 
 
 def read(path: Path) -> str:
@@ -152,6 +197,43 @@ def read(path: Path) -> str:
         raise
     except UnicodeDecodeError:
         return path.read_text()
+
+
+def task_field(block: str, label: str) -> str | None:
+    match = re.search(rf"^\s*-\s*{re.escape(label)}\s*([^|\r\n]+)", block, re.MULTILINE)
+    return match.group(1).strip().lower() if match else None
+
+
+def validate_test_decision(task_id: str, block: str, source: str) -> list[str]:
+    errors: list[str] = []
+    values: dict[str, str] = {}
+    for label, allowed in TEST_DECISION_FIELDS.items():
+        value = task_field(block, label)
+        if value is None:
+            errors.append(f"{task_id} in {source} is missing '{label}'")
+            continue
+        values[label] = value
+        if value not in allowed:
+            errors.append(f"{task_id} in {source} has invalid {label} value '{value}'")
+    for label in ("AffectedTests:", "TestReason:"):
+        if task_field(block, label) is None:
+            errors.append(f"{task_id} in {source} is missing '{label}'")
+
+    behavior = values.get("BehaviorChange:")
+    coverage = values.get("ExistingCoverage:")
+    action = values.get("TestAction:")
+    level = values.get("TestLevel:")
+    scope = values.get("RegressionScope:")
+    reason = task_field(block, "TestReason:") or ""
+    if behavior == "none" and action in {"update", "add"}:
+        errors.append(f"{task_id} in {source} changes tests even though BehaviorChange is none")
+    if coverage == "covered" and action in {"update", "add"}:
+        errors.append(f"{task_id} in {source} changes tests even though ExistingCoverage is covered")
+    if action in {"update", "add"} and level == "none":
+        errors.append(f"{task_id} in {source} has TestAction {action} but TestLevel is none")
+    if scope == "full" and not FULL_REGRESSION_TRIGGER_RE.search(reason):
+        errors.append(f"{task_id} in {source} uses full regression without an explicit trigger in TestReason")
+    return errors
 
 
 def requirement_artifact_paths(feature_dir: Path) -> list[Path]:
@@ -166,6 +248,15 @@ def task_planning_artifact_paths(feature_dir: Path) -> list[Path]:
     return sorted(feature_dir.glob("*-任务规划.md"))
 
 
+def task_index_artifact_paths(feature_dir: Path) -> list[Path]:
+    return sorted(feature_dir.glob("*-任务索引.md"))
+
+
+def task_pack_artifact_paths(feature_dir: Path) -> list[Path]:
+    tasks_dir = feature_dir / "tasks"
+    return sorted(tasks_dir.glob("TP-*.md")) if tasks_dir.is_dir() else []
+
+
 def task_blocks(tasks_text: str) -> list[tuple[str, str]]:
     matches = list(TASK_RE.finditer(tasks_text))
     blocks: list[tuple[str, str]] = []
@@ -174,6 +265,90 @@ def task_blocks(tasks_text: str) -> list[tuple[str, str]]:
         end = matches[index + 1].start() if index + 1 < len(matches) else len(tasks_text)
         blocks.append((match.group(1), tasks_text[start:end]))
     return blocks
+
+
+def validate_task_pack_mode(index_path: Path, pack_paths: list[Path]) -> list[str]:
+    errors: list[str] = []
+    index_text = read(index_path)
+    pack_graph: dict[str, set[str]] = {}
+    seen_pack_ids: set[str] = set()
+    indexed_pack_ids = set(TASK_PACK_INDEX_ROW_RE.findall(index_text))
+
+    active_match = ACTIVE_PACK_RE.search(index_text)
+    if not active_match:
+        errors.append(f"{index_path.name} is missing '当前活动任务包' field")
+    active_pack = active_match.group(1) if active_match else None
+
+    for pack_path in pack_paths:
+        text = read(pack_path)
+        header = TASK_PACK_HEADER_RE.search(text)
+        if not header:
+            errors.append(f"{pack_path.name} is missing TaskPack metadata")
+            continue
+        pack_id = header.group(1)
+        if pack_id in seen_pack_ids:
+            errors.append(f"Duplicate Task Pack ID: {pack_id}")
+        seen_pack_ids.add(pack_id)
+        if pack_id not in indexed_pack_ids:
+            errors.append(f"{pack_id} exists in {pack_path.name} but is not registered in {index_path.name}")
+        if not pack_path.stem.startswith(pack_id):
+            errors.append(f"{pack_path.name} filename must start with its Task Pack ID {pack_id}")
+
+        status_match = PACK_STATUS_RE.search(text)
+        approval_match = APPROVAL_STATUS_RE.search(text)
+        if not status_match:
+            errors.append(f"{pack_path.name} is missing PackStatus metadata")
+            status = ""
+        else:
+            status = status_match.group(1).lower()
+            if status not in VALID_PACK_STATUS:
+                errors.append(f"{pack_path.name} has invalid PackStatus: {status}")
+        if not approval_match:
+            errors.append(f"{pack_path.name} is missing ApprovalStatus metadata")
+            approval = ""
+        else:
+            approval = approval_match.group(1).lower()
+            if approval not in VALID_PACK_APPROVAL:
+                errors.append(f"{pack_path.name} has invalid ApprovalStatus: {approval}")
+        if status in {"approved", "in-progress"} and approval not in {"approved", "not-required"}:
+            errors.append(f"{pack_path.name} is executable but ApprovalStatus is not approved/not-required")
+
+        depends_match = PACK_DEPENDS_RE.search(text)
+        dependencies = set(TASK_PACK_RE.findall(depends_match.group(1))) if depends_match else set()
+        if pack_id in dependencies:
+            errors.append(f"{pack_path.name} cannot depend on itself ({pack_id})")
+        pack_graph[pack_id] = dependencies
+
+    for indexed_pack_id in sorted(indexed_pack_ids - seen_pack_ids):
+        errors.append(f"{index_path.name} registers {indexed_pack_id} but no matching task pack file exists")
+
+    for pack_id, dependencies in pack_graph.items():
+        for dependency in sorted(dependencies - seen_pack_ids):
+            errors.append(f"{pack_id} depends on unknown Task Pack {dependency}")
+
+    if active_pack and active_pack not in seen_pack_ids:
+        errors.append(f"{index_path.name} current active Task Pack {active_pack} has no task pack file")
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(pack_id: str) -> None:
+        if pack_id in visited:
+            return
+        if pack_id in visiting:
+            errors.append(f"Task Pack dependency cycle detected at {pack_id}")
+            return
+        visiting.add(pack_id)
+        for dependency in pack_graph.get(pack_id, set()):
+            if dependency in pack_graph:
+                visit(dependency)
+        visiting.remove(pack_id)
+        visited.add(pack_id)
+
+    for pack_id in pack_graph:
+        visit(pack_id)
+
+    return errors
 
 
 def heading_match(text: str, heading: str) -> re.Match[str] | None:
@@ -215,6 +390,25 @@ def has_section_content(text: str, headings: tuple[str, ...]) -> bool:
             continue
         return True
     return False
+
+
+def requires_runtime_init_dml(text: str) -> bool:
+    section = section_content(text, RUNTIME_INIT_DML_HEADINGS)
+    if section:
+        if re.search(r"是否涉及(?:运行初始化数据)?\s*[：:]\s*(?:否|不适用|no|false)", section, re.IGNORECASE):
+            return False
+        if re.search(r"是否涉及(?:运行初始化数据)?\s*[：:]\s*(?:是|适用|yes|true)", section, re.IGNORECASE):
+            return True
+        return bool(RUNTIME_INIT_DML_RE.search(section) and not re.search(r"不适用|none", section, re.IGNORECASE))
+    return bool(RUNTIME_INIT_DML_RE.search(text))
+
+
+def requires_ui_design(design_text: str, planning_text: str) -> bool:
+    if UI_DELIVERY_POSITIVE_RE.search(design_text):
+        return True
+    if UI_DELIVERY_NEGATIVE_RE.search(design_text) and not UI_KEYWORD_RE.search(planning_text):
+        return False
+    return bool(UI_KEYWORD_RE.search(design_text) or UI_KEYWORD_RE.search(planning_text))
 
 
 def validate_required_heading_groups(
@@ -313,21 +507,41 @@ def validate(feature_dir: Path, strict: bool = False) -> tuple[list[str], list[s
     else:
         design = design_files[0]
     task_files = task_planning_artifact_paths(feature_dir)
-    if not task_files:
-        errors.append(f"Missing required artifact: {feature_dir / '<功能中文名>-任务规划.md'}")
-        tasks = feature_dir / "<功能中文名>-任务规划.md"
-    elif len(task_files) > 1:
-        errors.append(f"Multiple task planning artifacts found in {feature_dir}; keep exactly one *-任务规划.md")
-        tasks = task_files[0]
+    task_index_files = task_index_artifact_paths(feature_dir)
+    task_pack_files = task_pack_artifact_paths(feature_dir)
+    planning_mode = ""
+    planning_artifacts: list[Path] = []
+    if task_files and task_index_files:
+        errors.append(f"Both V1 task plan and V2 task index found in {feature_dir}; keep only one active planning mode")
+    elif task_index_files:
+        planning_mode = "task-pack"
+        if len(task_index_files) > 1:
+            errors.append(f"Multiple task indexes found in {feature_dir}; keep exactly one *-任务索引.md")
+        if not task_pack_files:
+            errors.append(f"V2 task index found but no task packs exist under {feature_dir / 'tasks'}")
+        planning_artifacts = task_index_files[:1] + task_pack_files
+    elif task_files:
+        planning_mode = "single-file"
+        if len(task_files) > 1:
+            errors.append(f"Multiple task planning artifacts found in {feature_dir}; keep exactly one *-任务规划.md")
+        planning_artifacts = task_files[:1]
     else:
-        tasks = task_files[0]
+        errors.append(
+            f"Missing task planning artifact: expected {feature_dir / '<功能中文名>-任务规划.md'} "
+            f"or {feature_dir / '<功能中文名>-任务索引.md'} with tasks/TP-*.md"
+        )
 
     if errors:
         return errors, warnings
 
     spec_text = read(spec)
     design_text = read(design)
-    tasks_text = read(tasks)
+    planning_text_by_path = [(path, read(path)) for path in planning_artifacts]
+    tasks_text = "\n".join(text for _, text in planning_text_by_path)
+    planning_name = ", ".join(path.name for path in planning_artifacts)
+    task_index = task_index_files[0] if task_index_files else None
+    if planning_mode == "task-pack" and task_index:
+        errors.extend(validate_task_pack_mode(task_index, task_pack_files))
     all_text = "\n".join((spec_text, design_text, tasks_text))
 
     ac_ids = sorted(set(AC_RE.findall(spec_text)))
@@ -337,7 +551,15 @@ def validate(feature_dir: Path, strict: bool = False) -> tuple[list[str], list[s
     errors.extend(validate_required_heading_groups(spec_text, SPEC_REQUIRED_HEADING_GROUPS, str(spec.name)))
     errors.extend(validate_artifact_readiness(spec_text, str(spec.name)))
     errors.extend(validate_req_ac_mapping(spec_text))
-    errors.extend(validate_required_heading_groups(design_text, PLAN_REQUIRED_HEADING_GROUPS, str(design.name)))
+    design_heading_groups = (
+        DESIGN_V2_REQUIRED_HEADING_GROUPS
+        if has_any_heading(design_text, DESIGN_V2_REQUIRED_HEADING_GROUPS[0][1])
+        else PLAN_REQUIRED_HEADING_GROUPS
+    )
+    errors.extend(validate_required_heading_groups(design_text, design_heading_groups, str(design.name)))
+    design_approval = DESIGN_APPROVAL_RE.search(design_text)
+    if design_approval and design_approval.group(1).lower() == "pending":
+        errors.append(f"{design.name} design approval is pending and cannot enter task execution planning")
     if not has_any_heading(spec_text, DATA_IMPACT_HEADINGS):
         errors.append(f"{spec.name} is missing data impact check section")
     for display_name, headings in (
@@ -353,7 +575,7 @@ def validate(feature_dir: Path, strict: bool = False) -> tuple[list[str], list[s
         if ac_id not in design_text:
             errors.append(f"{ac_id} is not referenced in {design.name}")
         if ac_id not in tasks_text:
-            errors.append(f"{ac_id} is not referenced in {tasks.name}")
+            errors.append(f"{ac_id} is not referenced in task planning artifacts")
 
     plan_sql_files = sorted(set(SQL_PATH_RE.findall(design_text)))
     if plan_declares_sql_sync(design_text) and not plan_sql_files:
@@ -362,7 +584,7 @@ def validate(feature_dir: Path, strict: bool = False) -> tuple[list[str], list[s
         errors.append(f"{design.name} declares data structure or DDL impact but has no evidence list")
     for sql_file in plan_sql_files:
         if sql_file not in tasks_text:
-            errors.append(f"{sql_file} is referenced in {design.name} but not in {tasks.name}")
+            errors.append(f"{sql_file} is referenced in {design.name} but not in task planning artifacts")
 
     if declares_existing_table_change_with_baseline(design_text):
         executable_ddl_files = executable_ddl_paths(design_text)
@@ -370,43 +592,45 @@ def validate(feature_dir: Path, strict: bool = False) -> tuple[list[str], list[s
             errors.append(f"{design.name} declares an existing-table change with baseline DDL but names no executable change DDL file")
         for ddl_file in executable_ddl_files:
             if ddl_file not in tasks_text:
-                errors.append(f"{ddl_file} is referenced as executable change DDL in {design.name} but not in {tasks.name}")
+                errors.append(f"{ddl_file} is referenced as executable change DDL in {design.name} but not in task planning artifacts")
         if not re.search(r"(执行型变更\s*DDL|Executable\s+change\s+DDL|ALTER\s+TABLE)", tasks_text, re.IGNORECASE):
-            errors.append(f"{tasks.name} has no executable change DDL task for the existing-table structural change")
+            errors.append("task planning artifacts have no executable change DDL task for the existing-table structural change")
 
     if DATA_RISK_RE.search(design_text) and not DATA_VERIFICATION_RE.search(tasks_text):
-        errors.append(f"{tasks.name} has no data verification task for triggered data design/governance risk")
+        errors.append("task planning artifacts have no data verification task for triggered data design/governance risk")
 
     if requires_runtime_service_closure(design_text):
         if not RUNTIME_SERVICE_TASK_RE.search(tasks_text):
-            errors.append(f"{tasks.name} has no runtime service closure task for triggered service runtime design")
+            errors.append("task planning artifacts have no runtime service closure task for triggered service runtime design")
         if S2_RE.search(all_text) and not EVIDENCE_MATRIX_RE.search(tasks_text + "\n" + design_text):
-            errors.append(f"S2 {tasks.name} must include an Evidence Matrix for runtime service delivery")
+            errors.append("S2 task planning artifacts must include an Evidence Matrix for runtime service delivery")
 
-    if RUNTIME_INIT_DML_RE.search(design_text):
+    if requires_runtime_init_dml(design_text):
         if not RUNTIME_INIT_DML_TASK_RE.search(tasks_text):
-            errors.append(f"{tasks.name} has no runtime initialization DML/Seed deliverable task")
+            errors.append("task planning artifacts have no runtime initialization DML/Seed deliverable task")
 
     if not has_any_heading(design_text, KNOWLEDGE_IMPACT_HEADINGS):
         errors.append(f"{design.name} is missing knowledge impact section")
-    if not has_any_heading(tasks_text, APPROVAL_GATE_HEADINGS):
-        errors.append(f"{tasks.name} is missing implementation approval gate section")
+    approval_surface = read(task_index) if task_index else tasks_text
+    if not has_any_heading(approval_surface, APPROVAL_GATE_HEADINGS):
+        errors.append("task plan or task index is missing implementation approval gate section")
 
     if S2_RE.search(all_text):
         if not has_any_heading(design_text, RISK_ROLLBACK_HEADINGS):
             errors.append(f"S2 {design.name} is missing risk and rollback section")
-        for display_name, headings in PLAN_REQUIRED_HEADING_GROUPS:
+        for display_name, headings in design_heading_groups:
             if has_any_heading(design_text, headings) and not has_section_content(design_text, headings):
                 errors.append(f"S2 {design.name} section '{display_name}' has no content")
         has_s2_quality_gate = has_any_heading(tasks_text, S2_QUALITY_GATE_HEADINGS)
         if not has_s2_quality_gate and not RISK_CONTROL_RE.search(tasks_text):
-            errors.append(f"S2 {tasks.name} must include S2 quality gates or explicit risk-control tasks")
+            errors.append("S2 task planning artifacts must include S2 quality gates or explicit risk-control tasks")
 
     blocks = task_blocks(tasks_text)
     if not blocks:
-        errors.append(f"{tasks.name} contains no checklist tasks in '- [ ] T001' format")
+        errors.append("task planning artifacts contain no checklist tasks in '- [ ] T001' format")
 
     seen: set[str] = set()
+    requires_test_decision = TEST_DECISION_MARKER in tasks_text
     for task_id, block in blocks:
         if task_id in seen:
             errors.append(f"Duplicate task ID: {task_id}")
@@ -416,19 +640,21 @@ def validate(feature_dir: Path, strict: bool = False) -> tuple[list[str], list[s
         for label in ("Files:", "Verification:", "Quality:", "Done:"):
             if label not in block:
                 errors.append(f"{task_id} is missing '{label}'")
-        errors.extend(validate_quality_domain_check(task_id, block, str(tasks.name)))
+        errors.extend(validate_quality_domain_check(task_id, block, planning_name))
+        if requires_test_decision:
+            errors.extend(validate_test_decision(task_id, block, planning_name))
 
     # UI Gate check: page/UI deliverables must have UI design confirmation evidence
-    if UI_KEYWORD_RE.search(design_text) or UI_KEYWORD_RE.search(tasks_text):
+    if requires_ui_design(design_text, tasks_text):
         if not UI_DESIGN_EVIDENCE_RE.search(tasks_text):
-            errors.append(f"{tasks.name} contains UI/page deliverables but has no UI design confirmation task or evidence")
+            errors.append("task planning artifacts contain UI/page deliverables but have no UI design confirmation task or evidence")
 
     # Document update time consistency check
-    for doc_name, doc_path, doc_text in [
+    dated_artifacts = [
         ("requirement", spec, spec_text),
         ("technical design", design, design_text),
-        ("task planning", tasks, tasks_text),
-    ]:
+    ] + [("task planning", path, text) for path, text in planning_text_by_path]
+    for doc_name, doc_path, doc_text in dated_artifacts:
         update_match = DOC_UPDATE_DATE_RE.search(doc_text)
         if update_match and update_match.group(1) == "YYYY-MM-DD":
             warnings.append(f"{doc_path.name} has template placeholder date 'YYYY-MM-DD' as update date; update to actual date")
@@ -454,14 +680,21 @@ def validate_change_file(change_file: Path) -> list[str]:
 
     if not AC_RE.search(text):
         errors.append(f"{change_file} contains no AC-### mapping")
-    if not TASK_RE.search(text):
-        errors.append(f"{change_file} contains no incremental checklist tasks")
+    has_task_pack_reference = bool(
+        TASK_PACK_RE.search(text)
+        and re.search(r"(?<![A-Za-z0-9_.-])tasks[\\/][^\s`|]+\.md", text, re.IGNORECASE)
+    )
+    if not TASK_RE.search(text) and not has_task_pack_reference:
+        errors.append(f"{change_file} contains neither V1 incremental checklist tasks nor a V2 Task Pack reference")
 
+    requires_test_decision = TEST_DECISION_MARKER in text
     for task_id, block in task_blocks(text):
         for label in ("Files:", "Verification:", "Quality:", "Done:"):
             if label not in block:
                 errors.append(f"{task_id} in {change_file} is missing '{label}'")
         errors.extend(validate_quality_domain_check(task_id, block, str(change_file)))
+        if requires_test_decision:
+            errors.extend(validate_test_decision(task_id, block, str(change_file)))
 
     ddl_action = (
         re.search(r"SQL DDL action\s*:\s*(add|update|rename)", text, re.IGNORECASE)
@@ -586,7 +819,7 @@ def validate_implementation_report(report: Path) -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate Fons4AI SDD artifacts")
-    parser.add_argument("--feature-dir", help="Path to spec/features/<yyyymmdd> containing *-任务规划.md")
+    parser.add_argument("--feature-dir", help="Feature directory containing V1 *-任务规划.md or V2 *-任务索引.md plus tasks/*.md")
     parser.add_argument("--change-file", help="Path to spec/features/<yyyymmdd>/changes/CR-xxx.md")
     parser.add_argument("--bugfix-report", help="Path to spec/bugfixes/<yyyymmdd>/<bug中文名>-BUG修复报告.md")
     parser.add_argument("--implementation-report", help="Path to spec/features/<yyyymmdd>/reports/<功能中文名>-实施报告.md")

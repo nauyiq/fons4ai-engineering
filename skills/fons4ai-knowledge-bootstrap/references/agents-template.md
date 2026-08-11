@@ -21,7 +21,8 @@
 | 查看领域知识 | `.specify/memory/domains/<domain-slug>/` | 按需建模 |
 | 查看知识卡片 | `.specify/memory/domains/<domain-slug>/cards/` | 按需创建 |
 | 查看项目规则 | `.specify/rules/` | 可选生成 |
-| 查看 SDD 产物 | `spec/features/<yyyymmdd>/` | 按需生成 |
+| 查看 SDD 产物 | V1 `spec/features/<yyyymmdd>/`；V2 `spec/features/<yyyymmdd>/<feature-slug>/` | 按需生成 |
+| 查看大型系统功能地图 | `spec/initiatives/<yyyymmdd>/<initiative-slug>/initiative.md` | 按需生成 |
 | 查看 BUG 修复报告 | `spec/bugfixes/<yyyymmdd>/<bug中文名>-BUG修复报告.md` | 按需生成 |
 
 ## 硬性规则
@@ -75,12 +76,16 @@
 ## SDD 规范
 
 - SDD 只使用 `S1` 和 `S2`。
-- 全新需求产物默认位于 `spec/features/<yyyymmdd>/`，核心文件为 `<功能中文名>-需求说明书.md`、`<功能中文名>-技术设计说明书.md`、`<功能中文名>-任务规划.md`。
+- SDD 三件套表示需求、技术设计和任务规划三类职责，不限定恰好三个物理文件。
+- 小型 S1 可使用 V1 单文件任务规划；复杂 Feature 使用 V2 `<功能中文名>-任务索引.md` 与 `tasks/TP-*.md`。
+- 大型零到一系统先建立 Initiative 功能地图，再为项目初始化、用户管理、订单管理等独立能力分别创建 Feature。
 - 正常新需求开发优先使用 `fons4ai-sdd-feature-workflow` 编排需求、设计和任务规划。
-- 若关键需求含义、业务术语、数据语义、验收口径、兼容性、安全权限、迁移回滚或 SDD 等级存在歧义，必须先澄清，不得直接生成正式三件套。
+- 需求澄清使用成熟度和就绪门禁；5 个问题只是默认检查点，不是硬上限。阻塞歧义未关闭时不得进入设计。
+- S2、零到一系统、跨核心模块、公共契约、数据结构、权限安全、复杂 UI 或多 Task Pack 场景必须先确认技术设计。
 - `fons4ai-sdd-feature-workflow`、`fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks`、`fons4ai-sdd-change` 只能生成或更新 SDD 产物，不得写业务代码。
-- 生成 `<功能中文名>-任务规划.md` 或 CR 增量任务后必须暂停，等待用户确认执行。
-- 用户回复 `执行`、`开始实现`、`继续执行` 时默认执行全部未完成任务；用户回复 `执行 T001,T002` 时只执行指定任务。
+- 生成任务规划、任务索引、Task Pack 或 CR 增量范围后必须暂停，等待用户确认执行。
+- V1 中 `执行` 默认执行全部未完成任务；V2 中 `执行` 只执行当前活动、已批准 Task Pack。跨包执行必须指定 `TP-xxx`、任务 ID 或明确回复 `执行全部活动任务包`。
+- 已批准、完成、已替代或归档 Task Pack 不得继续追加；新增独立能力默认创建新 Feature，体量过大时创建继任 Feature。
 - 实现或验证阶段无法关闭时，`fons4ai-sdd-implement` 内置阻塞分类、失败签名和有界重试，直接诊断并建议路由到任务、设计、变更或外部 Gate。
 
 ## 知识库建设确认门禁

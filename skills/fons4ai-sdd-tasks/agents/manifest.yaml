@@ -7,16 +7,19 @@ agent:
   category: sdd-stage
   context_budget:
     required:
-      - spec/features/<yyyymmdd>/<feature>-需求说明书.md
-      - spec/features/<yyyymmdd>/<feature>-技术设计说明书.md
+      - V1 or V2 feature requirement specification
+      - matching V1 or V2 feature technical design specification
     optional:
       - AGENTS.md
       - source code
+      - directly related tests and prior validation evidence
     forbidden_full_scan: true
   permissions:
     read: true
     write:
       - spec/features/<yyyymmdd>/
+      - spec/features/<yyyymmdd>/<feature-slug>/<feature>-任务索引.md
+      - spec/features/<yyyymmdd>/<feature-slug>/tasks/
     execute:
       - scripts/validators/validate_sdd_artifacts.py
   evidence_level: L1

@@ -1,7 +1,9 @@
 # RR-xxx <问题简述>恢复闭环
 
 > 功能标识：`<feature-slug>`
-> 关联 feature 目录：`spec/features/<yyyymmdd>/`
+> 关联 feature 目录：`spec/features/<yyyymmdd>/` | `spec/features/<yyyymmdd>/<feature-slug>/`
+> 规划模式：single-file | task-pack
+> 关联 Task Pack：不适用 | TP-xxx
 > 关联任务：Txxx | 不适用
 > 文档状态：正式 | 草案-待确认
 > 创建日期：YYYY-MM-DD
@@ -19,7 +21,7 @@
 
 | 产物/证据 | 路径或来源 | 结论 |
 | --- | --- | --- |
-| 任务规划 | `<path>` |  |
+| 任务规划或任务索引/Task Pack | `<path>` |  |
 | 实施报告/失败输出 | `<path or user input>` |  |
 | 需求说明书 | 不适用 |  |
 | 技术设计说明书 | 不适用 |  |
@@ -36,7 +38,7 @@
 
 - 恢复动作：继续实现 | 补任务 | 补设计 | 生成 CR | 等待外部 Gate | 停止
 - 需要修改的 SDD 产物：无 | `<path>`
-- 新增任务 ID：无 | Txxx
+- 新增恢复范围：无 | Txxx | TP-xxx
 - 是否需要用户确认：否 | 是，原因
 - 是否涉及 DDL/DML/Seed：否 | 是，状态
 - 是否涉及运行态 Evidence Matrix：否 | 是，状态

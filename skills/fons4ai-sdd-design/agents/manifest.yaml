@@ -7,7 +7,7 @@ agent:
   category: sdd-stage
   context_budget:
     required:
-      - spec/features/<yyyymmdd>/<feature>-需求说明书.md
+      - V1 spec/features/<yyyymmdd>/<feature>-需求说明书.md or V2 spec/features/<yyyymmdd>/<feature-slug>/<feature>-需求说明书.md
       - AGENTS.md
     optional:
       - .specify/memory/index.md
@@ -19,6 +19,7 @@ agent:
     read: true
     write:
       - spec/features/<yyyymmdd>/
+      - spec/features/<yyyymmdd>/<feature-slug>/
     execute: false
   evidence_level: L2
   spawn_by: fons4ai-sdd-feature-workflow
