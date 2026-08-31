@@ -23,6 +23,7 @@ agent:
       - scoped tests and configuration
     execute:
       - minimal verification commands for S0
+      - scripts/classify_change_route.py for lifecycle routing
       - SDD artifact validators for S1/S2
   evidence_level: L2
   spawn_by: null

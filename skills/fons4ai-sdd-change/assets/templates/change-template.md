@@ -15,9 +15,12 @@
 
 ## 2. 路由与基线判断
 
-- 现有基线状态：draft | approved | in-progress | done
-- 路由结果：修订未批准基线 | 当前 Feature CR | 新 Feature | 继任 Feature
-- 路由理由：
+- FeatureLifecycle：accepted | released | <有证据的其他状态>
+- ExternalizedBaseline：yes | no
+- 已有不可逆效果：否 | 是，说明 DDL、真实数据、公共契约或外部系统影响
+- CR 触发条件：已验收 | 已发布 | 已外部化 | 已有不可逆效果 | 用户明确要求正式审计
+- 路由结果：change-request
+- 路由理由：必须说明为什么不能使用 baseline-revision 或 iteration-correction
 - 是否命中体量阈值：否 | 是，说明
 - 新 Feature/继任 Feature：不适用 | `<feature-slug>`
 - DependsOn：无 | `<feature-slug>`
@@ -37,14 +40,11 @@
 - 需求影响：无 | 有，说明
 - 技术设计影响：无 | 有，说明
 - 代码影响：无 | 有，涉及文件
-- 测试影响：无 | 有，涉及测试
-- BehaviorChange: none | changed | new
-- ExistingCoverage: covered | partial | missing | not-applicable
-- TestAction: none | reuse | update | add
-- TestLevel: none | unit | contract | integration | e2e | manual
-- AffectedTests: none | 测试路径、测试类或聚焦命令
-- RegressionScope: none | focused | affected | module | full
-- TestReason: 可观察行为、已有覆盖、覆盖缺口和范围依据；full 必须说明触发条件
+- 测试影响：只记录风险与最低证据意图；具体测试文件和动作由 implement 检查后确定
+- BehaviorRisk: none | low | medium | high
+- TestIntent: none | reuse | gap-to-confirm
+- MinimumEvidence: none | compile | unit | contract | integration | e2e | manual
+- TestBasis: 可观察行为风险和最低证据下限；不得在变更规划阶段预置新增测试或 full 回归
 - 接口/契约影响：无 | 有，说明
 - 权限/安全影响：无 | 有，说明
 - 兼容/回滚影响：无 | 有，说明

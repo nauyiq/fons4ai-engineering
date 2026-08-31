@@ -27,14 +27,14 @@ description: "Fons4AI 受控的 SDD 任务拆解技能。用于把正式需求�
 
 ### Exit Criteria
 
-- Success: 已选择合适规划模式；任务或 Task Pack 按依赖顺序排列，每个任务包含 `AC:`、`Files:`、`Verification:`、`Quality:`、`Done:`，实现确认状态为 `pending`，并通过 SDD 产物校验。
+- Success: 已选择合适规划模式；任务或 Task Pack 按依赖顺序排列，每个实现任务包含可解析的 `DesignRefs:`、可执行的 `Implementation:`、`Invariants:`、`NonGoals:`，并只声明风险驱动的最低测试证据意图；Feature 生命周期字段完整，实现确认状态为 `pending`，并通过 SDD 产物校验。
 - Blocked: 输入产物缺失、草案/阻塞、AC/设计/数据结构详设不足、任务依赖或执行范围无法确定。
 - Failure report: 汇报缺失产物、阻塞字段、应回到的上游技能和需要用户确认的问题。
 
 ### Handoff
 
 - Next skill: `fons4ai-sdd-implement`，但只有用户最新消息明确授权执行后才允许进入。
-- Required handoff fields: 规划模式、任务规划或任务索引路径、当前活动 Task Pack、Task Pack 路径、未完成任务 ID、依赖关系、AC 映射、Files、Verification、Quality、DDL/数据结构任务、风险任务。
+- Required handoff fields: 规划模式、`FeatureLifecycle`、`ExternalizedBaseline`、`CurrentRevision`、任务规划或任务索引路径、当前活动 Task Pack、未完成任务 ID、依赖关系、AC 映射、DesignRefs、Implementation、Invariants、NonGoals、Files、BehaviorRisk、TestIntent、MinimumEvidence、TestBasis、Verification、Quality、DDL/数据结构任务和风险任务。
 - Service/DML handoff fields: 若涉及独立可运行服务或运行初始化数据，必须同时交接服务启动/注册/健康检查/核心链路任务、Evidence Matrix、DML/Seed 脚本任务、执行状态确认和只读复核任务。
 - Stop condition: 任务规划生成后必须停止等待实现确认；不得自动实现。
 - Structured handoff: 阶段交接时同时输出结构化 handoff YAML（参考 `templates/handoff-yaml-template.yaml`），供跨平台多 Agent 协作使用。
@@ -58,7 +58,7 @@ description: "Fons4AI 受控的 SDD 任务拆解技能。用于把正式需求�
 
 ### Evidence Output
 
-- 任务规划必须记录每个任务的 AC 映射、Files 范围、Verification 方式、Quality 要求和 Done 标准。
+- 任务规划必须记录每个任务的 AC 映射、任务级实施契约、Files 范围、Verification 方式、Quality 要求和 Done 标准。
 - 任务规划必须记录实现确认状态 `pending`，并明确等待用户实现授权。
 - 涉及 DDL/数据结构、运行初始化 DML/Seed、可运行服务闭环时，必须记录对应任务和阻塞条件。
 - 校验脚本结果必须作为任务规划完成证据的一部分。
@@ -109,7 +109,7 @@ V2 中 `执行` 只选择当前活动、已批准 Task Pack；跨包执行必须
 3. 确认需求说明书和技术设计说明书不是草案或阻塞状态。
 4. 按 `REQ-###`、`AC-###`、模块名、文件路径、领域对象、接口、表/模型、业务模型路径搜索上下文。不得默认全量读取 `.specify/memory/`、`.specify/sql/`、`.specify/rules/`、`docs/` 或历史 `specs/`。
 5. 只读取与任务拆解直接相关的项目规则、`.specify/rules/sdd团队协作规范.md`、知识卡片、领域文档、SQL 文件、源码和测试。只有跨领域、S2 或全局约束决策时，才读取项目级知识库总览。
-6. 读取 `references/task-planning-v2.md` 并选择规划模式。
+6. 读取 `references/task-planning-v2.md`、`references/iteration-lifecycle.md` 和 `references/task-implementation-contract.md`，选择规划模式并建立任务级实施契约。
    - V1 使用 `assets/templates/tasks-template.md`。
    - V2 使用 `assets/templates/task-index-template.md` 和 `assets/templates/task-pack-template.md`。
 7. 如果任务规划、任务索引或 `tasks/` 已存在，必须先读取；不得覆盖已批准、已完成、已替代或已归档 Task Pack。
@@ -129,6 +129,7 @@ V2 中 `执行` 只选择当前活动、已批准 Task Pack；跨包执行必须
    - 小型 S1、单一交付边界且无需分批确认时使用 V1。
    - 多模块、多阶段、需要分批评审/执行、预计持续变更或命中 `references/task-planning-v2.md` 的拆分评估信号时使用 V2。
    - 命中数值阈值时必须记录拆分决定，但不得只因数字机械拆分。
+   - 新建任务规划设置 `FeatureLifecycle: planning`、`ExternalizedBaseline: no`、`CurrentRevision: INIT`；不得预先标记为 implementing、accepted 或 released。
 4. 提取任务依据。
    - 需求编号和 AC 编号。
    - 技术设计章节和关键决策。
@@ -147,21 +148,30 @@ V2 中 `执行` 只选择当前活动、已批准 Task Pack；跨包执行必须
    - 核心领域规则和状态流转优先于适配器、接口、页面和外围联调。
    - 集成、回归、风险关闭任务在主实现路径之后。
    - 可并行任务必须标记 `[P]`，且不得依赖未完成任务或修改同一关键文件。
+   - `Files` 是实施边界而不是技术方案；新文件必须区分 `new-confirmed:` 与 `candidate:`。包含 `candidate:` 的任务在真实落点确认前不得标记 `[P]`。
 6. 处理页面/交互型交付物设计确认。
    - 如果技术设计说明书涉及页面、控制台、前端、模板引擎页面（如 Freemarker、Vue、React）、管理后台或可视化界面等交互型交付物，必须生成 UI 设计确认任务。
    - UI 设计确认任务应覆盖：页面信息架构、页面清单、主要布局方案、关键操作流、状态反馈、敏感信息展示策略和验收口径。
    - 该任务应在页面实现任务之前，且必须标记依赖关系：页面实现任务 `Depends:` 该 UI 设计确认任务。
    - 若用户明确要求跳过 UI 设计确认，必须在任务规划中记录"用户跳过 UI 设计确认"的决策证据，并在实施报告中补充记录。
-7. 生成风险驱动的 TDD 就绪任务。
-   - 每个实现任务必须包含 `AC:`、`Files:`、`BehaviorChange:`、`ExistingCoverage:`、`TestAction:`、`TestLevel:`、`AffectedTests:`、`RegressionScope:`、`TestReason:`、`Verification:`、`Quality:`、`Done:`。纯文档、纯 Gate 和纯 DDL/DML 状态确认任务可将测试字段标记为 `not-applicable` 或 `none`，但不得省略决策。
+7. 生成风险驱动的实施与验证就绪任务。
+   - 新任务规划或 Task Pack 必须记录 `ImplementationContractVersion: 2` 和 `TestIntentVersion: 1`。V1 实施契约只作为历史非 strict 兼容格式。
+   - 每个实现任务必须包含 `AC:`、`DesignRefs:`、`Implementation:`、`Invariants:`、`NonGoals:`、`Files:`、`BehaviorRisk:`、`TestIntent:`、`MinimumEvidence:`、`TestBasis:`、`Verification:`、`Quality:`、`Done:`。纯文档、纯 Gate 和纯 DDL/DML 状态确认任务可使用 `BehaviorRisk: none`、`TestIntent: none`、`MinimumEvidence: none`，但必须在 `TestBasis:` 写明原因。
+   - `DesignRefs:` 必须引用技术设计中真实存在的具体章节、决策 ID 或 Feature 内真实契约路径；校验器必须能够解析该引用。不得只写“参考技术设计”，不得引用不存在的章节或文件。
+   - `Implementation:` 必须把设计压缩为当前任务内的具体动作、规则归属、组件协作和适用的事务/错误/幂等边界；不得重复任务标题或只写“按设计实现”。
+   - `Invariants:` 记录不得破坏的业务或技术不变量；`NonGoals:` 明确排除相邻范围，防止 implement 自行扩展。
+   - V2 语义门禁要求 `Implementation:` 同时出现具体动作，以及至少两类实施证据：规则/组件归属、数据或控制动作、错误/事务/幂等等边界。简单配置或脚本任务可以只有一个动作，但仍必须命名真实配置、脚本或资源及其处理方式。
+   - `Invariants:` 必须使用“必须/不得/只能/始终/至少/至多”等可检查约束；`NonGoals:` 必须指出具体不修改、不新增或不处理的对象。“保持现有逻辑不变”“不修改其他内容”等泛化描述不合格。不适用时必须写明原因。
+   - `Files:` 的每一项必须使用 `existing:`、`new-confirmed:` 或 `candidate:` 证据标签；不得把未经确认的新文件伪装成确定范围。
+   - 简单任务可以用一行分号分隔实施动作；复杂任务使用 2-6 个有序步骤。不得把整份技术设计复制进任务。
    - 建议每个任务包含 `通俗解释:` 和 `Depends:`；如果模板尚未强制，也应优先输出。
    - `Verification:` 必须具体到输入、动作和预期输出；避免只写“功能正常”“测试通过”。
-   - `BehaviorChange:` 只允许 `none|changed|new`；`ExistingCoverage:` 只允许 `covered|partial|missing|not-applicable`；`TestAction:` 只允许 `none|reuse|update|add`；`TestLevel:` 只允许 `none|unit|contract|integration|e2e|manual`；`RegressionScope:` 只允许 `none|focused|affected|module|full`。
-   - 测试决策顺序必须是：判断可观察行为是否变化，搜索已有测试并判断覆盖，再识别覆盖缺口，最后选择最低成本且能证明行为的测试层级。不得因为生产代码文件变化、任务存在 AC 或模板包含测试路径就默认新增测试。
-   - `covered` 默认对应 `reuse`，`partial` 默认优先 `update`，只有 `missing` 且存在可观察行为缺口时才使用 `add`。无行为变化默认 `TestAction: none|reuse`，不得修改测试代码。
+   - `BehaviorRisk:` 只允许 `none|low|medium|high`；`TestIntent:` 只允许 `none|reuse|gap-to-confirm`；`MinimumEvidence:` 只允许 `none|compile|unit|contract|integration|e2e|manual`。
+   - 规划阶段只判断可观察行为风险和最低证明下限，不搜索后臆测 `ExistingCoverage`，不预先决定 `TestAction`、`AffectedTests`、`RegressionScope` 或全量回归。`gap-to-confirm` 仅表示 implement 必须检查覆盖缺口，不代表已经授权新增测试。
+   - 测试路径默认不写入 `Files:`；只有技术设计明确锁定测试契约或验证专用文件时才列出。implement 必须从当前代码和测试事实发现实际受影响测试。
    - 单元测试不是独立默认任务。只有出现明确覆盖缺口时才按 RED -> GREEN -> REFACTOR 新增或更新测试；跨任务集成、回归、验收或 S2 风险关闭才单独生成验证任务。
    - 新测试必须对应 AC、BUG 失败行为或明确不变量；优先扩展现有测试或参数化场景，不测试无必要的 private 方法、内部调用顺序和实现细节，不机械生成正常/异常/边界三件套。
-   - `RegressionScope: full` 必须在 `TestReason:` 中命中明确触发条件：发布/合并门禁、公共契约或共享基础模块变化、依赖或构建配置变化、数据库结构或安全权限的广泛影响、影响范围无法可靠判断，或用户/CI 明确要求。其他情况使用聚焦、受影响或模块级验证。
+   - 具体 `BehaviorChange`、`ExistingCoverage`、`TestAction`、`TestLevel`、`AffectedTests`、`RegressionScope`、`TestReason` 全部后移到 implement 的 Test Decision Gate；任务规划不得填充这些实施期字段。
    - 如果存在 `.specify/rules/sdd团队协作规范.md`，任务规划必须满足其中的“任务规划合格标准”；不满足时不得汇报为正式完成。
    - 如果技术设计说明书引用了专业工作流，必须把该工作流的关键约束拆入任务的 `Quality:`、`Verification:` 或 `Done:` 字段。
    - 不得只写“参考某工作流”；必须明确到任务级动作，例如差异映射、适配器实现、签名验签、状态映射、幂等、回调、异常码、回归验证或禁止修改公共抽象。
@@ -214,12 +224,22 @@ V2 中 `执行` 只选择当前活动、已批准 Task Pack；跨包执行必须
 每个任务使用以下形态。兼容校验器的机器字段必须保留英文标签：
 
 ```markdown
+> TestIntentVersion: 1
+> ImplementationContractVersion: 2
+
 - [ ] T001 [P] 用动宾短语描述任务
   - 通俗解释: 这个任务完成后，用户或系统会发生什么可感知变化。
   - AC: AC-001, AC-002
-  - 来源: 技术设计说明书 §x.x
-  - Files: path/to/source; path/to/test
+  - DesignRefs: 技术设计说明书 §x.x | TD-xxx | contracts/<contract>.md
+  - Implementation: 1) 在已确认的规则归属层完成校验或状态处理；2) 复用现有组件完成映射、持久化或外部协作；3) 按设计处理错误、事务或幂等边界。
+  - Invariants: 不得破坏的业务规则、状态约束、数据口径或兼容承诺。
+  - NonGoals: 当前任务明确不修改的相邻模块、公共契约、数据结构或流程。
+  - Files: existing:path/to/source; new-confirmed:path/to/new-file; candidate:path/to/candidate（按事实选择）
   - Depends: 无 | Txxx
+  - BehaviorRisk: none | low | medium | high
+  - TestIntent: none | reuse | gap-to-confirm
+  - MinimumEvidence: none | compile | unit | contract | integration | e2e | manual
+  - TestBasis: 说明可观察行为风险和最低证据下限；具体测试动作由 implement 检查当前覆盖后决定。
   - Verification: 给定什么输入或前置条件，执行什么动作，应该得到什么可观察结果。
   - Quality: 确认可读性、DDD-lite/领域建模、方法长度、命名、重复代码、工具复用和依赖门禁；涉及数据时确认字段映射、金额单位、日期格式、状态口径、敏感数据处理和日志脱敏。
   - 专业工作流: 无 | <技术设计已引用的工作流/规则/知识卡片>
@@ -243,6 +263,7 @@ V2 中 `执行` 只选择当前活动、已批准 Task Pack；跨包执行必须
 - 只能创建或更新 V1 单文件任务规划，或 V2 任务索引与 `tasks/TP-*.md`。
 - 生成产物标题和固定文本以中文为主。
 - `AC:`、`Files:`、`Verification:`、`Quality:`、`Done:` 等机器可读字段保持英文。
+- 新产物必须包含 `ImplementationContractVersion: 2` 以及 `FeatureLifecycle`、`ExternalizedBaseline`、`CurrentRevision`；历史 V1 实施契约使用非 strict 校验保持兼容，正式更新后应升级到 V2 语义契约。
 - 不生成需求说明书、技术设计说明书、CR、实现报告、业务代码、SQL 文件、执行型 DDL、知识同步任务或知识汇总交接任务。
 - 不删除、不覆盖、不重排已有任务；未批准草案可按用户反馈修订，已批准 Task Pack 必须通过新包表达变化。
 - 不把任务标记为完成。

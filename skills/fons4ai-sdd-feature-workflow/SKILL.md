@@ -1,6 +1,6 @@
 ---
 name: fons4ai-sdd-feature-workflow
-description: "Fons4AI 正常新需求开发 SDD 编排技能。用于把全新功能需求按 requirements -> design -> tasks 编排为三类 SDD 产物；大型零到一系统先拆 Initiative 与独立 Feature，复杂 Feature 可使用任务索引与 Task Pack。运行产物校验，并在设计或实现确认 Gate 停止。只有当用户明确指定该技能、明确要求使用 Fons4AI/SDD 工作流处理全新功能，或启用 Fons4AI 路由且当前意图匹配正常新需求开发时使用。"
+description: "Fons4AI 正常新需求开发 SDD 编排技能。用于把全新功能需求按 requirements、design、tasks 三阶段编排为对应 SDD 产物；大型零到一系统先拆 Initiative 与独立 Feature，复杂 Feature 可使用任务索引与 Task Pack。运行产物校验，并在设计或实现确认 Gate 停止。只有当用户明确指定该技能、明确要求使用 Fons4AI/SDD 工作流处理全新功能，或启用 Fons4AI 路由且当前意图匹配正常新需求开发时使用。"
 ---
 
 # Fons4ai-sdd-feature-workflow
@@ -34,7 +34,7 @@ description: "Fons4AI 正常新需求开发 SDD 编排技能。用于把全新�
 ### Handoff
 
 - Next skill: 默认无自动下游；只有用户最新消息明确确认实现后，才可进入 `fons4ai-sdd-implement`。
-- Required handoff fields: initiative/feature 关系、feature 目录、需求说明书路径、技术设计路径、规划模式、任务规划或任务索引路径、当前活动 Task Pack、未完成任务 ID、设计确认状态、校验命令、校验结果、实现确认状态。
+- Required handoff fields: initiative/feature 关系、feature 目录、需求说明书路径、技术设计路径、规划模式、`FeatureLifecycle`、`ExternalizedBaseline`、`CurrentRevision`、任务规划或任务索引路径、当前活动 Task Pack、未完成任务 ID、设计确认状态、校验命令、校验结果、实现确认状态。
 - Stop condition: 任务规划生成并通过校验后必须停止，等待用户确认实现；不得自动进入实现。
 - Structured handoff: 阶段交接时同时输出结构化 handoff YAML（参考 `templates/handoff-yaml-template.yaml`），供跨平台多 Agent 协作使用。
 
@@ -170,7 +170,7 @@ python ../fons4ai-sdd-tasks/scripts/validate_sdd_artifacts.py --feature-dir <fea
 3. 合并 AC 覆盖表：按 AC-xxx 聚合多个 Agent 的覆盖状态；同一 AC 被多个 Agent 覆盖时，取最严格状态（未覆盖 > 部分覆盖 > 完全覆盖）。
 4. 汇总阻塞项和未完成项：合并所有 Agent 的阻塞任务、失败签名和建议恢复动作。
 5. 合并 DDL/DML 状态：按数据库和数据模型聚合 DDL 草案状态、执行状态和 DML/Seed 状态。
-6. 编排者追加“聚合回归验证结果”章节：默认执行各任务 `AffectedTests` 的去重并集和冲突接口所需的最小集成验证；记录命令、结果、复用证据和与各 Agent 自报的差异。只有命中发布/合并、公共契约或共享基础模块、依赖/构建配置、数据库结构或安全权限广泛影响、影响范围未知、用户/CI 明确要求等触发条件时才执行全量回归，并记录原因。
+6. 编排者追加“聚合回归验证结果”章节：默认执行各实施结果中实际 `AffectedTests` 的去重并集和冲突接口所需的最小集成验证；记录命令、结果、复用证据和与各 Agent 自报的差异。任务规划只提供测试风险与最低证据意图，不预置测试清单。只有命中发布/合并、公共契约或共享基础模块、依赖/构建配置、数据库结构或安全权限广泛影响、影响范围未知、用户/CI 明确要求等触发条件时才执行全量回归，并记录原因。
 7. 输出合并后的实施报告到 `<feature-dir>/reports/<功能中文名>-实施报告.md`。
 8. 各 Agent 的分片报告（`实施报告-T<xxx>.md`）保留不删除，作为合并报告的来源证据。
 

@@ -7,6 +7,7 @@
 > 实现确认依据：<用户最新消息原文或简要摘要>
 > SDD 等级：`S1|S2`
 > 完成日期：YYYY-MM-DD
+> ImplementationAlignmentVersion: 1
 
 ## 1. 实施摘要
 
@@ -28,6 +29,14 @@
 - path/to/file：
 - <feature-dir>/ddl-changes/<INIT|CR-xxx>-<database_or_service>-<business_model>.sql | <project-migration-path>.sql：
 - .specify/sql/<database_or_service>/<business_model>.sql：
+
+## 2.1 Implementation Alignment
+
+编码前逐项填写。引用无法解析或与当前代码存在未处理冲突时，不得进入实现。
+
+| 任务 | AC | DesignRefs | 读取证据 | 与当前代码对齐结论 | 冲突/处理 |
+| --- | --- | --- | --- | --- | --- |
+| T001 | AC-001 | 技术设计说明书 §x.x / TD-xxx / contracts/... | <实际读取的章节、决策或文件> | aligned / drift-found / already-implemented | 无 / <处理方式或停止原因> |
 
 ## 3. Test Decision 与 TDD 记录
 

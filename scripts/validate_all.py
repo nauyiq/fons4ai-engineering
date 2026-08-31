@@ -40,6 +40,14 @@ def main() -> int:
             [python, "-B", "-m", "unittest", "tests.test_test_decision_policy"],
         ),
         (
+            "task implementation contract",
+            [python, "-B", "-m", "unittest", "tests.test_task_implementation_contract"],
+        ),
+        (
+            "change lifecycle routing",
+            [python, "-B", "-m", "unittest", "tests.test_change_lifecycle_routing"],
+        ),
+        (
             "skill stack neutrality",
             [python, "scripts/validators/validate_stack_neutrality.py", "--root", "."],
         ),

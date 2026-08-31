@@ -19,6 +19,18 @@ PACK_STATUS_RE = re.compile(r"^>\s*PackStatus[：:]\s*([a-z-]+)", re.MULTILINE |
 APPROVAL_STATUS_RE = re.compile(r"^>\s*ApprovalStatus[：:]\s*([a-z-]+)", re.MULTILINE | re.IGNORECASE)
 PACK_DEPENDS_RE = re.compile(r"^>\s*DependsOn[：:]\s*([^\n\r]+)", re.MULTILINE | re.IGNORECASE)
 ACTIVE_PACK_RE = re.compile(r"当前活动任务包\s*[：:]\s*(?:`?(TP-\d{3})`?|无)", re.IGNORECASE)
+FEATURE_LIFECYCLE_RE = re.compile(
+    r"FeatureLifecycle\s*[：:]\s*`?(planning|implementing|accepted|released)`?",
+    re.IGNORECASE,
+)
+EXTERNALIZED_BASELINE_RE = re.compile(
+    r"ExternalizedBaseline\s*[：:]\s*`?(yes|no)`?",
+    re.IGNORECASE,
+)
+CURRENT_REVISION_RE = re.compile(
+    r"CurrentRevision\s*[：:]\s*`?(INIT|ITER-\d{3}|CR-\d{3})`?",
+    re.IGNORECASE,
+)
 SQL_PATH_RE = re.compile(r"\.specify/sql/[A-Za-z0-9_./-]+\.sql")
 EXECUTABLE_DDL_PATH_RE = re.compile(
     r"\.?[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*\.sql",
@@ -176,6 +188,9 @@ DESIGN_APPROVAL_RE = re.compile(r"设计确认状态\s*[:：]\s*`?(pending|appro
 VALID_PACK_STATUS = {"draft", "ready", "approved", "in-progress", "done", "deferred", "superseded", "archived"}
 VALID_PACK_APPROVAL = {"pending", "approved", "rejected", "not-required"}
 TEST_DECISION_MARKER = "TestDecisionVersion: 1"
+TEST_INTENT_MARKER = "TestIntentVersion: 1"
+IMPLEMENTATION_CONTRACT_MARKER_V1 = "ImplementationContractVersion: 1"
+IMPLEMENTATION_CONTRACT_MARKER_V2 = "ImplementationContractVersion: 2"
 TEST_DECISION_FIELDS = {
     "BehaviorChange:": {"none", "changed", "new"},
     "ExistingCoverage:": {"covered", "partial", "missing", "not-applicable"},
@@ -183,11 +198,62 @@ TEST_DECISION_FIELDS = {
     "TestLevel:": {"none", "unit", "contract", "integration", "e2e", "manual"},
     "RegressionScope:": {"none", "focused", "affected", "module", "full"},
 }
+TEST_INTENT_FIELDS = {
+    "BehaviorRisk:": {"none", "low", "medium", "high"},
+    "TestIntent:": {"none", "reuse", "gap-to-confirm"},
+    "MinimumEvidence:": {"none", "compile", "unit", "contract", "integration", "e2e", "manual"},
+}
 FULL_REGRESSION_TRIGGER_RE = re.compile(
     r"发布|合并|公共契约|共享基础|依赖|构建配置|数据库结构|安全|权限|影响范围|用户|CI|"
     r"release|merge|contract|shared|dependency|build|database|security|permission|unknown|user",
     re.IGNORECASE,
 )
+IMPLEMENTATION_CONTRACT_FIELDS = ("DesignRefs:", "Implementation:", "Invariants:", "NonGoals:")
+IMPLEMENTATION_PLACEHOLDER_RE = re.compile(
+    r"<[^>]+>|path/to|TODO|TBD|待补充|待完善|§\s*x|TD-x|DEC-x",
+    re.IGNORECASE,
+)
+GENERIC_IMPLEMENTATION_RE = re.compile(
+    r"^(?:按|依据|参考)?(?:技术)?设计(?:实现|开发|完成)?$|^(?:实现|完成)(?:相关)?(?:功能|开发|代码)$",
+    re.IGNORECASE,
+)
+IMPLEMENTATION_ACTION_RE = re.compile(
+    r"校验|判断|调用|复用|映射|转换|读取|写入|持久化|发布|更新|创建|删除|生成|同步|返回|处理|设置|修改|替换|启用|禁用|"
+    r"加载|注册|启动|确认|记录|接入|隔离|回滚|加密|脱敏|查询|比较|配置|路由|"
+    r"validate|check|call|reuse|map|transform|read|write|persist|publish|update|create|delete|set|modify|replace|enable|disable|"
+    r"generate|sync|return|handle|load|register|start|record|integrate|rollback|encrypt|query|configure|route",
+    re.IGNORECASE,
+)
+SIMPLE_ARTIFACT_MECHANISM_RE = re.compile(
+    r"(?:[A-Za-z0-9_.-]+[\\/])*[A-Za-z0-9_.-]+\.(?:ya?ml|json|toml|properties|xml|sql|sh|ps1|md)\b|"
+    r"配置项|环境变量|开关|feature\s*flag|config(?:uration)?\s+key|environment\s+variable",
+    re.IGNORECASE,
+)
+IMPLEMENTATION_MECHANISM_GROUPS = (
+    re.compile(r"领域|应用层|控制器|服务|仓储|适配器|客户端|组件|模块|接口|数据库|缓存|队列|配置|脚本|domain|application|controller|service|repository|adapter|client|component|module|interface|database|cache|queue|config|script", re.IGNORECASE),
+    re.compile(r"校验|判断|映射|转换|持久化|调用|发布|读取|写入|查询|返回|validate|check|map|transform|persist|call|publish|read|write|query|return", re.IGNORECASE),
+    re.compile(r"状态|错误|异常|事务|幂等|提交|失败|回滚|兼容|权限|安全|重试|超时|state|error|exception|transaction|idempot|commit|failure|rollback|compatib|permission|security|retry|timeout", re.IGNORECASE),
+)
+INVARIANT_CONSTRAINT_RE = re.compile(
+    r"不得|必须|只能|仅允许|始终|保持|不改变|不超过|至少|至多|一致|唯一|禁止|"
+    r"must|must not|never|only|always|at least|at most|remain|preserve|consistent|unique|prohibit",
+    re.IGNORECASE,
+)
+NONGOAL_EXCLUSION_RE = re.compile(
+    r"不修改|不新增|不删除|不调整|不实现|不包含|不负责|不处理|不引入|不扩展|不替代|不执行|"
+    r"out of scope|does not|do not|must not|without changing|exclude",
+    re.IGNORECASE,
+)
+GENERIC_INVARIANT_RE = re.compile(r"^(?:保持)?(?:现有|原有)?(?:行为|功能|逻辑|规则)?(?:不变|一致)[。.]?$", re.IGNORECASE)
+GENERIC_NONGOAL_RE = re.compile(r"^(?:不修改|不涉及|不处理)(?:其他|无关|相关)?(?:内容|功能|代码|逻辑)[。.]?$", re.IGNORECASE)
+FILE_EVIDENCE_TAG_RE = re.compile(r"^(?:existing|new-confirmed|candidate):\S+$", re.IGNORECASE)
+DESIGN_REFERENCE_RE = re.compile(
+    r"§\s*\d|\b(?:TD|DEC)-\d{3}\b|contracts?[\\/]|ddl-changes?[\\/]|UI\s*设计|字段映射|结构变更详设",
+    re.IGNORECASE,
+)
+DESIGN_SECTION_RE = re.compile(r"§\s*(\d+(?:\.\d+)*)")
+DESIGN_DECISION_ID_RE = re.compile(r"\b(?:TD|DEC)-\d{3}\b", re.IGNORECASE)
+DESIGN_PATH_RE = re.compile(r"(?:contracts?|ddl-changes?)[\\/][^\s|，、；;`]+", re.IGNORECASE)
 
 
 def read(path: Path) -> str:
@@ -202,6 +268,111 @@ def read(path: Path) -> str:
 def task_field(block: str, label: str) -> str | None:
     match = re.search(rf"^\s*-\s*{re.escape(label)}\s*([^|\r\n]+)", block, re.MULTILINE)
     return match.group(1).strip().lower() if match else None
+
+
+def task_field_text(block: str, label: str) -> str | None:
+    match = re.search(rf"^\s*-\s*{re.escape(label)}\s*([^\r\n]+)", block, re.MULTILINE)
+    return match.group(1).strip() if match else None
+
+
+def validate_implementation_contract(task_id: str, block: str, source: str, *, semantic: bool = True) -> list[str]:
+    errors: list[str] = []
+    values: dict[str, str] = {}
+    for label in IMPLEMENTATION_CONTRACT_FIELDS:
+        value = task_field_text(block, label)
+        if value is None:
+            errors.append(f"{task_id} in {source} is missing '{label}'")
+            continue
+        values[label] = value
+        if IMPLEMENTATION_PLACEHOLDER_RE.search(value):
+            errors.append(f"{task_id} in {source} has placeholder content in {label}")
+
+    design_refs = values.get("DesignRefs:", "")
+    if design_refs and not DESIGN_REFERENCE_RE.search(design_refs):
+        errors.append(f"{task_id} in {source} DesignRefs must name a concrete design section, decision ID, or contract path")
+
+    implementation = values.get("Implementation:", "")
+    normalized_implementation = implementation.strip().rstrip("。.")
+    if implementation:
+        if GENERIC_IMPLEMENTATION_RE.fullmatch(normalized_implementation):
+            errors.append(f"{task_id} in {source} Implementation is generic and not executable")
+        if re.search(r"not-applicable|不适用", implementation, re.IGNORECASE):
+            if not re.search(r"原因|reason", implementation, re.IGNORECASE):
+                errors.append(f"{task_id} in {source} marks Implementation not-applicable without a reason")
+        elif len(implementation) < 18:
+            errors.append(f"{task_id} in {source} Implementation is too short to describe an executable approach")
+
+    for label in ("Invariants:", "NonGoals:"):
+        value = values.get(label, "")
+        if value and len(value) < 6:
+            errors.append(f"{task_id} in {source} {label} is too short to define a useful boundary")
+
+    if semantic:
+        implementation_not_applicable = bool(re.search(r"not-applicable|不适用", implementation, re.IGNORECASE))
+        if implementation and not implementation_not_applicable:
+            if not IMPLEMENTATION_ACTION_RE.search(implementation):
+                errors.append(f"{task_id} in {source} Implementation names no concrete implementation action")
+            mechanism_groups = sum(bool(pattern.search(implementation)) for pattern in IMPLEMENTATION_MECHANISM_GROUPS)
+            if mechanism_groups < 2 and not SIMPLE_ARTIFACT_MECHANISM_RE.search(implementation):
+                errors.append(f"{task_id} in {source} Implementation lacks concrete mechanism, collaboration, or boundary detail")
+
+        invariants = values.get("Invariants:", "")
+        invariant_not_applicable = bool(re.search(r"not-applicable|不适用", invariants, re.IGNORECASE))
+        if invariants:
+            if invariant_not_applicable:
+                if not re.search(r"原因|reason", invariants, re.IGNORECASE):
+                    errors.append(f"{task_id} in {source} marks Invariants not-applicable without a reason")
+            elif GENERIC_INVARIANT_RE.fullmatch(invariants.strip()) or not INVARIANT_CONSTRAINT_RE.search(invariants):
+                errors.append(f"{task_id} in {source} Invariants does not define an enforceable business or technical constraint")
+
+        non_goals = values.get("NonGoals:", "")
+        nongoal_not_applicable = bool(re.search(r"not-applicable|不适用", non_goals, re.IGNORECASE))
+        if non_goals:
+            if nongoal_not_applicable:
+                if not re.search(r"原因|reason", non_goals, re.IGNORECASE):
+                    errors.append(f"{task_id} in {source} marks NonGoals not-applicable without a reason")
+            elif GENERIC_NONGOAL_RE.fullmatch(non_goals.strip()) or not NONGOAL_EXCLUSION_RE.search(non_goals):
+                errors.append(f"{task_id} in {source} NonGoals does not name a concrete excluded scope")
+
+        files = task_field_text(block, "Files:")
+        if files and not re.search(r"not-applicable|不适用", files, re.IGNORECASE):
+            file_entries = [entry.strip() for entry in re.split(r"[;；|]", files) if entry.strip()]
+            for entry in file_entries:
+                if not FILE_EVIDENCE_TAG_RE.fullmatch(entry):
+                    errors.append(f"{task_id} in {source} Files entry '{entry}' must use existing:, new-confirmed:, or candidate:")
+
+    if "[P]" in block.splitlines()[0] and re.search(r"\bcandidate\s*:", block, re.IGNORECASE):
+        errors.append(f"{task_id} in {source} is parallel but contains an unconfirmed candidate file")
+    return errors
+
+
+def validate_design_references(
+    task_id: str,
+    block: str,
+    design_text: str,
+    feature_dir: Path,
+    source: str,
+) -> list[str]:
+    """Resolve task DesignRefs against the selected design and feature artifacts."""
+    errors: list[str] = []
+    refs = task_field_text(block, "DesignRefs:") or ""
+    if not refs:
+        return errors
+
+    for section in DESIGN_SECTION_RE.findall(refs):
+        heading = re.compile(rf"^\s*#{{1,6}}\s+{re.escape(section)}(?:\s|[.、:：-]|$)", re.MULTILINE)
+        if not heading.search(design_text):
+            errors.append(f"{task_id} in {source} DesignRefs section §{section} does not resolve in the technical design")
+
+    for decision_id in DESIGN_DECISION_ID_RE.findall(refs):
+        if not re.search(rf"\b{re.escape(decision_id)}\b", design_text, re.IGNORECASE):
+            errors.append(f"{task_id} in {source} DesignRefs decision {decision_id} does not resolve in the technical design")
+
+    for raw_path in DESIGN_PATH_RE.findall(refs):
+        relative_path = Path(raw_path.replace("\\", "/"))
+        if not (feature_dir / relative_path).is_file():
+            errors.append(f"{task_id} in {source} DesignRefs path {raw_path} does not exist under the feature directory")
+    return errors
 
 
 def validate_test_decision(task_id: str, block: str, source: str) -> list[str]:
@@ -233,6 +404,34 @@ def validate_test_decision(task_id: str, block: str, source: str) -> list[str]:
         errors.append(f"{task_id} in {source} has TestAction {action} but TestLevel is none")
     if scope == "full" and not FULL_REGRESSION_TRIGGER_RE.search(reason):
         errors.append(f"{task_id} in {source} uses full regression without an explicit trigger in TestReason")
+    return errors
+
+
+def validate_test_intent(task_id: str, block: str, source: str) -> list[str]:
+    errors: list[str] = []
+    values: dict[str, str] = {}
+    for label, allowed in TEST_INTENT_FIELDS.items():
+        value = task_field(block, label)
+        if value is None:
+            errors.append(f"{task_id} in {source} is missing '{label}'")
+            continue
+        values[label] = value
+        if value not in allowed:
+            errors.append(f"{task_id} in {source} has invalid {label} value '{value}'")
+
+    basis = task_field_text(block, "TestBasis:")
+    if basis is None:
+        errors.append(f"{task_id} in {source} is missing 'TestBasis:'")
+    elif IMPLEMENTATION_PLACEHOLDER_RE.search(basis) or len(basis) < 8:
+        errors.append(f"{task_id} in {source} TestBasis is placeholder or too short")
+
+    risk = values.get("BehaviorRisk:")
+    intent = values.get("TestIntent:")
+    evidence = values.get("MinimumEvidence:")
+    if risk == "none" and intent == "gap-to-confirm":
+        errors.append(f"{task_id} in {source} cannot use gap-to-confirm when BehaviorRisk is none")
+    if intent == "gap-to-confirm" and evidence == "none":
+        errors.append(f"{task_id} in {source} gap-to-confirm requires non-none MinimumEvidence")
     return errors
 
 
@@ -614,6 +813,16 @@ def validate(feature_dir: Path, strict: bool = False) -> tuple[list[str], list[s
     approval_surface = read(task_index) if task_index else tasks_text
     if not has_any_heading(approval_surface, APPROVAL_GATE_HEADINGS):
         errors.append("task plan or task index is missing implementation approval gate section")
+    lifecycle = FEATURE_LIFECYCLE_RE.search(approval_surface)
+    externalized = EXTERNALIZED_BASELINE_RE.search(approval_surface)
+    revision = CURRENT_REVISION_RE.search(approval_surface)
+    if strict:
+        if not lifecycle:
+            errors.append("task plan or task index is missing FeatureLifecycle metadata")
+        if not externalized:
+            errors.append("task plan or task index is missing ExternalizedBaseline metadata")
+        if not revision:
+            errors.append("task plan or task index is missing CurrentRevision metadata")
 
     if S2_RE.search(all_text):
         if not has_any_heading(design_text, RISK_ROLLBACK_HEADINGS):
@@ -631,18 +840,45 @@ def validate(feature_dir: Path, strict: bool = False) -> tuple[list[str], list[s
 
     seen: set[str] = set()
     requires_test_decision = TEST_DECISION_MARKER in tasks_text
+    requires_test_intent = TEST_INTENT_MARKER in tasks_text
+    has_implementation_contract_v1 = IMPLEMENTATION_CONTRACT_MARKER_V1 in tasks_text
+    has_implementation_contract_v2 = IMPLEMENTATION_CONTRACT_MARKER_V2 in tasks_text
+    requires_implementation_contract = has_implementation_contract_v1 or has_implementation_contract_v2
+    if requires_test_decision and requires_test_intent:
+        errors.append("task planning artifacts cannot declare both TestDecisionVersion: 1 and TestIntentVersion: 1")
+    if strict and not requires_test_intent:
+        errors.append(f"task planning artifacts are missing '{TEST_INTENT_MARKER}'")
+    if has_implementation_contract_v1 and has_implementation_contract_v2:
+        errors.append("task planning artifacts cannot declare both ImplementationContractVersion: 1 and ImplementationContractVersion: 2")
+    if strict and not has_implementation_contract_v2:
+        errors.append(f"task planning artifacts are missing '{IMPLEMENTATION_CONTRACT_MARKER_V2}'")
     for task_id, block in blocks:
         if task_id in seen:
             errors.append(f"Duplicate task ID: {task_id}")
         seen.add(task_id)
         if not AC_RE.search(block):
             errors.append(f"{task_id} has no AC mapping")
+        for task_ac in sorted(set(AC_RE.findall(block))):
+            if task_ac not in ac_ids:
+                errors.append(f"{task_id} references unknown acceptance criterion {task_ac}")
         for label in ("Files:", "Verification:", "Quality:", "Done:"):
             if label not in block:
                 errors.append(f"{task_id} is missing '{label}'")
         errors.extend(validate_quality_domain_check(task_id, block, planning_name))
         if requires_test_decision:
             errors.extend(validate_test_decision(task_id, block, planning_name))
+        if requires_test_intent:
+            errors.extend(validate_test_intent(task_id, block, planning_name))
+        if requires_implementation_contract:
+            errors.extend(
+                validate_implementation_contract(
+                    task_id,
+                    block,
+                    planning_name,
+                    semantic=has_implementation_contract_v2,
+                )
+            )
+            errors.extend(validate_design_references(task_id, block, design_text, feature_dir, planning_name))
 
     # UI Gate check: page/UI deliverables must have UI design confirmation evidence
     if requires_ui_design(design_text, tasks_text):
@@ -688,6 +924,13 @@ def validate_change_file(change_file: Path) -> list[str]:
         errors.append(f"{change_file} contains neither V1 incremental checklist tasks nor a V2 Task Pack reference")
 
     requires_test_decision = TEST_DECISION_MARKER in text
+    requires_test_intent = TEST_INTENT_MARKER in text
+    has_implementation_contract_v1 = IMPLEMENTATION_CONTRACT_MARKER_V1 in text
+    has_implementation_contract_v2 = IMPLEMENTATION_CONTRACT_MARKER_V2 in text
+    if requires_test_decision and requires_test_intent:
+        errors.append(f"{change_file} cannot declare both TestDecisionVersion: 1 and TestIntentVersion: 1")
+    if has_implementation_contract_v1 and has_implementation_contract_v2:
+        errors.append(f"{change_file} cannot declare both ImplementationContractVersion: 1 and ImplementationContractVersion: 2")
     for task_id, block in task_blocks(text):
         for label in ("Files:", "Verification:", "Quality:", "Done:"):
             if label not in block:
@@ -695,6 +938,17 @@ def validate_change_file(change_file: Path) -> list[str]:
         errors.extend(validate_quality_domain_check(task_id, block, str(change_file)))
         if requires_test_decision:
             errors.extend(validate_test_decision(task_id, block, str(change_file)))
+        if requires_test_intent:
+            errors.extend(validate_test_intent(task_id, block, str(change_file)))
+        if has_implementation_contract_v1 or has_implementation_contract_v2:
+            errors.extend(
+                validate_implementation_contract(
+                    task_id,
+                    block,
+                    str(change_file),
+                    semantic=has_implementation_contract_v2,
+                )
+            )
 
     ddl_action = (
         re.search(r"SQL DDL action\s*:\s*(add|update|rename)", text, re.IGNORECASE)
@@ -730,6 +984,7 @@ def validate_bugfix_report(report: Path) -> list[str]:
         return [f"Missing bugfix report: {report}"]
 
     text = read(report)
+    is_template = "template" in report.name.lower()
     required = (
         "## 问题描述",
         "## 复现步骤",
@@ -762,6 +1017,20 @@ def validate_implementation_report(report: Path) -> list[str]:
         return [f"Missing implementation report: {report}"]
 
     text = read(report)
+    is_template = "template" in report.name.lower()
+    if "ImplementationAlignmentVersion: 1" in text:
+        for term in ("Implementation Alignment", "DesignRefs", "读取证据", "与当前代码对齐结论", "冲突/处理"):
+            if term not in text:
+                errors.append(f"{report} declares ImplementationAlignmentVersion: 1 but is missing '{term}'")
+        alignment_rows = re.findall(
+            r"^\|\s*T\d{3}\s*\|\s*AC-\d{3}(?:\s*[,，]\s*AC-\d{3})*\s*\|([^\n]+)$",
+            text,
+            re.MULTILINE,
+        )
+        if not alignment_rows:
+            errors.append(f"{report} has no concrete Implementation Alignment task row")
+        elif not is_template and any("<" in row or "§x" in row for row in alignment_rows):
+            errors.append(f"{report} Implementation Alignment contains placeholders")
     required = (
         "## 4. 验证结果",
         "## 5. Evidence Bundle",

@@ -41,7 +41,7 @@ Task Pack 负责：
 - 承载一个内聚、可评审、可批准、可执行的任务集合。
 - 记录 `PackStatus`、`ApprovalStatus`、`SourceChange`、`DependsOn` 和覆盖 AC。
 - 包含完整任务字段和包级完成标准。
-- 获得批准后冻结任务目标；后续范围变化使用新 Task Pack。
+- 获得批准后冻结任务目标；实现期用户纠偏按 `iteration-lifecycle.md` 将受影响包标记为 `superseded` 并创建 `SourceChange: ITER-xxx` 的修订 Task Pack，已外部化变更才使用 CR Task Pack。
 
 ## 3. Feature 与 Task Pack 边界
 
@@ -75,7 +75,7 @@ Task Pack 负责：
 - Task ID 继续使用 `T001`、`T002`，在整个 Feature 的活动和历史 Task Pack 中全局唯一。
 - `DependsOn` 可引用 Task Pack 或 Task ID；依赖图不得形成环。
 - 已批准、已完成、已替代或已归档的 Task Pack 不重排、不覆盖、不追加新任务。
-- Task Pack 文件名以稳定 ID 开头，可增加来源 CR，例如 `TP-005-CR-002-订单退款.md`。
+- Task Pack 文件名以稳定 ID 开头，可增加来源修订或 CR，例如 `TP-005-ITER-002-订单退款.md`、`TP-006-CR-002-订单退款.md`。
 
 ## 6. 大型需求的渐进规划
 
@@ -88,8 +88,11 @@ Task Pack 负责：
 
 ## 7. 变更路由
 
-- 基线尚未批准：修订原草案并更新版本，不创建 CR。
-- 已批准或已开始实施的同一能力局部变更：创建 CR 和独立 Change Task Pack。
+- 详细生命周期和外部化边界见 `iteration-lifecycle.md`。
+- `FeatureLifecycle: planning`：修订原草案并更新 `CurrentRevision: ITER-xxx`，不创建 CR。
+- `FeatureLifecycle: implementing` 且尚未验收、未外部化、无不可逆效果：执行迭代纠偏，不创建 CR；受影响已批准包标记为 `superseded`，创建独立 `SourceChange: ITER-xxx` 修订包。
+- `FeatureLifecycle: accepted|released`、`ExternalizedBaseline: yes`、已有不可逆效果或用户明确要求审计：创建 CR 和独立 Change Task Pack。
+- “已经开始实施”本身不是 CR 触发条件。
 - 新增独立 AC、业务模块或可独立验收能力：默认新建 Feature。
 - 核心流程重写、主数据模型重构、公共契约大改，或达到体量阈值：创建继任 Feature，并使用 `DependsOn`、`Supersedes` 建立关系。
 - CR 只引用 Task Pack 和任务 ID，不复制完整任务正文。

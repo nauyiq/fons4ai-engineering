@@ -81,8 +81,9 @@
 
 - 大型系统先建立轻量 Initiative 功能地图，独立可验收能力分别创建 Feature。
 - 同一 Feature 内优先按垂直交付边界拆 Task Pack；只有独立交付或所有权明确时才按前端/后端拆分。
-- 基线尚未批准时修订草案，不创建 CR。
-- 已批准能力的局部变化创建 CR 与独立 Change Task Pack，不修改已批准或已完成 Task Pack。
+- `FeatureLifecycle: planning` 时修订原基线，不创建 CR。
+- `FeatureLifecycle: implementing` 且未验收、未外部化、无不可逆效果时使用 `ITER-xxx` 纠偏，不创建 CR；已批准包标记为 `superseded` 后创建修订 Task Pack。
+- `accepted|released`、已外部化、已有不可逆效果或明确要求正式审计时创建 CR 与独立 Change Task Pack。
 - 新增独立 AC、业务模块或可独立验收能力时，默认创建新 Feature。
 - 核心流程重写、主数据模型重构、公共契约大改或任务体量持续膨胀时，创建继任 Feature 并保留 `DependsOn`、`Supersedes` 引用。
 

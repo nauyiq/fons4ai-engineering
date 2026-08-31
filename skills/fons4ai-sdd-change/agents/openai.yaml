@@ -1,7 +1,7 @@
 interface:
   display_name: "Fons4AI SDD Change"
-  short_description: "处理已有内容变更：S0 直接修改；S1/S2 路由到基线修订、Change Task Pack、新或继任 Feature。"
-  default_prompt: "Use $fons4ai-sdd-change for changes to existing functionality. Apply S0 first and perform a lightweight Test Decision: observable behavior, existing coverage, test action, test level, affected tests, and regression scope. Do not change tests for behavior-preserving work or default to full regression. For S1/S2, revise an unapproved baseline, create a CR with a dedicated Change Task Pack, or route independent/oversized work to a new or successor feature."
+  short_description: "处理已有内容变更：S0 直改；开发中纠偏使用 ITER；外部化基线才创建 CR。"
+  default_prompt: "Use $fons4ai-sdd-change for changes to existing functionality. Apply S0 first. For non-S0 work, classify the feature lifecycle before choosing artifacts: revise planning baselines in place, use ITER correction for implementing but unaccepted and unexternalized features, and create a CR only for accepted, released, externalized, irreversible, or explicitly audited changes. Keep requirement, design, tasks, and invalidated evidence consistent."
 
 adapter:
   platform: codex

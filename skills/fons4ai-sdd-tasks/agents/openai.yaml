@@ -1,7 +1,7 @@
 interface:
   display_name: "Fons4AI SDD Tasks"
-  short_description: "生成带 Test Decision Gate 的 V1 任务规划或 V2 Task Pack。"
-  default_prompt: "Use $fons4ai-sdd-tasks only for task planning. Every implementation task must decide observable behavior change, existing coverage, test action, test level, affected tests, and regression scope. Do not default to changing tests or full regression. Keep small S1 work in a V1 single file; use V2 Task Packs for large or evolving work. Stop for implementation approval."
+  short_description: "生成带任务级实施契约和 Test Decision Gate 的 V1/V2 任务规划。"
+  default_prompt: "Use $fons4ai-sdd-tasks only for task planning. Produce ImplementationContractVersion 2 with resolvable DesignRefs, concrete implementation mechanisms, enforceable Invariants, specific NonGoals, and evidence-tagged Files boundaries. Preserve lifecycle metadata. Record only BehaviorRisk, TestIntent, MinimumEvidence, and TestBasis; leave concrete coverage, test actions, affected tests, and regression scope to implement. Stop for implementation approval."
 
 adapter:
   platform: codex

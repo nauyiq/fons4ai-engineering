@@ -10,7 +10,20 @@
 - 使用能证明风险的最低有效测试层级，不用大量 Mock 单测替代契约、事务、数据库或跨服务边界验证。
 - 开发阶段运行聚焦或受影响测试；全量回归属于明确风险门禁，不属于每个 Agent Step。
 
-## 2. Test Decision 字段
+## 2. 规划阶段：Test Intent
+
+| 字段 | 值 |
+| --- | --- |
+| `BehaviorRisk` | `none|low|medium|high` |
+| `TestIntent` | `none|reuse|gap-to-confirm` |
+| `MinimumEvidence` | `none|compile|unit|contract|integration|e2e|manual` |
+| `TestBasis` | 可观察行为风险和最低证据下限依据 |
+
+任务规划使用 `TestIntentVersion: 1`。它只描述风险和最低证明意图，不判断当前测试是否覆盖，不指定要新建或修改哪些测试，也不提前决定回归范围。`gap-to-confirm` 表示 implement 必须检查覆盖缺口，不代表必须新增测试。
+
+## 3. 实施阶段：Test Decision Gate
+
+implement 读取当前生产代码和直接相关测试后，才记录以下字段：
 
 | 字段 | 值 |
 | --- | --- |
@@ -22,14 +35,16 @@
 | `RegressionScope` | `none|focused|affected|module|full` |
 | `TestReason` | 可观察行为、覆盖缺口、测试层级和回归范围依据 |
 
-一致性要求：
+实施期一致性要求：
 
 - `BehaviorChange: none` 不得搭配 `TestAction: update|add`。
 - `ExistingCoverage: covered` 默认使用 `none|reuse`。
 - `TestAction: update|add` 必须选择非 `none` 的测试层级。
 - `RegressionScope: full` 必须记录明确触发条件。
 
-## 3. 全量回归触发条件
+历史规划产物中的 `TestDecisionVersion: 1` 继续兼容校验；新规划不得同时声明 `TestDecisionVersion: 1` 与 `TestIntentVersion: 1`。
+
+## 4. 全量回归触发条件
 
 只有以下情况允许选择 `full`：
 
@@ -40,9 +55,9 @@
 - 影响范围无法可靠判断；
 - 用户或 CI 明确要求。
 
-多 Agent 汇总默认执行各任务 `AffectedTests` 的去重并集和冲突接口的最小集成验证，不自动升级全量回归。
+多 Agent 汇总默认执行各 implement 结果中实际 `AffectedTests` 的去重并集和冲突接口的最小集成验证，不自动升级全量回归。
 
-## 4. Evidence Ledger
+## 5. Evidence Ledger
 
 可复用证据至少记录命令、测试范围、结果、源码指纹、测试指纹、依赖/构建配置指纹、适用任务、失效条件和原始输出。只有输入指纹未变化且原始输出可核验时才能复用。
 

@@ -8,6 +8,7 @@ agent:
   context_budget:
     required:
       - V1 spec/features/<yyyymmdd>/<feature>-任务规划.md or V2 task index plus selected Task Pack
+      - selected task DesignRefs and referenced requirement/design fragments
     optional:
       - spec/features/<yyyymmdd>/<feature>-需求说明书.md
       - spec/features/<yyyymmdd>/<feature>-技术设计说明书.md
@@ -23,11 +24,12 @@ agent:
     read: true
     write:
       - task Files: scoped paths only
+      - FeatureLifecycle planning-to-implementing transition only
       - spec/features/<yyyymmdd>/reports/
       - spec/features/<yyyymmdd>/<feature-slug>/reports/
       - selected task pack status only
     execute:
-      - task Verification and risk-approved RegressionScope commands only
+      - task MinimumEvidence plus implementation-evaluated AffectedTests and RegressionScope commands only
   evidence_level: L3
   spawn_by: fons4ai-sdd-feature-workflow
   handoff_targets:

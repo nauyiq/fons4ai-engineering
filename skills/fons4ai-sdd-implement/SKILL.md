@@ -17,11 +17,11 @@ description: "Fons4AI 受控的 SDD 实现技能。用于执行已生成且已�
 
 - Entry gates: 同时满足 Fons4AI 路由条件和最新用户消息明确确认执行。
 - Required source artifacts: V1 任务规划，或 V2 任务索引和选中 Task Pack 必须存在；V2 Task Pack 必须已批准；选中任务必须未完成，依赖任务/包必须已完成或用户明确批准调整顺序。
-- Required repository facts: 修改前必须读取任务 `Files:` 指定文件和直接相关测试/配置；任务涉及 DDL、安全、权限、契约或数据时必须读取相应设计证据。
+- Required repository facts: 修改前必须读取任务 `Files:` 指定文件、直接相关测试/配置、任务 `DesignRefs:` 引用的需求 AC 和设计片段；逐项记录引用解析结果与当前代码对齐结论。任务涉及 DDL、安全、权限、契约或数据时必须读取相应完整证据。
 
 ### Outputs
 
-- May create or update: 选中任务范围内的业务代码、测试、配置、必要实现文件、V1 任务或 V2 Task Pack/任务状态、实施报告、任务明确要求的执行型 DDL 草案或 SQL 快照。
+- May create or update: 选中任务范围内的业务代码、测试、配置、必要实现文件、`FeatureLifecycle` 从 `planning` 到 `implementing` 的状态、V1 任务或 V2 Task Pack/任务状态、实施报告、任务明确要求的执行型 DDL 草案或 SQL 快照。
 - Must not create or update: 未授权任务、需求说明书、技术设计说明书、任务规划结构重写、CR、知识库正文、知识同步任务。
 - Output location: 任务 `Files:` 指定路径和 `<feature-dir>/reports/<功能中文名>-实施报告.md`；V1 兼容路径为 `spec/features/<yyyymmdd>/reports/<功能中文名>-实施报告.md`。
 
@@ -98,7 +98,7 @@ description: "Fons4AI 受控的 SDD 实现技能。用于执行已生成且已�
 
 本技能不得执行以下工作：
 
-- 不生成或重写需求说明书、技术设计说明书、任务规划或 CR。
+- 不生成或重写需求说明书、技术设计说明书、任务规划结构或 CR；只允许在首次实施时更新生命周期字段和执行过程中更新任务状态。
 - 不执行未出现在任务规划中的需求或技术范围。
 - 不生成知识同步任务、知识汇总交接任务或知识库正文。
 - 不直接执行生产数据库 DDL。
@@ -128,7 +128,7 @@ description: "Fons4AI 受控的 SDD 实现技能。用于执行已生成且已�
 
 - 每个 Agent 的 L3 Gate Evidence（测试结果、构建结果）只对自己的任务子集有效。
 - 编排者必须核验各 Agent 的原始输出、输入指纹和适用任务，不能只相信文字自报；输入指纹有效的证据可以复用。
-- 所有并行 Agent 完成后，编排者默认运行各任务 `AffectedTests` 的去重并集和冲突接口所需的最小集成验证，不默认运行全量回归。
+- 所有并行 Agent 完成后，编排者默认运行各实施结果中实际 `AffectedTests` 的去重并集和冲突接口所需的最小集成验证，不从任务规划预设测试清单，也不默认运行全量回归。
 - 只有发布/合并门禁、公共契约或共享基础模块变化、依赖或构建配置变化、数据库结构或安全权限产生广泛影响、影响范围无法可靠判断，或用户/CI 明确要求时才运行全量回归，并记录触发原因。
 - 如果并行 Agent 的修改产生冲突（同一文件、同一接口、同一数据结构），编排者必须停止并报告冲突，由用户决策。
 
@@ -153,13 +153,13 @@ description: "Fons4AI 受控的 SDD 实现技能。用于执行已生成且已�
 
 ## 必要上下文
 
-1. 读取 `../fons4ai-sdd-requirements/references/sdd-artifact-contract.md`，包括上下文加载和实现确认规则。
+1. 读取 `../fons4ai-sdd-requirements/references/sdd-artifact-contract.md`、`../fons4ai-sdd-tasks/references/iteration-lifecycle.md` 和 `../fons4ai-sdd-tasks/references/task-implementation-contract.md`。
 2. 优先判断规划模式：
    - V1 读取 `<功能中文名>-任务规划.md`。
    - V2 先读取 `<功能中文名>-任务索引.md`，再只读取当前或用户指定 Task Pack；不得为选择一个包而加载全部历史包。
-3. 按选中任务 ID、AC ID、`Files:`、模块名、领域对象、业务模型、接口和 SQL 路径搜索上下文。
+3. 按选中任务 ID、AC ID、`DesignRefs:`、`Files:`、模块名、领域对象、业务模型、接口和 SQL 路径搜索上下文。
 4. 只读取与选中任务直接相关的源码、测试、配置、项目规则、知识卡片、领域文档和 SQL 文件。
-5. 仅当任务描述不足、存在冲突、涉及跨域/S2/DDL/契约风险时，再读取 `<功能中文名>-需求说明书.md`、`<功能中文名>-技术设计说明书.md`、`contracts/`、`checklists/` 或其他补充产物。
+5. 始终解析并读取选中任务 `DesignRefs:` 精确引用的 AC、技术设计章节、决策或契约；将“任务、AC、DesignRefs、读取证据、与当前代码对齐结论、冲突/处理”写入 `Implementation Alignment`。引用无法解析、AC 不存在、任务合同与设计冲突或当前代码已经偏离且无法在任务边界内处理时，停止编码并返回任务规划/设计修订。仅当引用不足、存在冲突、涉及跨域/S2/DDL/契约风险时，再扩大到完整需求、完整技术设计、`contracts/`、`checklists/` 或其他补充产物。
 6. 如果存在 `.specify/rules/sdd团队协作规范.md`，读取其中的 SDD 完成定义、角色与评审门禁和知识汇总判断规则。
 7. 只有当 `<功能中文名>-技术设计说明书.md`、`<功能中文名>-任务规划.md`、`.specify/rules/` 或 `.specify/memory/` 中明确引用与当前任务直接相关的专业工作流、规则或知识卡片时，才允许读取并遵循该专业工作流。
 8. 使用 `assets/templates/implementation-report-template.md` 生成实施报告。
@@ -182,7 +182,11 @@ description: "Fons4AI 受控的 SDD 实现技能。用于执行已生成且已�
    - V2 `PackStatus` 为 `approved|in-progress`，且 `ApprovalStatus` 为 `approved|not-required`。
    - 选中任务仍是 `[ ]` 未完成。
    - 依赖任务已完成；否则必须停止，除非用户明确批准不同顺序。
-   - `Files:` 覆盖预计修改文件；如需新增或修改未列文件，先说明原因。大范围新增必须回到任务规划。
+   - 每个实现任务都有非占位的 `DesignRefs:`、`Implementation:`、`Invariants:` 和 `NonGoals:`；缺失或只写“按设计实现”时停止并返回任务规划。
+   - 新规划必须使用 `ImplementationContractVersion: 2` 并通过 strict 校验；历史 V1 契约仅可按非 strict 兼容读取，implement 必须人工复核其实施机制、不变量、排除范围和文件证据标签，语义不足时停止并返回任务规划升级，不得凭经验补写代码。
+   - 将 `Implementation:` 与引用的设计决策、当前代码结构逐项对齐；如果实施动作与设计冲突，不得凭经验选择一方。
+   - `Files:` 覆盖预计修改文件；`candidate:` 必须先根据仓库既有模式确认真实落点，确认前不得并行修改。如需新增或修改未列模块边界的文件，返回任务规划；同一模块内的小范围补充先说明理由。
+   - 执行过程中持续遵守 `Invariants:` 和 `NonGoals:`，不得为了让测试通过扩大业务范围、公共契约或数据结构。
    - 若任务涉及 DDL、权限、安全、兼容、事务或外部接口，确认任务中已有对应验证和风险控制要求。
    - 若任务涉及 DDL 或迁移脚本，确认任务或设计中已说明表注释、字段注释、索引依据、索引数量控制和回滚说明。DDL 草案中的表注释、字段注释和脚本说明默认使用中文；枚举值、状态值和代码标识可保留英文，但必须用中文解释语义。
    - 若任务涉及运行初始化 DML/Seed 数据，确认任务中已有脚本路径、占位变量、幂等策略、执行权限、回滚说明、执行状态确认和只读复核要求。
@@ -198,8 +202,9 @@ description: "Fons4AI 受控的 SDD 实现技能。用于执行已生成且已�
    - 若用户明确要求跳过 UI 设计确认（如快速原型、内部工具），必须在实施报告中记录"用户跳过 UI 设计确认"的决策证据。
 5. 执行前向用户简要说明选中任务和预计文件范围。
    - 删除文件、删除核心逻辑、大范围重构、覆盖已有内容前必须再次确认。
+   - 首次进入业务代码实现时，将任务规划或任务索引的 `FeatureLifecycle` 从 `planning` 更新为 `implementing`；不得自行设置 `accepted`、`released` 或 `ExternalizedBaseline: yes`。
 6. 先执行 Test Decision Gate，再按需执行 RED -> GREEN -> REFACTOR。
-   - 判断本次任务是否改变可观察行为，搜索直接相关已有测试，记录 `BehaviorChange`、`ExistingCoverage`、具体覆盖缺口、`TestAction`、`TestLevel`、`AffectedTests`、`RegressionScope` 和理由。任务规划中的测试决策是初始假设，必须结合当前代码与测试事实复核。
+   - 读取任务规划的 `BehaviorRisk`、`TestIntent`、`MinimumEvidence`、`TestBasis` 作为风险下限，不把它们当作具体测试指令。判断本次任务是否改变可观察行为，搜索直接相关已有测试，记录 `BehaviorChange`、`ExistingCoverage`、具体覆盖缺口、`TestAction`、`TestLevel`、`AffectedTests`、`RegressionScope` 和理由；这些实施期字段必须由当前代码与测试事实得出。
    - 无行为变化时不得修改测试代码，默认复用受影响已有测试；已有测试完整覆盖时使用 `reuse`；部分覆盖时优先 `update`；只有缺少可证明目标行为的覆盖时才 `add`。
    - 优先扩展现有测试、使用参数化场景和行为级断言，不测试无必要的 private 方法、内部调用次数或实现顺序，不按类、方法或正常/异常/边界清单机械生成测试。
    - RED：仅当存在可观察行为覆盖缺口且 `TestAction` 为 `update|add` 时，先写或更新最低成本且足以证明行为的聚焦测试，并确认失败原因符合预期。已有测试已经因目标行为失败时，直接复用该失败证据，不重复创建 RED 测试。
@@ -225,7 +230,7 @@ description: "Fons4AI 受控的 SDD 实现技能。用于执行已生成且已�
    - 专业工作流与任务规划冲突时，停止并说明冲突，建议回到设计或任务规划阶段处理。
 9. 执行任务验证。
    - 先运行任务 `Verification:` 指定的聚焦验证。
-   - 再按 `RegressionScope` 运行最小必要回归；默认上限是 `affected`，模块级和全量回归必须有明确触发原因。
+   - 先依据当前改动、依赖边界和测试事实确定 `RegressionScope`，再运行最小必要回归；默认上限是 `affected`，模块级和全量回归必须有明确触发原因。
    - 执行前查询 Evidence Ledger。源码、测试、依赖锁文件和构建配置指纹未变化，且原始输出可核验时，可以复用对应单测或构建证据；任一输入变化只失效覆盖该输入的证据。
    - 仅服务重启或运行态变化时，只重跑健康检查和受影响的运行态 smoke test，不重跑输入未变化的静态检查、单元测试或构建。
    - `RegressionScope: full` 仅适用于发布/合并门禁、公共契约或共享基础模块变化、依赖或构建配置变化、数据库结构或安全权限广泛影响、影响范围无法可靠判断，或用户/CI 明确要求。必须记录触发条件，不能以“更稳妥”为唯一理由。
@@ -291,7 +296,7 @@ description: "Fons4AI 受控的 SDD 实现技能。用于执行已生成且已�
 
 - 测试失败：停止，保留失败命令、错误摘要和当前判断，不标记任务完成。
 - 任务与设计冲突：停止，说明冲突点，建议回到设计或任务规划。
-- 实现会改变需求、AC 或公共行为：停止，建议进入 `fons4ai-sdd-change`。
+- 实现会改变需求、AC 或公共行为：停止，建议进入 `fons4ai-sdd-change`；由 Feature 生命周期决定原地修订、`ITER-xxx` 纠偏或 CR，不得仅因已经开始编码就预判必须创建 CR。
 - DDL 基线不可靠或输出路径不明确：停止，回到任务规划或变更规划，不编造脚本。
 - 用户改动与当前任务冲突：停止并说明冲突文件，等待用户决策。
 - 运行态 Evidence Matrix 缺失：停止，建议回到 `fons4ai-sdd-tasks` 补齐。
@@ -355,7 +360,7 @@ spec/features/<yyyymmdd>/recovery/RR-xxx-<问题简述>-恢复闭环.md
 ## 输出规则
 
 - 只执行选中任务，不实现未规划范围。
-- 默认只修改任务 `Files:` 指定文件；新增文件或修改未列文件必须有明确理由。
+- 默认只修改任务 `Files:` 指定边界；`candidate:` 文件必须先确认真实落点，新增文件或修改未列模块边界必须有明确理由并按范围大小决定是否返回任务规划。
 - 报告和固定标题以中文为主；`T001`、`AC-001`、`RED`、`GREEN`、`REFACTOR`、路径和命令保持原样。
 - 必须在报告中记录 `实现确认依据`，不得从产物存在或历史对话推断授权。
 - 结束回复包含：完成任务、未完成/阻塞任务、变更文件、验证结果、DDL 状态、长期知识影响、风险和后续建议。

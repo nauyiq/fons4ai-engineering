@@ -30,6 +30,8 @@ REQUIRED_TERMS = (
     "是否阻塞交付",
     "是否可交付",
 )
+ALIGNMENT_MARKER = "ImplementationAlignmentVersion: 1"
+ALIGNMENT_HEADERS = ("任务", "AC", "DesignRefs", "读取证据", "与当前代码对齐结论", "冲突/处理")
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8-sig")
@@ -61,9 +63,24 @@ def validate(path: Path) -> list[str]:
         return [f"implementation report not found: {path}"]
 
     text = read_text(path)
+    is_template = "template" in path.name.lower()
     missing = [term for term in REQUIRED_TERMS if term not in text]
     if missing:
         errors.append(f"{path} missing required terms: {', '.join(missing)}")
+
+    if ALIGNMENT_MARKER in text:
+        if "Implementation Alignment" not in text:
+            errors.append(f"{path} declares {ALIGNMENT_MARKER} but has no Implementation Alignment section")
+        if not all(header in text for header in ALIGNMENT_HEADERS):
+            errors.append(f"{path} Implementation Alignment table is missing required columns")
+        alignment_rows = re.findall(r"^\|\s*(T\d{3})\s*\|\s*(AC-\d{3}(?:\s*[,，]\s*AC-\d{3})*)\s*\|([^\n]+)$", text, re.MULTILINE)
+        if not alignment_rows:
+            errors.append(f"{path} has no concrete Implementation Alignment task row")
+        for task_id, _acs, remainder in alignment_rows:
+            if not is_template and ("<" in remainder or "§x" in remainder or re.search(r"\b(?:TD|DEC)-x", remainder, re.IGNORECASE)):
+                errors.append(f"{path} {task_id} Implementation Alignment contains placeholders")
+            if re.search(r"\|\s*drift-found\s*\|\s*(?:无|none)\s*\|", f"|{remainder}", re.IGNORECASE):
+                errors.append(f"{path} {task_id} reports drift-found without conflict handling")
 
     full_scope = re.search(r"回归范围\s*[：:]\s*full\b", text, re.IGNORECASE)
     full_trigger = field_value(text, "全量回归触发")

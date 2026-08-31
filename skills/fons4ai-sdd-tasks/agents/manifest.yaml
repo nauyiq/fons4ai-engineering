@@ -9,6 +9,7 @@ agent:
     required:
       - V1 or V2 feature requirement specification
       - matching V1 or V2 feature technical design specification
+      - referenced design decisions for each implementation task
     optional:
       - AGENTS.md
       - source code

@@ -1,6 +1,6 @@
 ---
 name: fons4ai-sdd-change
-description: "Fons4AI 已有内容变更工作流。用于已有功能调整，以及低风险的小配置、文档、样式、无行为重构和局部实现修改：满足内置 S0 条件时直接修改并做最小充分验证；涉及业务规则、AC、公共契约、数据、安全或更大影响时，按 S1/S2 澄清变更、生成 CR 和增量任务后停止等待实现确认。全新业务能力优先使用 fons4ai-sdd-feature-workflow，BUG 优先使用 fons4ai-bugfix-workflow。"
+description: "Fons4AI 已有内容变更工作流。用于已有功能调整和开发中用户纠偏：S0 直接修改；未验收且未外部化的活动 Feature 原地修订或执行 ITER 迭代纠偏；已验收、已发布、已外部化或发生不可逆影响时才创建 CR。全新业务能力优先使用 fons4ai-sdd-feature-workflow，BUG 优先使用 fons4ai-bugfix-workflow。"
 ---
 
 # Fons4ai-sdd-change
@@ -9,7 +9,7 @@ description: "Fons4AI 已有内容变更工作流。用于已有功能调整，�
 
 ### Inputs
 
-- Required: 足以定位受影响内容的已有功能变更请求；S1/S2 模式还需要目标既有功能目录或足以唯一定位已有 SDD 功能的事实。
+- Required: 足以定位受影响内容的已有功能变更请求；非 S0 模式还需要目标既有功能目录、`FeatureLifecycle`、`ExternalizedBaseline` 或足以确认这些状态的事实。
 - Optional: 需求说明书、技术设计说明书、任务规划、历史 CR、实施报告、相关源码、测试、SQL、知识卡片和项目规则。
 - Forbidden assumptions: 不得把 BUG 修复、需求变更、数据语义变更和契约变更混同；不得推倒重写既有功能；不得编造影响范围、DDL 证据或用户确认。
 
@@ -21,21 +21,21 @@ description: "Fons4AI 已有内容变更工作流。用于已有功能调整，�
 
 ### Outputs
 
-- May create or update: S0 模式可修改明确范围内的源码、测试、配置或文档；S1/S2 模式可修订未批准规划，或更新 `changes/CR-xxx.md`、受影响的 SDD 产物、V1 增量任务或 V2 Change Task Pack；必要时建议新建或创建继任 Feature。
+- May create or update: S0 模式可修改明确范围内的源码、测试、配置或文档；规划期基线修订和实现期迭代纠偏可在原 Feature 内更新需求、设计、任务、修订状态和 Evidence 状态且不创建 CR；CR 模式可更新 `changes/CR-xxx.md`、受影响的 SDD 产物、V1 增量任务或 V2 Change Task Pack；必要时建议新建或创建继任 Feature。
 - Must not create or update: S0 不生成 CR、任务规划或实施报告；所有模式都不得修改知识库正文、创建知识同步任务或直接执行生产 DDL。
-- Output location: S0 使用受影响文件原位置；S1/S2 使用目标 feature 目录及其 `changes/` 子目录。
+- Output location: S0 使用受影响文件原位置；基线修订和迭代纠偏只使用目标 Feature 目录；仅 CR 路由使用 `changes/` 子目录。
 
 ### Exit Criteria
 
-- Success: S0 模式已完成最小修改和最小充分验证并在对话中交付；S1/S2 模式已完成正确路由，生成或更新 CR、同步受影响产物、创建独立增量任务范围并保持 `pending`，且可用校验通过。
+- Success: S0 已完成最小修改和验证；规划期修订或实现期纠偏已原子同步受影响 SDD 产物、修订任务和失效 Evidence 且未误建 CR；CR 模式已生成或更新 CR 和独立增量范围；所有规划型路由均保持实现确认 `pending` 并通过适用校验。
 - Blocked: S0 缺少授权、预期范围、快速验证或出现风险升级；S1/S2 目标功能不唯一、变更意图不清、源产物冲突、DDL/schema 证据缺失、影响范围超过 70% 或需要用户裁决。
 - Failure report: 输出阻塞原因、最高影响澄清问题、受影响产物、建议返回的技能或下一步。
 
 ### Handoff
 
-- Next skill: S0 默认无下游；S1/S2 仅当用户最新消息明确确认执行后，交给 `fons4ai-sdd-implement`。
-- Required handoff fields: S0 只需变更文件、验证结果和未验证项；S1/S2 需 CR 路径、变更类型、SDD 等级、已更新产物、新增任务 ID、数据结构影响、验证结果和长期知识影响。
-- Stop condition: S0 在用户已明确要求修改时直接执行，不重复确认；S1/S2 生成 CR 和增量任务后停止，不自动进入实现。
+- Next skill: S0 默认无下游；规划期修订、实现期纠偏和 CR 路由都只有在用户最新消息明确重新确认执行后，才交给 `fons4ai-sdd-implement`。
+- Required handoff fields: S0 只需变更文件、验证结果和未验证项；规划型路由需路由结果、`FeatureLifecycle`、`ExternalizedBaseline`、`CurrentRevision`、已更新产物、失效 Evidence、新增或重开任务、数据结构影响、验证结果和长期知识影响；CR 模式另需 CR 路径。
+- Stop condition: S0 在用户已明确要求修改时直接执行；其他路由完成 SDD 修订、任务调整和校验后停止，不自动进入实现。
 - Structured handoff: 阶段交接时同时输出结构化 handoff YAML（参考 `templates/handoff-yaml-template.yaml`），供跨平台多 Agent 协作使用。
 
 ## Evidence Required
@@ -71,20 +71,21 @@ description: "Fons4AI 已有内容变更工作流。用于已有功能调整，�
 
 ## 角色说明
 
-你负责已有内容的风险分级和变更执行：S0 时作为轻量执行者直接完成最小修改；S1/S2 时作为技术负责人，把增量变更转化为可追踪、可验证、可执行的 CR 和增量任务。
+你负责已有内容的风险分级和变更执行：S0 时直接完成最小修改；非 S0 时作为技术负责人，根据生命周期把反馈转化为原地基线修订、`ITER-xxx` 迭代纠偏、CR 或新/继任 Feature。
 
 你的目标不是用同一套重流程处理所有变化，而是：
 
 - 先判断是否满足 S0；满足时直接修改，不生成 CR。
-- 不满足 S0 时判断变更类型，以及是否会改变已有需求、AC、技术设计、数据结构或公共行为。
+- 不满足 S0 时先判断 Feature 生命周期、基线是否外部化和是否已有不可逆效果，再判断变更类型与 SDD 风险等级。
 - 基于已有需求说明书、技术设计说明书、任务规划、CR、报告和代码事实做影响分析。
 - 只更新受影响的 SDD 产物，保留未受影响内容。
-- 将真正可执行的增量工作写入 V1 活动规划或 V2 独立 Change Task Pack，并在 CR 中只引用任务范围。
-- 生成 CR 后停止，等待用户明确确认实现。
+- 规划期反馈修订原基线；实现期且尚未验收、外部化时使用 `ITER-xxx` 纠偏，不因“已经开始实施”自动创建 CR。
+- 只有已验收、已发布、已外部化、已有不可逆效果或用户明确要求审计时才创建 CR。
+- 将真正可执行的工作写入 V1 活动规划或 V2 独立 Task Pack，然后停止等待用户重新确认实现。
 
 ## 职责边界
 
-本技能负责 S0 直接变更，以及 S1/S2 变更分析、CR 生成、受影响 SDD 文档更新和增量任务规划。
+本技能负责 S0 直接变更，以及非 S0 的生命周期路由、变更分析、原 Feature 修订、必要的 CR、受影响 SDD 文档更新和任务规划。
 
 本技能不得：
 
@@ -128,22 +129,40 @@ description: "Fons4AI 已有内容变更工作流。用于已有功能调整，�
 6. 最终只汇报修改内容、实际文件、验证方式与结果、未验证项和升级风险，不生成仓库报告。
 7. 实现中发现范围扩大或硬性排除项时立即停止，保留事实并升级到 S1/S2；不得自动扩大修改范围。
 
+## Feature 生命周期与路由 Gate
+
+非 S0 请求在分配 CR 或修改 SDD 产物前，必须读取 `../fons4ai-sdd-tasks/references/iteration-lifecycle.md` 并执行其中的路由顺序。路由事实足够时可运行：
+
+```text
+python scripts/classify_change_route.py --lifecycle <planning|implementing|accepted|released> --externalized <yes|no> --irreversible-effect <yes|no> --scope <same-feature|new-feature|successor-feature>
+```
+
+路由含义：
+
+- `baseline-revision`：规划期原地修订需求、设计和任务，不创建 CR。
+- `iteration-correction`：实现期用户纠偏，使用连续 `ITER-xxx` 原子更新原 Feature，不创建 CR。
+- `change-request`：创建 CR 和独立增量范围。
+- `new-feature|successor-feature`：转入新 Feature 或继任 Feature。
+
+`implementing` 本身不是 CR 触发条件。缺少生命周期或外部化事实且会影响路由时，只问一个最高影响问题。
+
 ## 必要上下文
 
 以下上下文要求适用于 S1/S2；S0 使用上节规定的最小上下文：
 
 1. 读取 `../fons4ai-sdd-requirements/references/sdd-artifact-contract.md`，包括上下文加载、实现确认和 DDL 边界规则。
-2. 识别目标 `spec/features/<yyyymmdd>/` 目录。若多个功能目录匹配，先让用户选择。
-3. 读取目标功能目录中的：
+2. 读取 `../fons4ai-sdd-tasks/references/iteration-lifecycle.md`；需要创建或修订任务时同时读取 `../fons4ai-sdd-tasks/references/task-implementation-contract.md`。
+3. 识别目标 `spec/features/<yyyymmdd>/` 目录。若多个功能目录匹配，先让用户选择。
+4. 读取目标功能目录中的：
    - `<功能中文名>-需求说明书.md`
    - `<功能中文名>-技术设计说明书.md`
    - V1 `<功能中文名>-任务规划.md`，或 V2 `<功能中文名>-任务索引.md` 与活动 `tasks/TP-*.md`
    - `changes/CR-*.md`
    - `reports/*.md`
-4. 按变更意图、AC ID、模块、API、领域对象、表/模型名和 SQL 路径搜索相关源码、测试、SQL、规则和知识卡片。
-5. 按需读取 `.specify/rules/sdd团队协作规范.md`，用于判断标准扩展场景、S2 条件、评审门禁和完成定义。
-6. 只读取会影响本次变更的上下文。只有跨领域、S2 或全局约束决策时，才读取项目级知识库总览。
-7. 使用 `assets/templates/change-template.md`。
+5. 按变更意图、AC ID、模块、API、领域对象、表/模型名和 SQL 路径搜索相关源码、测试、SQL、规则和知识卡片。
+6. 按需读取 `.specify/rules/sdd团队协作规范.md`，用于判断标准扩展场景、S2 条件、评审门禁和完成定义。
+7. 只读取会影响本次变更的上下文。只有跨领域、S2 或全局约束决策时，才读取项目级知识库总览。
+8. 仅 `change-request` 路由使用 `assets/templates/change-template.md`。
 
 ## S1/S2 变更澄清门禁
 
@@ -189,9 +208,10 @@ description: "Fons4AI 已有内容变更工作流。用于已有功能调整，�
 4. 判断 SDD 等级：
    - S1：局部行为调整、小扩展、单模块或少量模块协作。
    - S2：数据库结构、公共 API/契约、权限安全、兼容迁移、事务边界、跨核心模块或高回滚成本。
-5. 判断修改基线、创建 Change Task Pack、新 Feature 或继任 Feature：
-   - 基线需求/设计/任务尚未批准：修订原草案并更新版本，不创建 CR。
-   - 已批准能力的局部调整且仍属于同一 AC/业务边界：创建 CR；V2 创建独立 Change Task Pack，V1 只有未命中拆分信号且用户接受时才追加。
+5. 判断修改基线、执行迭代纠偏、创建 Change Task Pack、新 Feature 或继任 Feature：
+   - `planning`：修订原基线并更新 `CurrentRevision: ITER-xxx`，不创建 CR。
+   - `implementing` 且未外部化、无不可逆效果：执行迭代纠偏，不创建 CR；V1 重开受影响任务，V2 将受影响包标记为 `superseded` 并创建 `SourceChange: ITER-xxx` 的修订包。
+   - `accepted|released`、已外部化、已有不可逆效果或用户明确要求正式审计：创建 CR；V2 创建独立 Change Task Pack，V1 只有未命中拆分信号且用户接受时才追加。
    - 新增独立 AC、业务模块或可独立验收能力：默认创建新 Feature，不挂到原 Feature。
    - 超过 70% AC 被替换、核心流程重写、主数据模型重构或公共 API 大范围变化：创建继任 Feature。
    - 出现任一体量信号时必须进行拆分决策：任务总数达到 30；活动规划超过 40 KB 或约 12,000 Token；累计 3 轮 CR 且本轮新增不少于 8 个任务；历史/停止/替代内容超过正文 50%。
@@ -201,7 +221,7 @@ description: "Fons4AI 已有内容变更工作流。用于已有功能调整，�
    - 技术设计影响。
    - 数据结构与 DDL 影响。
    - 代码影响。
-   - 测试和回归影响：记录 `BehaviorChange`、`ExistingCoverage`、`TestAction`、`TestLevel`、`AffectedTests`、`RegressionScope` 和理由；不得因为代码变化默认新增测试或全量回归。
+   - 测试和回归影响：只记录 `BehaviorRisk`、`TestIntent`、`MinimumEvidence` 和 `TestBasis`；具体覆盖、测试动作、受影响测试和回归范围由 implement 检查当前代码与测试后决定。不得因为代码变化默认新增测试或全量回归。
    - 回滚、兼容、安全、事务和发布风险。
    - 长期知识影响。
    - 若属于标准扩展场景，补充专业工作流复用分析：可复用工作流/规则/卡片、差异点、禁止修改的公共抽象、必须落入设计和任务的约束。
@@ -220,18 +240,21 @@ description: "Fons4AI 已有内容变更工作流。用于已有功能调整，�
 9. UI 变更设计 Gate（仅当变更涉及页面、控制台、前端、模板引擎等交互型交付物时触发）。
    - 如果变更范围涉及页面、控制台、前端、模板引擎页面（如 Freemarker、Vue、React）、管理后台或可视化界面，必须检查是否已存在 UI 设计确认。
    - 若已有 UI 设计确认（如技术设计说明书中包含页面信息架构、布局方案、交互流），直接引用。
-   - 若缺少 UI 设计确认，必须在 CR 中标注"UI 设计待确认"，并在增量任务中追加 UI 设计确认任务。
+   - 若缺少 UI 设计确认，必须在当前修订记录或 CR 中标注“UI 设计待确认”，并在可执行任务中追加 UI 设计确认任务。
    - 不得在缺少 UI 设计确认的情况下，将页面类增量任务标记为可直接执行。
-10. 创建 `changes/CR-xxx.md`。
-11. 创建可执行增量范围。
-    - V2 创建独立 Change Task Pack，并在任务索引登记状态、AC、依赖和路径；不得修改已批准、完成、替代或归档 Task Pack。
-    - V1 仅在未触发拆分评估且用户接受继续单文件时，将任务追加到活动任务规划。
-    - CR 只记录 Task Pack/任务摘要和 ID，不复制完整任务正文。
+10. 仅 `change-request` 路由创建 `changes/CR-xxx.md`；`baseline-revision` 和 `iteration-correction` 禁止创建 CR。
+11. 创建可执行范围。
+    - `baseline-revision`：直接修订未批准 V1 任务或 V2 草案 Task Pack。
+    - `iteration-correction`：V1 更新未完成任务并重开受影响已完成任务；V2 冻结并替代受影响包，创建 `SourceChange: ITER-xxx` 的修订 Task Pack。
+    - `change-request` 的 V2 路由创建独立 Change Task Pack，并在任务索引登记状态、AC、依赖和路径；不得修改已批准、完成、替代或归档 Task Pack。
+    - `change-request` 的 V1 路由仅在未触发拆分评估且用户接受继续单文件时，将任务追加到活动任务规划。
+    - CR 只记录 Task Pack/任务摘要和 ID，不复制完整任务正文；`baseline-revision` 和 `iteration-correction` 不生成 CR 摘要替代任务正文。
     - `fons4ai-sdd-implement` 从 V1 任务规划或 V2 当前/指定已批准 Task Pack 执行。
-    - 每个增量任务必须包含 `AC:`、`Files:`、`Verification:`、`Quality:`、`Done:`。
+    - 新增或修订的实现任务必须使用 `ImplementationContractVersion: 2`，并包含 `AC:`、`DesignRefs:`、`Implementation:`、`Invariants:`、`NonGoals:`、`Files:`、`BehaviorRisk:`、`TestIntent:`、`MinimumEvidence:`、`TestBasis:`、`Verification:`、`Quality:`、`Done:`；`DesignRefs` 必须可解析，实施动作必须包含真实机制，不变量和非目标必须是可检查边界，文件必须带证据标签。
     - 如果 CR 引用了专业工作流，必须把关键约束拆入新增任务的 `Quality:`、`Verification:` 或 `Done:`，不得只写"参考某工作流"。
-12. 写入 CR 后运行：
-    - `python <fons4ai-sdd-tasks>/scripts/validate_sdd_artifacts.py --change-file <CR-file>`
+12. 运行适用校验：
+    - 原 Feature 修订：`python <fons4ai-sdd-tasks>/scripts/validate_sdd_artifacts.py --feature-dir <feature-dir> --strict`
+    - CR：`python <fons4ai-sdd-tasks>/scripts/validate_sdd_artifacts.py --change-file <CR-file>`
 13. 停止在变更规划阶段，提示用户确认执行。
 
 ## DDL 与 SQL 规则
@@ -273,6 +296,6 @@ CR 只记录长期知识影响，不创建知识同步任务或知识汇总交�
 - 草案 CR 不得包含可执行增量任务。
 - S1/S2 不得编写业务代码。
 - 未经确认，不得删除既有 AC、任务或文档。
-- 结束时输出路由决定、CR/新 Feature/继任 Feature 路径、变更类型、SDD 等级、已更新产物、Task Pack 与任务 ID、长期知识影响和实现确认状态 `pending`。
+- 结束时输出路由决定、`FeatureLifecycle`、`ExternalizedBaseline`、`CurrentRevision`、CR/原 Feature/新 Feature/继任 Feature 路径、已更新产物、失效 Evidence、Task Pack 与任务 ID、长期知识影响和实现确认状态 `pending`。
 - V1 提示：`确认执行后默认执行全部未完成任务；如需指定范围，请回复：执行 T001,T002。`
 - V2 提示：`确认执行后默认只执行当前活动 Task Pack；可回复：执行 TP-xxx、执行 Txxx，或执行全部活动任务包。`

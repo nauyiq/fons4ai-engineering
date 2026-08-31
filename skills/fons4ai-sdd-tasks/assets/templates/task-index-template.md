@@ -5,6 +5,9 @@
 > SDD 等级：`S1|S2`
 > 来源需求：`<feature-dir>/<功能中文名>-需求说明书.md`
 > 来源技术设计：`<feature-dir>/<功能中文名>-技术设计说明书.md`
+> FeatureLifecycle: planning
+> ExternalizedBaseline: no
+> CurrentRevision: INIT
 > 当前活动任务包：无 | `TP-001`
 > 实现确认状态：pending
 > 创建日期：YYYY-MM-DD
@@ -39,6 +42,7 @@ graph LR
 - 已完成任务包：无 | TP-xxx
 - 已替代/归档任务包：无 | TP-xxx，替代来源
 - 当前变更：无 | CR-xxx
+- 当前修订：INIT | ITER-xxx | CR-xxx
 
 ## 5. AC 覆盖
 

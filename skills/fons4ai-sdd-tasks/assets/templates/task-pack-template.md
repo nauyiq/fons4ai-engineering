@@ -4,7 +4,7 @@
 > Feature：`<feature-slug>`
 > PackStatus：draft | ready | approved | in-progress | done | deferred | superseded | archived
 > ApprovalStatus：pending | approved | rejected | not-required
-> SourceChange：INIT | CR-xxx
+> SourceChange：INIT | ITER-xxx | CR-xxx
 > DependsOn：无 | TP-xxx | Txxx
 > 覆盖 AC：AC-xxx
 > 创建日期：YYYY-MM-DD
@@ -20,21 +20,22 @@
 
 ## 2. 任务列表
 
-> TestDecisionVersion: 1
+> TestIntentVersion: 1
+> ImplementationContractVersion: 2
 
 - [ ] Txxx 用动宾短语描述任务
   - 通俗解释: 这个任务完成后，用户或系统会发生什么可感知变化。
   - AC: AC-xxx
-  - 来源: 技术设计说明书 §x | CR-xxx
-  - Files: path/to/source; path/to/test
+  - DesignRefs: 技术设计说明书 §x | TD-xxx | contracts/<contract>.md | CR-xxx
+  - Implementation: 1) 在已确认的规则归属层完成核心动作；2) 复用现有组件完成调用、映射或持久化；3) 按设计处理错误、事务或幂等边界。
+  - Invariants: 不改变已确认的业务口径、状态约束、数据语义和兼容承诺。
+  - NonGoals: 不修改当前任务包之外的公共契约、数据结构或相邻流程。
+  - Files: existing:path/to/source; new-confirmed:path/to/new-file
   - Depends: 无 | Txxx | TP-xxx
-  - BehaviorChange: none | changed | new
-  - ExistingCoverage: covered | partial | missing | not-applicable
-  - TestAction: none | reuse | update | add
-  - TestLevel: none | unit | contract | integration | e2e | manual
-  - AffectedTests: none | path/to/test | <聚焦测试命令>
-  - RegressionScope: none | focused | affected | module | full
-  - TestReason: 说明可观察行为、覆盖缺口和范围依据；full 必须说明触发条件。
+  - BehaviorRisk: none | low | medium | high
+  - TestIntent: none | reuse | gap-to-confirm
+  - MinimumEvidence: none | compile | unit | contract | integration | e2e | manual
+  - TestBasis: 说明可观察行为风险和最低证据下限；具体测试动作与回归范围由 implement 基于当前覆盖决定。
   - Verification: 给定什么输入或前置条件，执行什么动作，应该得到什么可观察结果。
   - Quality: 确认可读性、领域规则归属、重复代码、工具复用、数据口径和依赖门禁。
   - Done: 客观完成标准。
@@ -43,8 +44,8 @@
 
 - 必需验证：
 - 最小回归：
-- 受影响测试并集：无 | <测试类、测试文件或命令>
-- 全量回归触发：无 | 发布/合并门禁 | 公共契约或共享基础模块变化 | 依赖或构建配置变化 | 数据库结构或安全权限广泛影响 | 影响范围无法可靠判断 | 用户/CI 明确要求
+- 最低证据组合：<各任务 MinimumEvidence 的风险覆盖组合>
+- 实施阶段聚合：由 implement 汇总实际 `AffectedTests` 并决定回归范围；规划阶段不预置测试清单或 full 回归。
 - 外部 Gate：无 | <责任方、状态和恢复条件>
 - Done：包内必需任务完成、验证通过，且未完成外部 Gate 已明确归属和状态。
 

@@ -25,7 +25,7 @@ Fons4AI Harness Engineering 使用 6 层结构：
 | `fons4ai-sdd-requirements` | Intent Harness | Context Harness, Skill Harness | 澄清需求并生成需求说明书 | 保留现有职责；后续评估是否补充轻量 Evidence 章节 |
 | `fons4ai-sdd-design` | Intent Harness | Skill Harness, Feedback Harness | 在需求后生成技术设计，记录风险、验证策略和知识影响 | 结构较完整；后续补显式 `职责边界` 章节 |
 | `fons4ai-sdd-tasks` | Intent Harness | Skill Harness, Feedback Harness | 把需求和设计拆成 V1 单文件规划，或 V2 任务索引与 Task Pack，并停止等待实现确认 | 保留任务规划职责与 V1 兼容；用拆分阈值控制上下文规模 |
-| `fons4ai-sdd-change` | Intent Harness | Skill Harness, Feedback Harness | S0 Fast Change 直接执行；S1/S2 做变更分析、CR 和增量任务 | 内置风险分级，无项目规则时仍可判断 S0 |
+| `fons4ai-sdd-change` | Intent Harness | Skill Harness, Feedback Harness | S0 Fast Change 直接执行；非 S0 按生命周期路由到基线修订、ITER 纠偏、CR 或新/继任 Feature | 内置风险分级和生命周期路由，无项目规则时仍可判断 |
 | `fons4ai-sdd-implement` | Feedback Harness | Skill Harness, Context Harness | 执行已授权 SDD 任务，通过 Test Decision Gate、风险驱动回归和 Evidence Ledger 约束测试成本与验证证据 | 作为实现类技能样板，保持覆盖缺口驱动测试和证据可失效复用 |
 | `fons4ai-bugfix-workflow` | Feedback Harness | Intent Harness, Skill Harness | S0 Fast Fix 或标准复现、诊断、修复、验证并记录 BUG | 内置风险分级，标准模式保留完整 Evidence |
 | `fons4ai-harness-feedback` | Learning Harness | Feedback Harness | 将业务试点项目中的 Agent 使用问题整理为脱敏上游反馈单 | 已落地为独立反馈技能；默认输出到 `spec/reports/harness-feedback/` |
@@ -41,7 +41,7 @@ Fons4AI Harness Engineering 使用 6 层结构：
 | 流程编排类 | `fons4ai-sdd-feature-workflow` | 控制阶段顺序和停止点，不直接产出业务代码 |
 | SDD 阶段产物类 | `fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks` | 负责需求、设计，以及 V1 任务规划或 V2 任务索引/Task Pack 等正式 SDD 产物 |
 | 实现执行类 | `fons4ai-sdd-implement` | 只执行已规划且已授权任务，更新代码、测试、任务状态和实施报告 |
-| 变更执行与规划类 | `fons4ai-sdd-change` | S0 直接修改；S1/S2 生成 CR 和增量任务 |
+| 变更执行与规划类 | `fons4ai-sdd-change` | S0 直接修改；未外部化活动 Feature 用 ITER 纠偏；稳定或外部化基线使用 CR |
 | BUG 修复闭环类 | `fons4ai-bugfix-workflow` | S0 Fast Fix；复杂缺陷完成标准修复验证和 BUG 报告 |
 | 知识库类 | `fons4ai-knowledge-bootstrap`、`fons4ai-domain-knowledge-modeling`、`fons4ai-knowledge-summary` | 建立项目知识基线、领域/能力域建模和已验证事实沉淀 |
 | 规则生成类 | `fons4ai-generate-project-rules` | 把项目事实、团队决策和治理边界固化为规则文件 |

@@ -18,7 +18,7 @@ Fons4AI Engineering 的定位是：
 - 用项目规则和验证门禁限制高风险行为。
 - 将失败、验证和评审结果沉淀为项目本地资产或脱敏上游反馈。
 
-测试与 TDD 采用风险驱动策略：实现任务先经过 Test Decision Gate，只有可观察行为变化且现有覆盖存在缺口时才新增或更新测试；开发阶段默认执行聚焦或受影响测试，全量回归仅用于明确风险门禁。完整约定见 `docs/test-decision-policy.md`。
+测试与 TDD 采用风险驱动策略：任务规划只声明行为风险和最低证据意图；implement 读取当前代码与已有测试后再完成 Test Decision Gate。只有可观察行为变化且现有覆盖存在缺口时才新增或更新测试；开发阶段默认执行聚焦或受影响测试，全量回归仅用于明确风险门禁。任务规划采用 `ImplementationContractVersion: 2`，校验具体实施机制、可检查不变量、明确非目标和文件证据标签；implement 还必须解析任务 `DesignRefs` 与 AC，并在编码前记录与当前代码的实施对齐结论。完整测试约定见 `docs/test-decision-policy.md`。
 
 ## 目录结构
 
@@ -99,7 +99,7 @@ spec/reports/harness-feedback/
 | 场景 | 推荐入口 | 说明 |
 | --- | --- | --- |
 | 正常新需求开发 | `fons4ai-sdd-feature-workflow` | 以需求就绪和设计确认门禁编排 SDD；大型需求按 Feature 与 Task Pack 拆分，校验后停止等待实现确认 |
-| 已有功能迭代或低风险非 BUG 小变更 | `fons4ai-sdd-change` | S0 直接修改验证；S1/S2 生成 CR 和增量任务 |
+| 已有功能迭代或低风险非 BUG 小变更 | `fons4ai-sdd-change` | S0 直接修改；规划期原地修订；实现期未外部化反馈使用 ITER；稳定或外部化基线才创建 CR |
 | BUG、异常、回归失败 | `fons4ai-bugfix-workflow` | S0 Fast Fix 直接修复验证；复杂问题执行完整报告闭环 |
 | 用户确认实现 | `fons4ai-sdd-implement` | 只执行已规划且已授权的任务 |
 
@@ -112,7 +112,7 @@ Fons4AI 技能按用户入口和职责边界分为以下类型：
 | 流程编排类 | `fons4ai-sdd-feature-workflow` | 串联阶段、控制停止点，不直接写业务代码 |
 | SDD 阶段产物类 | `fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks` | 生成或调整需求、7 章技术设计，以及 V1 单文件或 V2 任务索引/Task Pack |
 | 实现执行类 | `fons4ai-sdd-implement` | 执行已规划且已授权的任务，更新代码、测试、任务状态和实施报告 |
-| 变更执行与规划类 | `fons4ai-sdd-change` | S0 直接修改验证；S1/S2 生成 CR 和增量任务 |
+| 变更执行与规划类 | `fons4ai-sdd-change` | S0 直接修改；按 Feature 生命周期路由到基线修订、ITER 纠偏、CR 或新/继任 Feature |
 | BUG 修复闭环类 | `fons4ai-bugfix-workflow` | S0 Fast Fix 或标准复现、修复、验证和报告 |
 | 知识库类 | `fons4ai-knowledge-bootstrap`、`fons4ai-domain-knowledge-modeling`、`fons4ai-knowledge-summary` | 建立、深化和汇总项目知识事实 |
 | 规则生成类 | `fons4ai-generate-project-rules` | 把已验证项目事实和团队决策固化为 `.specify/rules/` |
