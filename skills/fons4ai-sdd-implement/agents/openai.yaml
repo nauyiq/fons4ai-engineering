@@ -1,14 +1,4 @@
 interface:
-  display_name: "Fons4AI SDD Implement"
-  short_description: "受控执行 SDD 任务，先做 Test Decision，再按覆盖缺口编写测试并执行风险驱动回归。"
-  default_prompt: "Use $fons4ai-sdd-implement only when a V1 task plan or approved V2 Task Pack exists and the latest user message explicitly confirms implementation. Resolve every selected task's AC and DesignRefs, record Implementation Alignment against current code, and stop on unresolved conflicts. Execute the Implementation contract while preserving Invariants, NonGoals, and Files boundaries. Treat planning TestIntent as a risk floor, then perform the concrete Test Decision Gate from current code evidence. Record the Evidence Ledger, Review status, Gate status, verification, and unresolved items."
-
-adapter:
-  platform: codex
-  capabilities:
-    multi_agent: true
-    parallel: true
-    thread_handoff: true
-  spawn_method: create_thread
-  handoff_method: handoff_thread
-  context_isolation: true
+  display_name: "Fons4AI SDD 实现"
+  short_description: "执行已授权任务，以 TDD 验证行为，复用现有能力并增量更新项目知识。"
+  default_prompt: "使用 $fons4ai-sdd-implement 执行已授权工作，核查依赖能力并验证实际行为。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fons4AI SDD 规划"
+  short_description: "由主 Agent 切换需求、设计和任务角色，按复杂度形成轻量可验证规划。"
+  default_prompt: "使用 $fons4ai-sdd-plan 理解需求并完成适当的设计与任务规划。"
