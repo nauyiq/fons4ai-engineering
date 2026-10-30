@@ -1,113 +1,29 @@
-#!/usr/bin/env python3
-"""Run repository-level Fons4AI Harness validation."""
-
-from __future__ import annotations
-
+"""Run current suite checks and behavior tests; legacy protocols are excluded."""
 import argparse
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
+
+from sync_global_skills import collect_skills, verify_lock
+from validate_repository import validate_docs, validate_suite
 
 
-def run_check(label: str, command: list[str], cwd: Path) -> int:
-    print(f"==> {label}", flush=True)
-    result = subprocess.run(command, cwd=cwd)
-    if result.returncode == 0:
-        print(f"OK: {label}", flush=True)
-    else:
-        print(f"ERROR: {label} failed with exit code {result.returncode}", file=sys.stderr)
-    return result.returncode
-
-
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate all Fons4AI Harness repository assets")
-    parser.add_argument("--root", default=".", help="Repository root")
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
     args = parser.parse_args()
-
-    root = Path(args.root).resolve()
-    python = sys.executable
-    checks = [
-        (
-            "skill contracts",
-            [python, "scripts/validators/validate_skill_contracts.py", "--skills-root", "skills"],
-        ),
-        (
-            "SDD V1/V2 artifact regressions",
-            [python, "-B", "-m", "unittest", "tests.test_sdd_artifacts_v2"],
-        ),
-        (
-            "risk-driven test decision policy",
-            [python, "-B", "-m", "unittest", "tests.test_test_decision_policy"],
-        ),
-        (
-            "task implementation contract",
-            [python, "-B", "-m", "unittest", "tests.test_task_implementation_contract"],
-        ),
-        (
-            "change lifecycle routing",
-            [python, "-B", "-m", "unittest", "tests.test_change_lifecycle_routing"],
-        ),
-        (
-            "skill stack neutrality",
-            [python, "scripts/validators/validate_stack_neutrality.py", "--root", "."],
-        ),
-        (
-            "feedback harness entrypoint",
-            [python, "scripts/validators/validate_feedback_harness.py", "--root", "."],
-        ),
-        (
-            "loop phase 1 assets",
-            [python, "scripts/validators/validate_loop_phase1.py", "--root", "."],
-        ),
-        (
-            "business project validator help",
-            [python, "scripts/validators/validate_business_project_harness.py", "--help"],
-        ),
-        (
-            "handoff template",
-            [python, "scripts/validators/validate_handoff.py", "--file", "templates/handoff-template.md"],
-        ),
-        (
-            "structured handoff YAML template",
-            [python, "scripts/validators/validate_handoff_schema.py", "--file", "templates/handoff-yaml-template.yaml"],
-        ),
-        (
-            "platform neutrality",
-            [python, "scripts/validators/validate_platform_neutrality.py", "--root", "."],
-        ),
-        (
-            "multi-agent runtime validator help",
-            [python, "scripts/validators/validate_multi_agent_runtime.py", "--help"],
-        ),
-        (
-            "implementation report template",
-            [
-                python,
-                "scripts/validators/validate_implementation_report.py",
-                "--report",
-                "skills/fons4ai-sdd-implement/assets/templates/implementation-report-template.md",
-            ],
-        ),
-    ]
-
-    example = root / "examples" / "business-project-minimal"
-    if example.exists():
-        checks.append(
-            (
-                "business project minimal example",
-                [python, "scripts/validators/validate_business_project_harness.py", "--target", str(example)],
-            )
-        )
-
-    failures = 0
-    for label, command in checks:
-        failures += 1 if run_check(label, command, root) != 0 else 0
-
-    if failures:
-        print(f"ERROR: {failures} validation check(s) failed", file=sys.stderr)
+    root = args.root.resolve()
+    try:
+        errors = validate_suite(root / "skills") + validate_docs(root)
+        errors += verify_lock(root, collect_skills(root / "skills"))
+    except (OSError, ValueError) as exc:
+        errors = [str(exc)]
+    for error in errors:
+        print(f"ERROR: {error}", file=sys.stderr)
+    result = subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", "tests", "-v"], cwd=root)
+    if errors or result.returncode:
         return 1
-
-    print("OK: all Fons4AI Harness validations passed")
+    print("OK: current suite, source hashes, navigation and behavior tests")
     return 0
 
 

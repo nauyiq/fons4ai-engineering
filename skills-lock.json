@@ -1,138 +1,72 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
     "fons4ai-bugfix-workflow": {
       "files": {
-        "agents/manifest.yaml": "2c373d0a54c3812e0c31eebcd4b1e2f869de1773ac4be143af0ace6065a41339",
-        "agents/openai.yaml": "57441a221815ad76e92fee6972666499a039f4ce87dd96794e7ce2a0cba274f6",
-        "assets/templates/bugfix-report-template.md": "01e632fb010090dd82e582abc658e4c05ef8fdfe545f7f92fde1088e4cba3d40",
-        "scripts/validate_bugfix_report.py": "aad13a007a6906a950e83e32ef523e284e34e1e025b3d095d0bce96f14685fd1",
-        "SKILL.md": "90614dafb46b56ffe58c0f9e7360713ecab622dedc8b5e119e043e6f36755003"
+        "agents/openai.yaml": "bb88e6002b5851be1d19273aa4701bbd64ac7e0c4f38611ca2f76b3cf445c8df",
+        "references/investigate.md": "32407ad51e86f6dfe9f656ce17c9b154476ebc68ff06812efcb25ae628537729",
+        "SKILL.md": "020061d17caf0484601eec9cd97dde6cee864d5266bcebb2aab48b5d84a4bae9"
       }
     },
-    "fons4ai-domain-knowledge-modeling": {
+    "fons4ai-knowledge": {
       "files": {
-        "agents/manifest.yaml": "edbda741be34f3c5572be60519c7728f670260244122bc80796391f8dd636a66",
-        "agents/openai.yaml": "ec662340848d3ac95f3541db08e5d2642a13130247fd8c8452dd2877a78e3826",
-        "references/business-adaptation-matrix-template.md": "d3f813888ee3796b553606f5d30a65345b5a5330ea63d3e35db714c9b84a6ceb",
-        "references/business-adaptation-template.md": "48cdedbef11bdd1428585f8d871e79b25d50f1bf6e9d48a9cc31264e71e69c25",
-        "references/capability-ability-template.md": "09e35c74eac0b984174894c6d29af8cedcd6c4eb938efa54299a434e1c47fcc6",
-        "references/capability-adaptation-matrix-template.md": "1af2c39f39f0cb3915c5fdef425961a47b298fe5f505093babb729b9f3ca6ab5",
-        "references/capability-adaptation-template.md": "31cc2474a861d0320761d7b1f9a7abc46444487ce0d49cfa29e6487578362109",
-        "references/capability-configuration-resource-template.md": "12e5f5a08c2ecd5bd8661fe60baef4b2625f58b551ac68182c211a5cf3f26598",
-        "references/capability-runtime-template.md": "5804ec60ccc62993567e62db510e60d56fdd07e3e840c54d18eb341a7d7864f0",
-        "references/domain-business-template.md": "38971e94e35d98be0abab9a7b83245ec274c4d68a975d58a0534b0a3175c681b",
-        "references/domain-data-template.md": "2d9824005ca69fa0c0914f80c6fb61f1954e5ce1f803a89a64975a71833240aa",
-        "references/domain-modeling-confirmation-template.md": "8e920abcdb1217fc2228b1df9a7ae27436ec5ed6d955ec91fbd010fce2a04ede",
-        "references/domain-modeling-report-template.md": "794aa1509bc4da662cb169c7b8bba8f68c5ab6bba0eb35752bc1dd737efeac21",
-        "references/domain-technical-template.md": "f47310f07a23f3b28025e5746cc7570064d0864bac16e10cfcc6caec80ec4d42",
-        "references/evidence-ledger-template.md": "206a8fb8a98172da077454b3ec51ef75167e6e7952e61321474f95d0facfb776",
-        "references/knowledge-card-template.md": "00b12f266239129e84608b109b71ad470e4163d17b8668633072085ca2dc0905",
-        "scripts/validate_domain_knowledge.py": "bee9b40bc62424c8cca7c5a7c7895157c0cc4acf1121657f84a3230681227f74",
-        "SKILL.md": "47765b922270571a871ff2ae46bee43b7ceb9bee9f021350e3a1edb037979307"
-      }
-    },
-    "fons4ai-generate-project-rules": {
-      "files": {
-        "agents/manifest.yaml": "5a8a3a7e41ffae2d7f0b204e7dfac5b8f12c772cfe15bc4ed5404340d30763bb",
-        "agents/openai.yaml": "62517312617244be14f54f3457f64b8c99e1dc86536891eeea2d585d8a6293ef",
-        "assets/templates/agent运行规则-template.md": "27c5b73aaf4450b282881240dc84ffac4bf47b5a13618ceaed6158b40959cd77",
-        "assets/templates/sdd团队协作规范-template.md": "eecf1cc9c0823318561840dc1f2691e25542646ec4e0acbf5346c26757773f23",
-        "assets/templates/代码编写规范-template.md": "ac04ec859524c8e4b17be44982ace1c2dc4c9bb296373c375aeabe2d09766572",
-        "references/rule-files.md": "f9171e378b66b91513b753a82bea2d726c47468736523d3577663014fbbbdefc",
-        "scripts/validate_rule_docs.py": "b003e4f864da4af9991bffe57e8c4f7cbe7a8ab34b7f2d3db8d933a8743f1380",
-        "SKILL.md": "3dcb0e79434946284b81fea90ed07d5c8397ef9d7d407e247926af23bb5e0b34"
-      }
-    },
-    "fons4ai-harness-feedback": {
-      "files": {
-        "agents/manifest.yaml": "0e9f3d37d0f2127267c49028f2e28d7a22567c851e320eaf3db47cdcf90be3a8",
-        "agents/openai.yaml": "f336e03b1a9be26672b08522da3936dc64b04d525cda0d3133a9750715722782",
-        "assets/templates/upstream-feedback-template.md": "0ea8e0ec6bfbe14c926964fc8c004c1c800b29f8f68436140822fba561361022",
-        "scripts/validate_harness_feedback.py": "731ba2f5cfb6c67a07713049ce6ee21b717a32aabbf492269a385b61791798ea",
-        "SKILL.md": "b224ff4d175541c5bd4cc2539ed5fc9b9766db080b8fead7d3ea6ea0da700e67"
-      }
-    },
-    "fons4ai-knowledge-bootstrap": {
-      "files": {
-        "agents/manifest.yaml": "519da851f9bd2efcc8894286deeb6875274e8542ab373f98000e0e88d3fcd4f7",
-        "agents/openai.yaml": "7219b6fd6d287a9742fd602206abae8a67d1492a38bf7c37586d2421a2359fb4",
-        "references/agents-template.md": "25b93e3dc1591eedfb57a7ce2c4505572673068626a6a5ab4df5206996d74448",
-        "references/bootstrap-analysis-report-template.md": "3193d6a260844b369612b516f480e81dd69554ce21c42161a6d1c724d17a15ea",
-        "references/dialogue-confirmation-template.md": "72361fca41ba7ad3fe564863afad65c103e61e799169345431ef2afafe80134b",
-        "references/memory-index-template.md": "0a9549451a899c2e0ccfdaf9515cc2173f884edc399b4b0393389c3c748215aa",
-        "references/project-business-architecture-template.md": "86db571c303685003258c50d559f5cc1604864733638d5b7ebf2138e76f8b15a",
-        "references/project-configuration-resource-architecture-template.md": "af2f6a4738e5380ff5f959178f9d909cd8e509eaa6856837329d45363eb7f7c8",
-        "references/project-data-architecture-template.md": "ae25bed3edc807a56daf6027cd675504ca49738b599acf5f9fd8fce91fd9d8b5",
-        "references/project-runtime-architecture-template.md": "e72c8cf6d37fce759e2c1ce159ba704850e6de8eafe611fd654c576d2be0021a",
-        "references/project-technical-architecture-template.md": "dc879441ef307efd7c5d47704b77489b4f3fbb66340dc2583004816fca208075",
-        "references/project-technical-capability-architecture-template.md": "17c68ed54acf460e1a3a1b7d58b14e59d65541a64c30fb96976bcea1cd5b7efd",
-        "references/technical-memory-index-template.md": "ad10ba2813423151cdc2b143dc7219b667cf8bc08ad9546fe09153451851e4d1",
-        "scripts/validate_knowledge_bootstrap.py": "38069bf2d0c743fbe199c230dc5d0fb0d8ee453ba0bbb13ad83864d08d5fb198",
-        "SKILL.md": "2b60e648d7cb73c4f1d640abda9b91c6ba23b075a0317334cfdb0a8bc190604f"
-      }
-    },
-    "fons4ai-knowledge-summary": {
-      "files": {
-        "agents/manifest.yaml": "6e9fa029f0334796072148a7d6f946ff832604be35d3170bb46299ad1c10d5c8",
-        "agents/openai.yaml": "91a6068f4de921ae882cabacf7623624ccd2412ab4d1313d868fd134469fc9ab",
-        "SKILL.md": "02eff3c5667425de4a9576e67260ebf9c821a5d86dec50c71c60d23b6b95f4df"
+        "agents/openai.yaml": "df93e51d8f781c581cac5e026ee50f2fb5c13f3f25af5eea8ab3a3e8e30d5a2e",
+        "assets/templates/agents.md": "d0ce1c48b6cddbb5985eaaf4a6e76dac20a470fb92087902917091a47dcdaf14",
+        "assets/templates/framework-usage.md": "753963e635425f6c0f5aa37db688d92f8988f9316131efaa7a7a40c9004daee2",
+        "assets/templates/readme.md": "b865736674843b7e419256faa16e81504430f8beb10e28ff39ee3eafdfcde362",
+        "assets/templates/topic.md": "509567c99868afb13b0f27a9e182303e0a982c2f928d17b119a7cb63b62cdedc",
+        "assets/templates/wiki-index.md": "2d12bdfcce3ede46e94a5ab49983afbc124ef836ee27780d0290b84035c96c24",
+        "references/consolidate.md": "a1aee7c77c3c686ef8c534405cf1b94a9d23522276c6bddcf476308f6f7857ca",
+        "references/dependency-discovery.md": "55d628603c6676f3b63d2b383f9f88b436a04daa3a1524da59541e754fdb15e9",
+        "references/derive-rules.md": "ebfa622e07e85790f597fc281a590ef8e8c5fb6bf4f04deae0ca3ad9812ede0d",
+        "references/diagram-guidance.md": "953f7771e40984646805999856cb8195277efc2fd9a732d4aed01491e1b737b7",
+        "references/initialize.md": "1a51a8ef4e527af4113191ce29ab97f4eff5d11e50e57f8eaa00c7b69d756cc2",
+        "references/languages/binary.md": "82c801720a8821f445309b47afb4aff42653c4b9671479cbec9f6a12b1bb2993",
+        "references/languages/javascript.md": "0059b407dc6eb542e6e5f87bafcb006758b28bf6cb6f0eacadb29c71374077cf",
+        "references/languages/jvm.md": "42b84c8bbdc9ec2848fb525e3ef4b0b736043769220d2e0726fb585f67effd01",
+        "references/languages/python.md": "bee0f1a354654e52c3f7e452bef6d5a2b7142abb519f870820a4423cb87cd667",
+        "references/maintain.md": "ba7d8356a29dd76d564fa09268e8b6b287136d4f2742a9d754a70a0598444baf",
+        "references/query.md": "51cb6d475f7a09f5d02aed5c31c8875df2e9d04705530fd55cd9e681f897056f",
+        "references/readme-authoring.md": "30d4bc56fa4645ab962c775c0495e66bf62b1cf95f147fac62378b4ef947fd64",
+        "scripts/check_wiki.py": "b389e831cc3c55afde15a009c72db0b2e5c9c4edcd3eb512a9896e190ea22e88",
+        "scripts/inspect_artifact.py": "7160419b22873bfcf4d8b3b536297a718a36e42d3fa1d412cec90f7717cf2356",
+        "SKILL.md": "01db07a96fb6366397d1e6562cde9d40e1062c196d614e7b5a9d87fd914b30d3"
       }
     },
     "fons4ai-sdd-change": {
       "files": {
-        "agents/manifest.yaml": "be8e0cf347b571aba77ba6bbdc4ecad4cb2a2500f6f4c7a8015baee2dfa246ad",
-        "agents/openai.yaml": "7051e7f0b01bd99a6f562ff28a113ac9bdaa10d4b7683e42ac43bab85960cabe",
-        "assets/templates/change-template.md": "1ed0c440dd92b1cab87e5fabb07f29a01f8cb9a041290f4b674b0c709ac5bc2f",
-        "SKILL.md": "105872594ef5a7c0f68762f989a59592b327db8edee939332e83310ef93de7c1"
-      }
-    },
-    "fons4ai-sdd-design": {
-      "files": {
-        "agents/manifest.yaml": "1785414c0b4eb970f6a024cd6bc892db6c242ae40a8ff75f3b46c1b7ad573034",
-        "agents/openai.yaml": "e3b20b714b1bb47867dc4f1d1a84704422b48e9d4177c90d0e250ebb1eb00227",
-        "assets/templates/technical-design-template.md": "45077ed499e7dbc561863e97b14642b3a08b067982a043bf450e68042b958ab9",
-        "SKILL.md": "a38a1ca2787b3f8f4afb8b5ccac68a351d9b376cfaa60cd84043c547f3f66c92"
-      }
-    },
-    "fons4ai-sdd-feature-workflow": {
-      "files": {
-        "agents/manifest.yaml": "bd40bafe42f88f4faad7636293aaafdad3b6768c439a860b3c55adac0abcb3bc",
-        "agents/openai.yaml": "d1a8dbb118482ca87fb1ff905c31b0042b0231f52696929b39de9eaee442f7f6",
-        "assets/templates/initiative-template.md": "25abb5b84204f59eb6f845a587fc8529c66957848c6415bc56404b13034f125b",
-        "references/multi-agent-orchestration.md": "57a62effca5c037d1bf4d403e66d3337fc72b6cc6236b17cfa6db6aa9a46fdb0",
-        "SKILL.md": "7a5fd6caa23cb2d657ce203cf7f4be687c5c942cc1cb4fee1c32fdc95d59ece9"
+        "agents/openai.yaml": "446dcef4a504a6e87c5460b7a49226010ebafd188aac169a06a58b5ee02537c6",
+        "references/baseline.md": "7c7902e062710134332dd02408ea969121bcc2f13a3f6f8f7812b3ea51392b00",
+        "references/local-change.md": "b649c20e33ab9cb6ae680e2fcd303191fa80dafae4dcfd48ff4de779fced4790",
+        "references/spec-change.md": "223e5868af4174da0d718b5111fb376901d220d93778521ef5ab06cb5f1d2f11",
+        "SKILL.md": "2d8aae21c3dabc2cd6e08c73be68fb09f8bebaef325f1f5f18065ea7d423a6f2"
       }
     },
     "fons4ai-sdd-implement": {
       "files": {
-        "agents/manifest.yaml": "6965bd93b167cd255fe7233271323620808bc8b49dffbf60f8b23810cb15351f",
-        "agents/openai.yaml": "75c40df40e7d5bee72fbd3561d1dbc33dbecf3b92c041f0d94663b9e84dc3af0",
-        "assets/templates/implementation-report-template.md": "4a5e2319ea4161fca065ce470f69f62c66ab6349424f809cce63e5e340fb30bc",
-        "assets/templates/recovery-report-template.md": "5f4a232edcf3efbc9891ef5670aeada828dc1a11e28ad67946fd3a0514995fad",
-        "SKILL.md": "5150154a3ca22d5578a903afeed764317afc4d747e99553b63f070d46deed622"
+        "agents/openai.yaml": "61e9f1c9cf528d92670514f7e90919d98e0ddbc312f522906b2f03cc2901eb6e",
+        "references/completion.md": "2a3ca14cc9d6b0840122c026bbc4e6982cb903beb806cc59f3d4981f143279dd",
+        "references/non-behavior.md": "56ca2725f433b238ce4b012dfb57fc1a0aff9a1eecc22f0b185dba1096cff5d9",
+        "references/tdd.md": "86dff1b8e59bdbe9afd9677f6456e1fac9cde65b8431d1defcaa767c46f9e9aa",
+        "SKILL.md": "76adf6e2f66245bb33d87d385f3f63369710529833be3fe53e8c0c4e297e3c0f"
       }
     },
-    "fons4ai-sdd-requirements": {
+    "fons4ai-sdd-plan": {
       "files": {
-        "agents/manifest.yaml": "799fdc0c1ba34e14352967298f34ba8219870a614d8f1e3a6b5176d692e65e4c",
-        "agents/openai.yaml": "1ca40431eca646bc0576698a1f62cf2cf6798b92ec08e2771bf7fa035d63a2d6",
-        "assets/templates/spec-template.md": "fe538d197d6dad8ed2e3be19a2d0d40a70179982a3c402c299304717439ee71c",
-        "references/sdd-artifact-contract.md": "cc44fa0201ef4bdd4171c0b9660d89fa41109d1d580fd2e4a83d8a41dff0a037",
-        "scripts/find_relevant_context.py": "efad0b5c898ba5e3469370a66bbe44706ecf8af7235a89ebdb3d02f8c4b7154c",
-        "SKILL.md": "be2d34a14c6e2fc5c091cd0cc0a8d860d11c7864127e15df19e49101389993f5"
-      }
-    },
-    "fons4ai-sdd-tasks": {
-      "files": {
-        "agents/manifest.yaml": "76caadbe7adf28e516c3ed6a3330d0efa8928806696274cdee2a068217b25701",
-        "agents/openai.yaml": "087386a10f9dcf72e4cec985ccd24c5f559c83efffcc34c1b61b08e433ef7dbb",
-        "assets/templates/task-index-template.md": "b4bf59bdd15a9a87382aaf1fea9c9666f8443880ec0fc215c831541c3b88ec22",
-        "assets/templates/task-pack-template.md": "ef97aaaf537d9546dc7085306d0746ffbe99f0196cb02f10ad1972c0fd59e5ed",
-        "assets/templates/tasks-template.md": "db22d0a0e64fe5f535c7519e0ea6224b2349cb88ef7ed0eb454852700d7b853b",
-        "references/task-planning-v2.md": "700e7b86030dce66992010c8ead29e12209d838a3b20a345ca2fc5050fdee86a",
-        "scripts/validate_sdd_artifacts.py": "11d144f11e5bbc7fec340a98124f575bf2a094376b437a778f8645d3939d1487",
-        "SKILL.md": "b614e1587584371ba93919649cba38484ab6d837607372aa153096b6db4a2ac1"
+        "agents/openai.yaml": "3e5004c2b7228c8d44b23a357fa1ecaf012b4fd01cd73fc8f06c6072cab8a6eb",
+        "assets/templates/design.md": "0e8f1d42c273b1c8d8f2726abc2642ebf12d76f14ceafad513e654b9b0f3d1aa",
+        "assets/templates/requirements.md": "850df4382849de5b2b7a8bb03426f82cdd35bb863ff0a62e3bacf26e9e9d829f",
+        "assets/templates/tasks.md": "0a3dcb887b6b319e71f841d2c7c9e007d7cb5821a0fa22ee6f0120081bacfe5c",
+        "references/approval.md": "26c80323f33aae73de65e58d160b955036b5646ce9ecbc991bb074ddf916201e",
+        "references/artifact-contract.md": "642eef62c9d72a7887c0f0b83f2c47a47b3a752eff1d18903d65b0f48d0df3b8",
+        "references/design-details.md": "1cf623309670e3ea032573285538a6a6d00006d2536808c0c3350d65ca92798f",
+        "references/design.md": "c5ce948ad6d3b15c7d1a8601014806bcb148209f718bc18b167d59272cef9c88",
+        "references/planning-review.md": "c5f9546f70733c7fc5539f866cf589086b16e0ce237e8d034640837d12bccb4e",
+        "references/replanning.md": "577166660a95dde45c1099f194b4947737c31e7e7c957e67b52a0a6f73dafcb1",
+        "references/requirements.md": "747f8de967ce9154bc5d0a3ab69afda288d81f8b3a4551fc754c346b998b9227",
+        "references/risk-checks.md": "dbb39361362cfb9c4cfecc582c1e909632d06697360ff472e599052546afdf06",
+        "references/tasks.md": "7b36b6417ccf0fc8d75bc9a289210f322d7e52870a9d6655641222353a345644",
+        "SKILL.md": "e23026d9a0332c13a379e47b3c5b10d7b1341067a64b6f465ca658a04cc504b9"
       }
     }
   }

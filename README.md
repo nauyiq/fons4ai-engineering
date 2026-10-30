@@ -1,210 +1,149 @@
-﻿# Fons4AI Engineering
+# Fons4AI Engineering
 
-Fons4AI Engineering 是一套用于把业务仓库初始化为 Harness Engineering 项目的 Template Kit。
+让 Agent 在已有工程中理解需求、复用能力、验证行为，并持续维护项目知识。适用于开发中的业务项目、新需求交付和已有功能迭代。
 
-本仓库不是集中式跨项目 Harness 工程，也不替业务项目定义业务边界、领域边界、团队规则或验证等级。它维护可安装技能、模板、上游校验器和说明文档。业务项目引入配套技能后，在自己的仓库内生成并维护项目级 Harness Engineering 资产。
+套件以五个技能组织工作：简单任务直接处理，复杂需求形成可评审的规格；知识与框架用法按需读取，减少重复规划和上下文加载。
 
-## 项目定位
+## 五个技能
 
-Fons4AI Engineering 的定位是：
-
-> 面向企业软件交付的 Agent Harness Engineering Template Kit。
-
-这里的 Harness Engineering 指对 Agent 工作环境进行工程化驾驭，包括：
-
-- 明确任务意图、边界和完成定义。
-- 组织 Agent 需要读取的项目上下文。
-- 通过技能契约约束不同工作角色。
-- 用项目规则和验证门禁限制高风险行为。
-- 将失败、验证和评审结果沉淀为项目本地资产或脱敏上游反馈。
-
-测试与 TDD 采用风险驱动策略：任务规划只声明行为风险和最低证据意图；implement 读取当前代码与已有测试后再完成 Test Decision Gate。只有可观察行为变化且现有覆盖存在缺口时才新增或更新测试；开发阶段默认执行聚焦或受影响测试，全量回归仅用于明确风险门禁。任务规划采用 `ImplementationContractVersion: 2`，校验具体实施机制、可检查不变量、明确非目标和文件证据标签；implement 还必须解析任务 `DesignRefs` 与 AC，并在编码前记录与当前代码的实施对齐结论。完整测试约定见 `docs/test-decision-policy.md`。
-
-## 目录结构
-
-```text
-skills/                  # 可安装技能，负责生成/维护项目本地资产
-templates/               # 通用交接和报告模板
-scripts/validators/      # 上游校验器
-docs/                    # Kit 使用说明、契约标准、分层说明
-```
-
-## 平台中立与多 Agent 协作
-
-Fons4AI 技能体系支持跨 AI 平台协作。团队中不同成员可以使用不同 AI 工具（Codex、Claude Code、Qder、Trace 等），但产出的 SDD 产物、handoff 记录和 Evidence Bundle 格式完全一致，可以互相衔接和审查。
-
-### 三层分离
-
-| 层 | 内容 | 文件 | 平台中立 |
-| --- | --- | --- | --- |
-| 契约层 | 技能 Contract / Evidence / Handoff | `skills/*/SKILL.md` | 是 |
-| Agent 清单层 | 角色 / 上下文预算 / 权限 / Evidence 级别 | `skills/*/agents/manifest.yaml` | 是 |
-| 平台适配层 | 线程管理 / 并行能力 / spawn 方式 | `skills/*/agents/<platform>.yaml` | 否 |
-
-### 多 Agent 能力分级
-
-| Tier | 能力 | 说明 |
+| 场景 | 技能 | 默认行为 |
 | --- | --- | --- |
-| Tier 0 | 单 Agent + 技能切换 + 文件 handoff | 所有平台基线，降级不降质 |
-| Tier 1 | Orchestrator 创建子线程，串行调度 | 支持多 Agent 的平台（Codex、Claude Code） |
-| Tier 2 | 并行多 Agent + 跨 Agent Evidence 信任 | 支持并行执行的平台 |
+| 初始化、查询、更新、维护 Wiki 或提炼规则 | [项目知识管理](skills/fons4ai-knowledge/SKILL.md) | 一个生命周期入口，按操作加载 |
+| 新需求或补充规划阶段 | [SDD 规划](skills/fons4ai-sdd-plan/SKILL.md) | 一次调用依次澄清、完整设计和精简任务，统一交付 |
+| 调整已有功能 | [SDD 变更](skills/fons4ai-sdd-change/SKILL.md) | 先定位知识或过程基线，再决定修改方式 |
+| 执行已授权工作 | [SDD 实现](skills/fons4ai-sdd-implement/SKILL.md) | 行为变化使用 TDD，聚焦验证，增量维护知识 |
+| BUG、异常或回归 | [BUG 修复](skills/fons4ai-bugfix-workflow/SKILL.md) | 复现、最小修复、回归验证 |
 
-平台不支持高 Tier 时自动降级到 Tier 0，但 handoff YAML、Evidence Bundle 和校验器对所有 Tier 一视同仁。
+简单局部任务直接处理，不强制生成文档。正式需求保留需求说明书、技术设计、任务规划：合并三次调用，不省略需求澄清或设计细节。默认三份文档完整交付后统一确认当前实施基线；认可总体思路或“用 SDD 开发”不自动批准后续细化规格。用户明确允许细化后直接实施时可免再次确认，同一已确认基线续做不重复询问。
 
-### 结构化 Handoff 协议
+简单行为调整也可走轻量流程，仍以 TDD 验证。仅补设计或任务时引用真实已有依据，不为模板补造其他阶段文档；跨技能转入变更前先核实基线。
 
-除了现有的 Markdown handoff 模板，新增了机器可读的结构化 handoff YAML：
+## 整体架构
 
-```text
-templates/handoff-yaml-template.yaml
+```mermaid
+flowchart TB
+    User[开发者的需求与授权] --> Agent[主 Agent]
+    subgraph Kit[本套件]
+        Skills[skills/：五个技能入口] --> Resources[按需参考、模板与辅助脚本]
+        Checks[scripts/ 与 tests/：校验和分发] -.检查完整性.-> Skills
+    end
+    Skills -->|显式安装整个套件| Installed[开发工具的技能目录]
+    Installed -->|读取指令与所需资源| Agent
+    Agent -->|查证、修改与验证| Code[业务仓库：代码、测试、配置与依赖]
+    Agent -->|必要时规划并记录结果| Process[开发过程：需求、设计与任务]
+    Agent -->|增量维护已核实事实| Wiki[工程 Wiki：项目地图、约定与专题]
+    Wiki -->|按需提供上下文| Agent
 ```
 
-任何 AI 工具都能读写这个 YAML，校验器 `validate_handoff_schema.py` 校验其 schema 合规性。
+技能由主 Agent 读取并执行；参考与模板随套件分发，Python 工具负责确定性的检查和文件操作。业务项目保留自己的代码结构、技术栈与工程约定。资源边界见 [项目地图](docs/wiki/index.md)。
 
-### 校验入口
+## 核心使用流程
 
-```text
-scripts/validators/validate_platform_neutrality.py --root .
-scripts/validators/validate_handoff_schema.py --file <handoff.yaml>
+```mermaid
+flowchart TD
+    Start[接入已有或新建项目] --> Init[建立最小项目地图与根导航]
+    Init --> Task{当前工作}
+    Task -->|明确局部工作| Local[直接修改]
+    Task -->|正式新需求或复杂变更| Plan[变更先核实基线，再依次澄清、设计、任务]
+    Task -->|BUG| Bug[复现与定位后最小修复]
+    Plan --> Check[三份文档交叉检查与统一交付]
+    Check --> Auth{当前基线已确认或明确免再次确认}
+    Auth -->|是| Implement[实现；行为变化以 TDD 驱动]
+    Auth -->|否| Review[等待用户评审当前实施基线]
+    Review --> Implement
+    Local --> Verify[聚焦验证与必要回归]
+    Bug --> Verify
+    Implement --> Verify
+    Verify --> Knowledge[更新受影响的已核实知识并交付结果]
 ```
 
-`scripts/validate_all.py` 已集成以上校验器。
+项目知识可以逐步补充，接入时无需补写所有历史规格。业务工作遵循现有工程体系；实现与验证发现的新事实，再反馈到 Wiki。细节见 [SDD 与 Wiki 设计](docs/wiki/topics/sdd-and-wiki.md)。
 
-## 业务项目自治
+## 关键交互时序
 
-业务项目接入后，自己就是一个 Harness Engineering 项目。上游 Template Kit 只提供生成方法、默认骨架、校验标准和反馈通道。
+以下展示实现行为时，主 Agent 如何使用项目知识并核实仅以组件包提供的框架能力：
 
-业务项目本地通常会形成：
-
-```text
-AGENTS.md
-.specify/memory/
-.specify/rules/
-spec/features/
-spec/reports/harness-feedback/
+```mermaid
+sequenceDiagram
+    actor User as 开发者
+    participant Agent as 主 Agent
+    participant Wiki as 项目知识与规则
+    participant Repo as 代码、配置与实际组件包
+    participant Tests as 测试工具
+    User->>Agent: 实现已授权的行为目标
+    Agent->>Wiki: 读取相关规则、专题与规格
+    Agent->>Repo: 查已有封装、实际依赖版本与配置
+    opt 用法未核实或没有源码
+        Agent->>Repo: 检查包内容、公开接口及必要资源
+        Note over Agent,Repo: 接口签名只证明结构；关键语义需要对应资料或真实组件验证
+    end
+    alt 关键行为缺少依据
+        Agent-->>User: 明确具体缺口，等待必要依据
+    else 依据足以实现
+        Agent->>Tests: 运行复现或最小行为测试，确认 RED
+        Agent->>Repo: 复用适用能力，完成最小实现
+        Agent->>Tests: 验证 GREEN，必要重构后做受影响回归
+        Tests-->>Agent: 实际运行结果
+        Agent->>Wiki: 仅更新受影响的已核实长期事实
+        Agent-->>User: 修改结果、验证及剩余限制
+    end
 ```
 
-推荐接入顺序：
+这是技能约定的执行顺序。组件清单工具只读取包条目和指纹；真实框架语义仍需资料或测试证明，详见 [框架与组件复用](docs/wiki/topics/dependency-reuse.md)。
 
-1. 使用 `fons4ai-knowledge-bootstrap` 建立项目知识基线和技能路由入口。
-2. 使用 `fons4ai-generate-project-rules` 生成项目规则。
-3. 运行 `scripts/validators/validate_business_project_harness.py --target <业务项目根目录>`。
-4. 选择一个低风险真实需求做 SDD MVP 回放。
-5. 发现通用 Harness 问题时，使用 `fons4ai-harness-feedback` 生成脱敏上游反馈单。
+## 快速开始
 
-## 业务开发入口
+准备支持 Agent Skills 的开发工具。维护和分发本套件需要 Python 3.10 或更新版本，测试中的真实 JAR 用例在 JDK 工具可用时执行。
 
-业务项目完成最小接入后，日常开发优先按工作类型选择入口：
+本套件五个技能一同分发，资源通过相邻技能链接复用。复制整个 `skills/` 下的五个目录到支持 Agent Skills 的工具目录，不单独复制 `SKILL.md`。调用前检查所需相邻技能可用；安装后重启或刷新工具的技能发现。
 
-| 场景 | 推荐入口 | 说明 |
-| --- | --- | --- |
-| 正常新需求开发 | `fons4ai-sdd-feature-workflow` | 以需求就绪和设计确认门禁编排 SDD；大型需求按 Feature 与 Task Pack 拆分，校验后停止等待实现确认 |
-| 已有功能迭代或低风险非 BUG 小变更 | `fons4ai-sdd-change` | S0 直接修改；规划期原地修订；实现期未外部化反馈使用 ITER；稳定或外部化基线才创建 CR |
-| BUG、异常、回归失败 | `fons4ai-bugfix-workflow` | S0 Fast Fix 直接修复验证；复杂问题执行完整报告闭环 |
-| 用户确认实现 | `fons4ai-sdd-implement` | 只执行已规划且已授权的任务 |
+也可以从本仓库显式安装，下面的目标路径需要替换成当前工具实际使用的目录：
 
-## 技能分类
-
-Fons4AI 技能按用户入口和职责边界分为以下类型：
-
-| 类别 | 技能 | 分类原因 |
-| --- | --- | --- |
-| 流程编排类 | `fons4ai-sdd-feature-workflow` | 串联阶段、控制停止点，不直接写业务代码 |
-| SDD 阶段产物类 | `fons4ai-sdd-requirements`、`fons4ai-sdd-design`、`fons4ai-sdd-tasks` | 生成或调整需求、7 章技术设计，以及 V1 单文件或 V2 任务索引/Task Pack |
-| 实现执行类 | `fons4ai-sdd-implement` | 执行已规划且已授权的任务，更新代码、测试、任务状态和实施报告 |
-| 变更执行与规划类 | `fons4ai-sdd-change` | S0 直接修改；按 Feature 生命周期路由到基线修订、ITER 纠偏、CR 或新/继任 Feature |
-| BUG 修复闭环类 | `fons4ai-bugfix-workflow` | S0 Fast Fix 或标准复现、修复、验证和报告 |
-| 知识库类 | `fons4ai-knowledge-bootstrap`、`fons4ai-domain-knowledge-modeling`、`fons4ai-knowledge-summary` | 建立、深化和汇总项目知识事实 |
-| 规则生成类 | `fons4ai-generate-project-rules` | 把已验证项目事实和团队决策固化为 `.specify/rules/` |
-| 反馈治理类 | `fons4ai-harness-feedback` | 把业务试点中的通用 Harness 问题整理为脱敏上游反馈单 |
-
-
-## 体系分层
-
-Fons4AI Harness Engineering 按 6 层组织：
-
-| 层级 | 目标 | 典型产物 |
-| --- | --- | --- |
-| Intent Harness | 明确用户意图、范围和验收标准 | 需求说明书、CR、AC、澄清问题 |
-| Context Harness | 控制 Agent 应加载的上下文 | `AGENTS.md`、`.specify/memory/`、知识卡片 |
-| Skill Harness | 约束 Agent 按角色执行 | `skills/*/SKILL.md`、技能契约、handoff |
-| Rule Harness | 固化团队工程规则 | `.specify/rules/`、规则模板、校验脚本 |
-| Feedback Harness | 证明任务完成并记录失败 | 测试结果、实施报告、失败报告 |
-| Learning Harness | 跨项目沉淀可复用经验 | 失败案例、回放样例、`spec/reports/harness-feedback/` 上游反馈单 |
-
-## 校验入口
-
-仓库级校验入口：
-
-```text
-scripts/validators/validate_skill_contracts.py --skills-root skills
-scripts/validators/validate_feedback_harness.py
-scripts/validate_all.py
-scripts/validators/validate_business_project_harness.py --target <业务项目根目录>
+```sh
+python scripts/sync_global_skills.py --target /path/to/skills
 ```
 
-`scripts/validate_all.py` 是仓库级一键入口。业务项目接入校验优先使用 `scripts/validators/validate_business_project_harness.py --target <业务项目根目录>`。
+分发工具先验证，拒绝不完整套件和源/目标重叠，备份被替换的技能；旧版多余入口会被检测并阻止继续，按工具提示显式选择归档后重试。不会在日常开发中自动同步用户级技能。
 
-## 与 Loop Engineering 的关系
+旧版安装迁移使用 `--archive-obsolete`；备份位于目标目录同级的 `.fons4ai-backups/`，不会继续参与技能发现。
 
-本仓库当前优先提供 Harness Engineering Template Kit，并已进入 Loop Phase 1：人工反馈闭环标准化。长期目标是逐步演进为具备回放样例和自动评估能力的 Loop Engineering。
+业务项目不需要复制整套 Kit 脚本。使用项目知识管理技能建立根目录 `README.md`、`AGENTS.md` 与 `docs/wiki/index.md`，已有文件合并保留人工内容。后续按任务需要建立专题和过程文档。
 
-```text
-Prompt Engineering
-  -> Harness Engineering
-      -> Loop Engineering
+安装并刷新技能发现后，在目标业务仓库中可提出：
+
+> 使用 fons4ai-knowledge 初始化本项目的工程 Wiki。先核查当前代码、测试、配置与依赖，合并根 README 和 AGENTS，建立项目地图与有依据的工程约定。只为当前需要的主题建页。
+
+首次接入的可观察结果是根导航、项目地图和按事实生成的必要专题；不会为了初始化补写历史三件套。
+
+## 验证与开发
+
+```sh
+# 当前套件、源码锁、导航和工具行为测试
+python -B scripts/validate_all.py
+
+# 对比用户级安装，只读检查
+python scripts/sync_global_skills.py --target /path/to/skills --check-only
 ```
 
-- Harness Engineering 解决“如何驾驭 Agent 完成受控交付”。
-- Loop Engineering 解决“如何让执行结果、失败原因和验证反馈持续回流，推动体系自我改进”。
-- Loop Phase 1 先标准化 `上游反馈单 -> Loop 改进记录 -> 修改清单 -> 校验 -> 全局 skills 同步`，不引入无人值守自动循环。
+维护者审查技能修改后，用 `python scripts/sync_global_skills.py --write-lock` 更新源码哈希，再运行统一验证。当前工具测试覆盖包清单、导航、套件资源与安装保护；模型遵循率和真实 token 成本需要业务任务回放。
 
-## Loop Phase 1
-
-Loop Phase 1 的标准产物：
+## 目录与文档导航
 
 ```text
-spec/reports/loop-improvements/<yyyymmdd>-<问题简述>-loop改进记录.md
+README.md / AGENTS.md       根导航与工作规则
+docs/wiki/                 当前项目地图、工程约定、按需专题
+docs/development/          开发过程溯源
+skills/                    五个可安装技能及按需资源
+scripts/ / tests/          套件检查、分发和工具行为测试
+templates/                 可选的维护者反馈模板
+archive/v1/                原版技能、模板、文档快照，不参与发布
 ```
 
-使用模板：
+旧版 `.specify/`、Task Pack、交接 YAML、卡片编号和实施报告不再是当前流程要求。历史资料不自动迁移或删除。原有未跟踪的试点目录与旧校验包装脚本不属于当前发布入口。
 
-```text
-templates/loop-improvement-record-template.md
-```
-
-每次通用上游改进应记录来源反馈单、用户决策、修改清单、验证命令、全局 skills 同步状态和关闭结论。
-
-## SDD 的位置
-
-SDD 是当前 Fons4AI Harness 的核心执行骨架之一，但不是全部。
-
-```text
-fons4ai-sdd-feature-workflow
-  -> fons4ai-sdd-requirements
-      -> fons4ai-sdd-design
-          -> fons4ai-sdd-tasks
-              -> 等待用户确认实现
-                  -> fons4ai-sdd-implement
-                      -> 阻塞时由 fons4ai-sdd-implement 诊断并路由（可选）
-                      -> 用户显式触发知识汇总（可选）
-                          -> fons4ai-knowledge-summary
-```
-
-对于低风险、小范围或非功能性任务，体系应允许轻量处理；对于高风险任务，必须通过更严格的 SDD、证据和验证门禁。
-
-## 设计原则
-
-- 业务项目自治：项目私有边界、规则、验证能力和知识沉淀留在业务项目。
-- 上游只维护通用能力：技能、模板、校验器和脱敏反馈闭环。
-- 风险分层，不用同一套重流程处理所有任务。
-- 规则短而硬，解释和样例放到专门文档。
-- 优先机器可验证，其次人工可审查，最后才是文字约束。
-- 不把一次性经验上升为通用规则，除非经过脱敏、归因和抽象。
-
-## 文档入口
-
-- [Harness Engineering 方案](docs/harness-engineering.md)
-- [Loop Phase 1](docs/loop-phase-1.md)
-- [Harness Layer Map](docs/harness-layer-map.md)
-- [Skill Contract Standard](docs/skill-contract-standard.md)
+- [项目地图](docs/wiki/index.md)：人和 Agent 共用的能力与文件入口。
+- [工程约定](docs/wiki/工程约定.md)：维护本套件的规则。
+- [SDD 与 Wiki 设计](docs/wiki/topics/sdd-and-wiki.md)：更完整的流程与设计取舍。
+- [框架与组件复用](docs/wiki/topics/dependency-reuse.md)：无源码时的发现与证据边界。
+- [Agent 指南](AGENTS.md)：项目身份、技能入口与工作规则。
+- [开发过程](docs/development/index.md)：需求、设计、任务及验证记录。

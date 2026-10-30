@@ -1,14 +1,4 @@
 interface:
-  display_name: "Fons4AI Bugfix Workflow"
-  short_description: "BUG 风险分级工作流：S0 快速修复，复杂问题执行完整闭环。"
-  default_prompt: "Use $fons4ai-bugfix-workflow for BUGs, exceptions, and regressions. Apply the built-in S0 Fast Fix gate first. Reuse an existing failing test or executable reproduction as RED; add or update a test only when durable regression coverage is missing. Run focused verification and the minimum valuable affected regression, not full regression by default. Use the standard evidence and report workflow for other defects, and route requirement changes to $fons4ai-sdd-change."
-
-adapter:
-  platform: codex
-  capabilities:
-    multi_agent: true
-    parallel: true
-    thread_handoff: true
-  spawn_method: create_thread
-  handoff_method: handoff_thread
-  context_isolation: true
+  display_name: "Fons4AI BUG 修复"
+  short_description: "基于复现证据定位与修复缺陷，保留回归覆盖并按风险执行聚焦验证。"
+  default_prompt: "使用 $fons4ai-bugfix-workflow 复现并修复问题，报告实际验证与遗留限制。"

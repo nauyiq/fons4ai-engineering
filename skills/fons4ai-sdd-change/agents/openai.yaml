@@ -1,14 +1,4 @@
 interface:
-  display_name: "Fons4AI SDD Change"
-  short_description: "处理已有内容变更：S0 直改；开发中纠偏使用 ITER；外部化基线才创建 CR。"
-  default_prompt: "Use $fons4ai-sdd-change for changes to existing functionality. Apply S0 first. For non-S0 work, classify the feature lifecycle before choosing artifacts: revise planning baselines in place, use ITER correction for implementing but unaccepted and unexternalized features, and create a CR only for accepted, released, externalized, irreversible, or explicitly audited changes. Keep requirement, design, tasks, and invalidated evidence consistent."
-
-adapter:
-  platform: codex
-  capabilities:
-    multi_agent: true
-    parallel: false
-    thread_handoff: true
-  spawn_method: create_thread
-  handoff_method: handoff_thread
-  context_isolation: true
+  display_name: "Fons4AI SDD 变更"
+  short_description: "基于已有知识或过程基线调整功能，局部直改，复杂变更更新规格与验证。"
+  default_prompt: "使用 $fons4ai-sdd-change 先核实已有基线，再规划或执行本次授权的变更。"
